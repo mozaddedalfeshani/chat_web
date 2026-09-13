@@ -20,6 +20,8 @@ export * from "./notification";
 export * from "./wall";
 export * from "./chat";
 export * from "./chat-e2ee";
+export * from "./chat-e2ee-versions";
+export * from "./chat-e2ee-repair";
 export * from "./chat-webhooks";
 export * from "./chat-connections";
 export * from "./messaging";

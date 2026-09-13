@@ -75,6 +75,15 @@ export type ChatE2EEBackfillItem = {
   envelope: ChatE2EEKeyEnvelope;
 };
 
+/**
+ * This account's own envelopes at the key versions it asked for. A version it
+ * holds none for is absent. `ChatE2EEConversationKeyStatus` carries the newest
+ * version only; this is where an older one comes back.
+ */
+export type ChatE2EEKeyVersions = {
+  envelopes: Array<{ key_version: number; envelope: ChatE2EEKeyEnvelope }>;
+};
+
 export type ChatE2EEConversationKeyStatus =
   | { exists: false }
   | {

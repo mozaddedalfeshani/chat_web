@@ -14,6 +14,7 @@ import {
   randomBytes,
 } from "./primitives";
 import { ensureDMKey, loadDMKey, rotateDMKey, ChatKeyNotReady } from "./conversation-key";
+import { loadReadKey } from "./read-key";
 
 export { rotateDMKey, ChatKeyNotReady };
 
@@ -69,15 +70,63 @@ export async function encryptExistingDMText(conversationID: string, text: string
   return encryptWithDMKey(conversationID, text, currentUserID, entry);
 }
 
+/**
+ * A quote is sealed against the QUOTED message's sender and key version, not
+ * the quoting message's — it is that row's ciphertext, handed over by join.
+ * Decrypted separately because the two can disagree: an attachment-only reply
+ * carries no ciphertext of its own while still quoting an encrypted message.
+ */
+async function decryptQuote(message: ChatMessage, currentUserID: string) {
+  const quote = message.quote;
+  if (!quote?.encrypted_body) return quote;
+  try {
+    const entry = await loadReadKey(
+      message.conversation_id,
+      currentUserID,
+      quote.encryption_key_version,
+    );
+    if (!entry || entry.version !== quote.encryption_key_version) {
+      throw new Error("key unavailable");
+    }
+    const plaintext = await crypto.subtle.decrypt(
+      {
+        name: "AES-GCM",
+        iv: base64UrlToBytes(quote.encryption_nonce ?? ""),
+        additionalData: encoder.encode(
+          `ababilx-dm-v1:${message.conversation_id}:${entry.version}:${quote.user_id ?? ""}`,
+        ),
+      },
+      entry.key,
+      base64UrlToBytes(quote.encrypted_body),
+    );
+    // Clearing the ciphertext is what makes this idempotent: the websocket
+    // path re-dispatches a decrypted event through the same handler, and a
+    // quote that still looked encrypted would decrypt forever.
+    return {
+      ...quote,
+      body: decoder.decode(plaintext),
+      encrypted_body: "",
+      sealed: true,
+    };
+  } catch {
+    // Most often a message from before this account joined: the reply reads
+    // fine, so the quote says "not available" rather than raising an alarm.
+    return { ...quote, body: "", encrypted_body: "", decryption_failed: true };
+  }
+}
+
 export async function decryptChatMessage(message: ChatMessage, currentUserID: string) {
+  const quote = await decryptQuote(message, currentUserID);
+  if (quote !== message.quote) message = { ...message, quote };
   if (message.encryption_version !== 1 || !message.encrypted_body) return message;
   try {
-    let entry = await loadDMKey(message.conversation_id, currentUserID);
-    // A newer key version means the other side rotated (usually after starting
-    // a fresh identity), so the cached key is stale and worth one refetch.
-    if (entry && (message.encryption_key_version ?? 0) > entry.version) {
-      entry = await loadDMKey(message.conversation_id, currentUserID, true);
-    }
+    // By the version the message names, not the newest: a group rotates on
+    // every join, leave and reset, and older messages keep their own version.
+    const entry = await loadReadKey(
+      message.conversation_id,
+      currentUserID,
+      message.encryption_key_version,
+    );
     if (!entry || entry.version !== message.encryption_key_version) throw new Error("key unavailable");
     const plaintext = await crypto.subtle.decrypt(
       {

@@ -5,6 +5,9 @@ import { attachmentPreviewLabel } from "./chat-preview-utils";
 /** What a reply preview says under the author's name. */
 export function quoteSummary(quote: ChatMessageQuote): string {
   if (quote.deleted) return "Original message was deleted";
+  // Not an alarm: the reply itself reads fine, and the original is simply one
+  // this account was never given a key for — typically sent before it joined.
+  if (quote.decryption_failed) return "Original message not available";
   const text = tiptapToPlainText(quote.body ?? "").replace(/\s+/g, " ").trim();
   if (text) return text;
   return attachmentPreviewLabel(quote.attachment_type) ?? "Attachment";

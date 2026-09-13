@@ -6,7 +6,13 @@ const RECENT_MESSAGE_LIMIT = 10;
 const THREAD_FEED_MARKER = ":thread:";
 
 function persistenceSafeMessage(message: ChatMessage): ChatMessage {
-  return { ...message, body: "", decryption_failed: undefined };
+  // A quote opened on this device lost its ciphertext when it was decrypted,
+  // so its body is plaintext; the silent page refetch brings the sealed copy
+  // back after a reload.
+  const quote = message.quote?.sealed
+    ? { ...message.quote, body: "", sealed: undefined }
+    : message.quote;
+  return { ...message, body: "", decryption_failed: undefined, quote };
 }
 
 export function persistenceSafeConversations<T extends { last_message_body?: string }>(

@@ -17,6 +17,23 @@ export const dmKeys = new Map<
   { version: number; key: CryptoKey; stale: boolean }
 >();
 
+/**
+ * Keys for READING, keyed `conversationId:version`. Separate from `dmKeys`,
+ * which must hold the newest version because a send seals with it; this holds
+ * retired versions quite legitimately, since every message keeps the version it
+ * was sealed under. `readKeyMisses` remembers when the server said this account
+ * holds no envelope for a version, so a screenful of such messages is one
+ * request and not one per render.
+ */
+export const readKeys = new Map<string, CryptoKey>();
+export const readKeyMisses = new Map<string, number>();
+
+function forgetConversationKeys() {
+  dmKeys.clear();
+  readKeys.clear();
+  readKeyMisses.clear();
+}
+
 export function getIdentityPrivateKey() {
   return identityPrivateKey;
 }
@@ -28,7 +45,7 @@ export function getIdentityPublicKey() {
 export function setIdentity(privateKey: CryptoKey, publicKey: JsonWebKey) {
   identityPrivateKey = privateKey;
   identityPublicKey = publicKey;
-  dmKeys.clear();
+  forgetConversationKeys();
 }
 
 export function isMessageVaultUnlocked() {
@@ -38,7 +55,7 @@ export function isMessageVaultUnlocked() {
 export function lockMessageVault() {
   identityPrivateKey = null;
   identityPublicKey = null;
-  dmKeys.clear();
+  forgetConversationKeys();
 }
 
 if (typeof window !== "undefined") {

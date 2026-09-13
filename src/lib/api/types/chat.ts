@@ -195,7 +195,10 @@ export type ChatMessageQuote = {
   encryption_nonce?: string;
   encryption_key_version?: number;
   attachment_type?: string;
-  deleted?: boolean;
+  deleted?: boolean;  /** Opened on this device; its body is plaintext and never goes to storage. */
+  sealed?: boolean;
+  /** Sealed under a key this account was never given, e.g. written before it joined. */
+  decryption_failed?: boolean;
 };
 
 // The end-to-end encryption types live next door; re-exported so every

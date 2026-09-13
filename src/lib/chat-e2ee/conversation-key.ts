@@ -7,6 +7,7 @@ import { api, type ChatE2EEKeyEnvelope } from "@/lib/api";
 import { unwrapDMKey, wrapDMKey } from "./dm-key-envelope";
 import { backfillConversationKeys } from "./key-backfill";
 import { dmKeys, getIdentityPrivateKey, getIdentityPublicKey } from "./identity-state";
+import { reportUnreadableEnvelope } from "./key-repair";
 
 /**
  * Thrown only on the FIRST-key path (no key has ever existed) when the
@@ -28,13 +29,16 @@ async function fetchDMKey(conversationID: string, userID: string) {
   const status = await api.getChatE2EEConversationKey(conversationID);
   if (!status.exists) return null;
   // An envelope that will not open is indistinguishable from having none:
-  // unwrapping is pure computation, so this is a corrupt or hostile row, not a
-  // network blip. Reporting "no key" lets the next send mint a fresh version
-  // instead of leaving the conversation unable to send at all.
+  // unwrapping is pure computation, so this is a corrupt or mis-sealed row, not
+  // a network blip. Reporting it first drops the row server-side, so "no key"
+  // really does let the next send mint a fresh version instead of being handed
+  // the same row and leaving the conversation unable to send.
+  const identity = getIdentityPrivateKey();
   let key: CryptoKey;
   try {
     key = await unwrapDMKey(status.key.envelope, userID);
   } catch {
+    await reportUnreadableEnvelope(conversationID, status.key.key_version, identity);
     return null;
   }
   // Hand the surviving key to anyone who lost theirs BEFORE deciding the key is
@@ -113,7 +117,15 @@ async function createDMKey(conversationID: string, currentUserID: string, firstK
     );
   }));
   const saved = await api.createChatE2EEConversationKey(conversationID, envelopes);
-  const winningKey = await unwrapDMKey(saved.envelope, currentUserID);
+  let winningKey: CryptoKey;
+  try {
+    winningKey = await unwrapDMKey(saved.envelope, currentUserID);
+  } catch (error) {
+    // A rival's key won the race and its envelope for us does not open. This
+    // send fails; the report makes the next one rotate.
+    await reportUnreadableEnvelope(conversationID, saved.key_version, getIdentityPrivateKey());
+    throw error;
+  }
   const result = { version: saved.key_version, key: winningKey, stale: false };
   dmKeys.set(conversationID, result);
   return result;

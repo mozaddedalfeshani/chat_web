@@ -21,6 +21,7 @@ import {
   decryptChatMessages,
 } from "@/lib/chat-e2ee/crypto";
 import { decryptSidebarPreviews } from "@/lib/chat-e2ee/sidebar-preview";
+import { fillConversationKeyGaps } from "@/lib/chat-e2ee/key-gaps";
 import {
   rememberLocalMessages,
   removeLocalMessage,
@@ -390,6 +391,9 @@ export const useChatStore = create<ChatState>()(
           // Chat is scope-blind since migration 0145 — one membership-driven
           // list, personal and converted groups alike, no scope to narrow.
           const data = await api.listAllChatConversations();
+          // Gives back keys other members lost, without waiting for them to open
+          // the chat. Once per unlocked identity; later refreshes are free.
+          void fillConversationKeyGaps(get().currentUserId);
           // Groups are sealed exactly like DMs, so both lists are opened.
           const [previewDms, previewChannels] = await Promise.all([
             decryptSidebarPreviews(data.dms ?? [], get().currentUserId),
@@ -901,12 +905,16 @@ export const useChatStore = create<ChatState>()(
           fetchSidebar,
         } = get();
 
+        // A message can need decrypting for its own body, for the quote it
+        // carries, or both — an attachment-only reply is sent in the clear but
+        // can still quote ciphertext. decryptChatMessage clears what it opens,
+        // so re-dispatching settles after one pass.
         if (
           (ev.type === "chat.message.created" ||
             ev.type === "chat.message.updated") &&
-          ev.message.encryption_version === 1 &&
-          !ev.message.body &&
-          currentUserId
+          currentUserId &&
+          ((ev.message.encryption_version === 1 && !ev.message.body) ||
+            !!ev.message.quote?.encrypted_body)
         ) {
           void decryptChatMessage(ev.message, currentUserId).then((message) => {
             get().handleWsEvent({ ...ev, message });

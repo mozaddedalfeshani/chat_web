@@ -1,5 +1,7 @@
 import { api, type ChatE2EEBackfillItem, type ChatE2EEKeyGap } from "@/lib/api";
 import { unwrapDMKey, wrapDMKey } from "./dm-key-envelope";
+import { getIdentityPrivateKey } from "./identity-state";
+import { reportUnreadableEnvelope } from "./key-repair";
 
 // One attempt per conversation per session. A gap that survives a failed
 // attempt is retried on the next page load, not on every message.
@@ -26,10 +28,20 @@ export async function backfillConversationKeys(
 ): Promise<boolean> {
   if (!gaps.length || attempted.has(conversationID)) return false;
   attempted.add(conversationID);
+  const identity = getIdentityPrivateKey();
   try {
     const envelopes: ChatE2EEBackfillItem[] = [];
     for (const gap of gaps) {
-      const key = await unwrapDMKey(gap.envelope, currentUserID);
+      let key: CryptoKey;
+      try {
+        key = await unwrapDMKey(gap.envelope, currentUserID);
+      } catch {
+        // Our own copy of this version is the broken one. Nothing to hand on
+        // from it; reporting it lets somebody else hand it to us, and the other
+        // versions in this list are still worth filling.
+        await reportUnreadableEnvelope(conversationID, gap.key_version, identity);
+        continue;
+      }
       for (const userID of gap.user_ids) {
         const { public_key: publicKey } = await api.getChatE2EEPublicKey(userID);
         envelopes.push({
