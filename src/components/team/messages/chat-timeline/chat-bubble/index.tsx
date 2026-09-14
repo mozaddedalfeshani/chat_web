@@ -19,7 +19,6 @@ import type { ChatMessage } from "@/lib/api";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ReactionChips } from "@/components/shared/reaction-bar";
 import { CommentEditForm } from "@/components/team/board/comments/message/comment-edit-form";
-import { DeleteCommentDialog } from "@/components/team/board/comments/message/delete-comment-dialog";
 import { extractUrls, isTiptapEmpty } from "@/components/team/board/tiptap/utils";
 import { openExternal } from "@/lib/files/asset-actions";
 import { cn } from "@/lib/utils";
@@ -27,6 +26,10 @@ import { chatInitials } from "../../chat-utils";
 import { bubbleRadius, isMediaOnly } from "./bubble-shape";
 import BubbleBody from "./bubble-body";
 import BubbleToolbar from "./bubble-toolbar";
+import {
+  DeleteMessageDialog,
+  type MessageDeleteScope,
+} from "./delete-message-dialog";
 import BubbleContextMenu, { type BubbleMenuItem } from "./bubble-context-menu";
 import {
   copyImage,
@@ -62,7 +65,7 @@ export default function ChatBubble({
   onToggleReaction: (emoji: string) => void;
   onOpenThread?: () => void;
   onEditMessage?: (body: string) => Promise<void>;
-  onDeleteMessage?: () => Promise<void>;
+  onDeleteMessage?: (scope: MessageDeleteScope) => Promise<void>;
   onForwardMessage?: () => void;
   onOpenProfile?: (userId: string) => void;
   /** Signal's quoted reply — stays in the main feed, unlike a thread. */
@@ -102,11 +105,11 @@ export default function ChatBubble({
     }
   }
 
-  async function confirmDelete() {
+  async function confirmDelete(scope: MessageDeleteScope) {
     if (!onDeleteMessage) return;
     setDeleteBusy(true);
     try {
-      await onDeleteMessage();
+      await onDeleteMessage(scope);
       setDeleteOpen(false);
     } finally {
       setDeleteBusy(false);
@@ -218,7 +221,9 @@ export default function ChatBubble({
       icon: <InformationCircleIcon size={18} />,
       onSelect: () => setInfoOpen(true),
     });
-    if (onDeleteMessage && outgoing && !isForward) {
+    // Any message can be deleted for me; the dialog decides whether "for
+    // everyone" is on offer.
+    if (onDeleteMessage) {
       items.push({
         key: "delete",
         label: "Delete",
@@ -295,11 +300,7 @@ export default function ChatBubble({
               }
             : undefined
         }
-        onDelete={
-          onDeleteMessage && outgoing && !isForward
-            ? () => setDeleteOpen(true)
-            : undefined
-        }
+        onDelete={onDeleteMessage ? () => setDeleteOpen(true) : undefined}
       />
 
       <div
@@ -354,10 +355,11 @@ export default function ChatBubble({
         outgoing={outgoing}
       />
 
-      <DeleteCommentDialog
+      <DeleteMessageDialog
         open={deleteOpen}
         onOpenChange={setDeleteOpen}
         busy={deleteBusy}
+        canDeleteForEveryone={outgoing && !isForward}
         onConfirm={confirmDelete}
       />
     </div>

@@ -16,6 +16,7 @@ import TimelineFooter, {
 import { quoteFromMessage } from "../chat-quote-utils";
 import type { ChatMessageQuote } from "@/lib/api/types/chat";
 import type { MessageComposerHandle } from "./message-composer";
+import type { MessageDeleteScope } from "./chat-bubble/delete-message-dialog";
 import { buildTimelineItems } from "./timeline-items";
 import { TimelineMessageList } from "./timeline-message-list";
 import { useTimelineScroll } from "./use-timeline-scroll";
@@ -66,7 +67,10 @@ export default function ChatTimeline({
   onToggleReaction: (messageId: string, emoji: string) => void;
   onOpenThread?: (messageId: string) => void;
   onEditMessage?: (messageId: string, body: string) => Promise<void>;
-  onDeleteMessage?: (messageId: string) => Promise<void>;
+  onDeleteMessage?: (
+    messageId: string,
+    scope: MessageDeleteScope,
+  ) => Promise<void>;
   onForwardMessage?: (message: ChatMessage) => void;
   onPresign: Parameters<typeof TimelineFooter>[0]["onPresign"];
   onDiscard: Parameters<typeof TimelineFooter>[0]["onDiscard"];

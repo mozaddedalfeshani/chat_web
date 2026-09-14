@@ -150,6 +150,13 @@ export function deleteChatMessage(messageId: string) {
   });
 }
 
+/** "Delete for me" — hidden for this account only, on every device. */
+export function hideChatMessage(messageId: string) {
+  return apiFetch<void>(`/api/teams/chat/messages/${messageId}/hide`, {
+    method: "POST",
+  });
+}
+
 export function toggleChatReaction(messageId: string, emoji: string) {
   return apiFetch<WallReactionGroup[]>(
     `/api/teams/chat/messages/${messageId}/reactions`,

@@ -23,6 +23,7 @@ import ForwardDialog from "./chat-forward/forward-dialog";
 import { extractMentionUserIds } from "@/components/team/board/tiptap/utils";
 import { selectActiveConversation, useChatStore } from "@/store/chat-store";
 import { useMessageRequest } from "./use-message-request";
+import { rememberDeletedMessage } from "@/lib/messages/deletions";
 import type { ChatMessage } from "@/lib/api";
 import MessageVaultGate from "./message-vault-gate";
 import { useMessageVaultStore } from "@/store/message-vault-store";
@@ -515,9 +516,14 @@ export default function MessagesClient() {
                     throw e;
                   }
                 }}
-                onDeleteMessage={async (id) => {
+                onDeleteMessage={async (id, scope) => {
                   try {
-                    await api.deleteChatMessage(id);
+                    if (scope === "me") {
+                      await api.hideChatMessage(id);
+                      rememberDeletedMessage(currentUserId, activeConversationId!, id);
+                    } else {
+                      await api.deleteChatMessage(id);
+                    }
                     removeFeedMessage(activeConversationId!, id, null);
                   } catch (e) {
                     toast.error(

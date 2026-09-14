@@ -8,6 +8,7 @@ import { GroupCallEventRow } from "./group-call-event";
 import GroupEventRow from "./group-event-row";
 import WebhookMessageRow from "./webhook-message-row";
 import ChatBubble from "./chat-bubble";
+import type { MessageDeleteScope } from "./chat-bubble/delete-message-dialog";
 
 export function ChatTimelineItemRow({
   message,
@@ -38,7 +39,10 @@ export function ChatTimelineItemRow({
   onToggleReaction: (messageId: string, emoji: string) => void;
   onOpenThread?: (messageId: string) => void;
   onEditMessage?: (messageId: string, body: string) => Promise<void>;
-  onDeleteMessage?: (messageId: string) => Promise<void>;
+  onDeleteMessage?: (
+    messageId: string,
+    scope: MessageDeleteScope,
+  ) => Promise<void>;
   onForwardMessage?: (message: ChatMessage) => void;
   onOpenProfile?: (userId: string) => void;
   onReply?: (message: ChatMessage) => void;
@@ -99,7 +103,9 @@ export function ChatTimelineItemRow({
               onEditMessage ? (body) => onEditMessage(m.id, body) : undefined
             }
             onDeleteMessage={
-              onDeleteMessage ? () => onDeleteMessage(m.id) : undefined
+              onDeleteMessage
+                ? (scope) => onDeleteMessage(m.id, scope)
+                : undefined
             }
             onForwardMessage={onForwardMessage ? () => onForwardMessage(m) : undefined}
             onOpenProfile={onOpenProfile}
