@@ -58,7 +58,23 @@ export function ChatTimelineItemRow({
       }
     >
       {m.message_type === "webhook" ? (
-        <WebhookMessageRow message={m} />
+        <>
+          <WebhookMessageRow
+            message={m}
+            onToggleReaction={(emoji) => onToggleReaction(m.id, emoji)}
+            onOpenThread={onOpenThread ? () => onOpenThread(m.id) : undefined}
+          />
+          {showThreadSummary ? (
+            <div className="pl-12 pr-2">
+              <ThreadReplySummary
+                root={chatToThreadMessage(m)}
+                replies={(threadRepliesByRoot[m.id] ?? []).map(chatToThreadMessage)}
+                replyCount={m.thread_count}
+                onClick={() => onOpenThread!(m.id)}
+              />
+            </div>
+          ) : null}
+        </>
       ) : m.message_type === "system" ? (
         <GroupEventRow message={m} currentUserId={currentUserId} />
       ) : m.message_type === "voice_call" ? (

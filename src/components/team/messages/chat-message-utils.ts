@@ -1,6 +1,13 @@
 import type { ChatMessage } from "@/lib/api/types/chat";
 import type { ThreadMessage } from "@/components/team/board/comments/thread-types";
 
+export function webhookSourceName(message: ChatMessage): string {
+  return (
+    (message.meta as { source_name?: string } | null)?.source_name?.trim() ||
+    "Webhook"
+  );
+}
+
 export function chatToThreadMessage(message: ChatMessage): ThreadMessage {
   return {
     id: message.id,
@@ -8,7 +15,11 @@ export function chatToThreadMessage(message: ChatMessage): ThreadMessage {
     parent_id: message.parent_id,
     body: message.deleted_at ? "" : message.body,
     created_at: message.created_at,
-    user_name: message.user_name,
+    // A webhook message has no author: the thread header names its source.
+    user_name:
+      message.message_type === "webhook"
+        ? webhookSourceName(message)
+        : message.user_name,
     user_avatar_url: message.user_avatar_url,
     attachments: (message.attachments ?? []).map((a) => ({
       id: a.id,

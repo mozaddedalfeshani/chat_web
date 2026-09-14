@@ -90,7 +90,7 @@ export default function ChatTimeline({
     useChatStore(selectActiveConversation)?.type === "webhook";
   const composerVisible = showComposer && !webhookOnly;
   const readOnlyText = webhookOnly
-    ? "Messages arrive through this group's webhook. Members can only view this feed."
+    ? "Messages arrive through this group's webhook. Open a message's thread to discuss it."
     : readOnlyLabel;
 
   const timelineItems = useMemo(() => buildTimelineItems(messages), [messages]);
