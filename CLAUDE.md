@@ -59,3 +59,12 @@ bun run dev
 ```
 
 Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_SITE_URL` in `.env.local`.
+
+## Search Console
+
+This app is a signed-in chat client. Crawlers may index only `/` (QR login).
+`src/app/sitemap.ts` lists that one URL; `src/app/robots.ts` disallows
+`/user/`, `/auth/`, `/api/`, `/hooks/`, `/backend/`. Signed-in and callback
+layouts also send `noindex`. After deploy, submit
+`https://chat.ababilx.com/sitemap.xml` in Search Console. Optional HTML-tag
+verify: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`.

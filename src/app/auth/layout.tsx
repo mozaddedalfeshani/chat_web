@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import UserShell from "@/components/user-shell";
 
 export const metadata: Metadata = {
   robots: {
@@ -12,10 +11,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function UserLayout({
+export default function AuthLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return <UserShell>{children}</UserShell>;
+  return children;
 }
