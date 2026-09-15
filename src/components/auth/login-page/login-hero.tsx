@@ -7,10 +7,13 @@ export default function LoginHero() {
     <div className="flex min-w-0 flex-1 flex-col justify-center pr-0 lg:pr-8">
       <h1
         id="hero-heading"
-        className="text-[28px] font-normal tracking-tight text-[#111b21]"
+        className="text-[28px] font-semibold tracking-tight text-[#111b21]"
       >
         {LOGIN_COPY.title}
       </h1>
+      <p className="mt-2 text-[16px] font-normal text-[#667781]">
+        {LOGIN_COPY.lead}
+      </p>
       <ol className="mt-8 space-y-4">
         {steps.map((step, i) => (
           <li key={step} className="flex items-start gap-3 text-[15px] text-[#3b4a54]">

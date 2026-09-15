@@ -7,13 +7,13 @@ export default function LoginNavbar() {
       <span className="flex items-center gap-2">
         <Image
           src="/logo.png"
-          alt=""
+          alt="AbabilX Chat"
           width={28}
           height={28}
           className="shrink-0 object-contain"
         />
         <span className="text-[15px] font-semibold tracking-tight text-[#e11d48]">
-          {LOGIN_COPY.brand}
+          {LOGIN_COPY.product}
         </span>
       </span>
     </header>

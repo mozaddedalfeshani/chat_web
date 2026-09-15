@@ -60,11 +60,20 @@ bun run dev
 
 Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_SITE_URL` in `.env.local`.
 
-## Search Console
+## Search Console / SEO gate
 
 This app is a signed-in chat client. Crawlers may index only `/` (QR login).
 `src/app/sitemap.ts` lists that one URL; `src/app/robots.ts` disallows
 `/user/`, `/auth/`, `/api/`, `/hooks/`, `/backend/`. Signed-in and callback
-layouts also send `noindex`. After deploy, submit
-`https://chat.ababilx.com/sitemap.xml` in Search Console. Optional HTML-tag
-verify: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`.
+layouts also send `noindex`.
+
+The public landing is the **brand gate** for queries like `AbabilX`,
+`AbabilX Chat`, `chat AbabilX`: brand-first `<title>` / H1, keyword + OG /
+Twitter metadata in `src/app/layout.tsx`, JSON-LD (`Organization` /
+`WebSite` / `SoftwareApplication`) via `src/components/seo/home-json-ld.tsx`,
+and `src/app/opengraph-image.tsx`. Constants live in `src/lib/site.ts`.
+Do not keyword-stuff hidden text; keep copy visible and honest.
+
+After deploy, submit `https://chat.ababilx.com/sitemap.xml` in Search
+Console. Optional HTML-tag verify: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`.
+Canonical production origin: `https://chat.ababilx.com`.
