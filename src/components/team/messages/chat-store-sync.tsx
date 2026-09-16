@@ -8,6 +8,7 @@ import {
   requestPersistentChatStorage,
 } from "@/lib/messages/outbox";
 import { ensureMessagingDevice } from "@/lib/messages/device";
+import { useTypingRealtime } from "@/lib/chat-typing/use-typing-realtime";
 
 async function replayCurrentUserOutbox() {
   const userId = useChatStore.getState().currentUserId;
@@ -31,6 +32,7 @@ export default function ChatStoreSync() {
   const currentUserId = useChatStore((s) => s.currentUserId);
   // Chat needs no workspace since migration 0145 — only a signed-in account.
   const chatReady = !!currentUserId;
+  useTypingRealtime(chatReady);
 
   useEffect(() => {
     void requestPersistentChatStorage();

@@ -9,6 +9,7 @@ import { useChatStore } from "@/store/chat-store";
 import { chatConvLabel } from "../chat-utils";
 import { cn } from "@/lib/utils";
 import GroupAvatarStack from "../chat-sidebar/group-avatar-stack";
+import GroupTypingLine from "./group-typing-line";
 import GroupDetailsDialog from "./group-details-dialog";
 import DeleteGroupDialog from "./delete-group-dialog";
 import DmHeader from "./dm-header";
@@ -106,7 +107,12 @@ export default function ChatHeader({
               )}
               aria-label={t(language, "chat.groupDetails")}
             >
-              <span className="truncate">{chatConvLabel(activeConv)}</span>
+              <span className="flex min-w-0 flex-col items-start">
+                <span className="truncate">{chatConvLabel(activeConv)}</span>
+                {activeConv.type !== "webhook" ? (
+                  <GroupTypingLine conversationId={activeConv.id} />
+                ) : null}
+              </span>
             </button>
             <div className="h-5 w-px bg-[var(--border)]" />
             <div className="flex items-center gap-1 pr-0.5 pl-1">

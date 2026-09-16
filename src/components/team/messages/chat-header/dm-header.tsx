@@ -11,6 +11,7 @@ import { cn } from "@/lib/utils";
 import DmActionsSheet from "./dm-actions-sheet";
 import DmProfileDialog from "./dm-profile-dialog";
 import DmCallActions from "./dm-call-actions";
+import { useTypingLabel } from "@/lib/chat-typing/use-typing-label";
 
 /**
  * The header capsule for a one-to-one thread.
@@ -37,6 +38,7 @@ export default function DmHeader({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const selfNote = isNoteToSelf(conv);
+  const typingText = useTypingLabel(selfNote ? null : conv.id, false);
   const label = chatConvLabel(conv);
   const peerMember =
     (conv.peer_user_id
@@ -86,7 +88,11 @@ export default function DmHeader({
               />
             ) : null}
           </span>
-          {selfNote ? null : (
+          {selfNote ? null : typingText ? (
+            <span className="text-[11px] font-medium text-[var(--indigo)]">
+              {typingText}
+            </span>
+          ) : (
             <PeerCallOrStatus userId={conv.peer_user_id} compact />
           )}
         </button>

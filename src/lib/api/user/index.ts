@@ -26,6 +26,7 @@ export * from "./chat-webhooks";
 export * from "./chat-connections";
 export * from "./messaging";
 export * from "./voice-call";
+export * from "./typing-indicators";
 export * from "./group-call";
 export * from "./team-member-connections";
 export * from "./overview";

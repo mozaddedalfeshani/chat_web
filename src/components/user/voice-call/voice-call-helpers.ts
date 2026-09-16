@@ -57,7 +57,7 @@ export function callPhaseLabel(view: WebCallView) {
   const video = view.mode === "video";
   switch (view.phase) {
     case "starting": return screen ? "Starting screen share…" : video ? "Starting video call…" : "Starting call…";
-    case "outgoing-ringing": return screen ? "Waiting for them to accept…" : "Calling…";
+    case "outgoing-ringing": return screen ? "Waiting for them to accept…" : view.remoteRinging ? "Ringing…" : "Calling…";
     case "incoming-ringing": return screen ? "Wants to share their screen" : video ? "Incoming video call" : "Incoming voice call";
     case "connecting": return "Connecting…";
     case "connected": return "Connected";

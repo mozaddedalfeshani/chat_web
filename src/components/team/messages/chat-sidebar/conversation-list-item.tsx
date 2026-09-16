@@ -5,6 +5,7 @@ import ConversationRow from "../conversation-row";
 import { chatConvLabel, chatInitials, isNoteToSelf } from "../chat-utils";
 import GroupAvatarStack from "./group-avatar-stack";
 import { Bookmark01Icon, Link01Icon } from "hugeicons-react";
+import { useTypingLabel } from "@/lib/chat-typing/use-typing-label";
 
 /** One row in the unified list — a group (stacked avatars) or a DM (peer avatar). */
 export default function ConversationListItem({
@@ -24,7 +25,9 @@ export default function ConversationListItem({
   searchMessageId?: string | null;
   onOpenProfile?: (userId: string) => void;
 }) {
+  const typingText = useTypingLabel(searchSnippet ? null : conv.id, conv.type !== "dm");
   const shared = {
+    typingText,
     title: chatConvLabel(conv),
     lastMessageAt: conv.last_message_at,
     lastMessageBody: searchSnippet ?? conv.last_message_body,

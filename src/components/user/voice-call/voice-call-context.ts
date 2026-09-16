@@ -33,6 +33,8 @@ export type WebCallView = {
   remoteCamera?: MediaStream;
   /** Why the camera is off when it was asked for. The call itself is fine. */
   cameraError?: string;
+  /** Caller side: a callee device is ringing, so "Ringing…" not "Calling…". */
+  remoteRinging?: boolean;
   connectedAt?: number;
   error?: string;
 };

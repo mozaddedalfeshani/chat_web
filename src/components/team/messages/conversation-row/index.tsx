@@ -27,6 +27,7 @@ export default function ConversationRow({
   showAvatar = true,
   avatarNode,
   onAvatarClick,
+  typingText,
 }: {
   title: string;
   avatarUrl?: string;
@@ -46,6 +47,8 @@ export default function ConversationRow({
   showAvatar?: boolean;
   avatarNode?: React.ReactNode;
   onAvatarClick?: () => void;
+  /** While somebody is typing, this replaces the last-message preview. */
+  typingText?: string;
 }) {
   const isYou =
     !!currentUserId &&
@@ -133,6 +136,11 @@ export default function ConversationRow({
           </div>
         </div>
         <div className="mt-0.5 flex min-w-0 items-center gap-1.5 overflow-hidden">
+          {typingText ? (
+            <span className="min-w-0 flex-1 truncate text-[14px] font-medium text-[var(--sig-accent)]">
+              {typingText}
+            </span>
+          ) : (
           <ChatMessagePreview
             body={lastMessageBody}
             attachmentType={lastMessageAttachmentType}
@@ -144,6 +152,7 @@ export default function ConversationRow({
               hasUnread && "font-medium text-[var(--sig-label)]",
             )}
           />
+          )}
         </div>
       </div>
     </button>

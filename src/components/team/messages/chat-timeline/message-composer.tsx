@@ -5,13 +5,14 @@ import { toast } from "sonner";
 import CommentComposer, {
   type CommentComposerHandle,
 } from "@/components/team/board/comments/composer";
-import { extractMentionUserIds, textToTiptapJson } from "@/components/team/board/tiptap/utils";
+import { extractMentionUserIds, isTiptapEmpty, textToTiptapJson } from "@/components/team/board/tiptap/utils";
 import { isMentionAllId } from "@/components/team/board/tiptap/mention-list";
 import { MAX_WALL_ATTACHMENT_BYTES } from "@/components/team/wall/wall-attachment-limits";
 import type { ChatAttachmentInput } from "@/lib/api/types/chat";
 import type { TeamMember } from "@/lib/api/types/team";
 import VoiceRecordingBar from "../voice-recording-bar";
 import { VoiceMessageRecorder } from "../voice-recorder";
+import { useTypingSender } from "@/lib/chat-typing/use-typing-sender";
 
 const MAX_CHAT_FILES = 10;
 const MAX_VOICE_MS = 60_000;
@@ -30,6 +31,7 @@ export default function MessageComposer({
   initialValue,
   allowMentionAll = false,
   secureSend = false,
+  typingConversationId,
   ref,
 }: {
   mentionMembers: TeamMember[];
@@ -54,6 +56,8 @@ export default function MessageComposer({
   allowMentionAll?: boolean;
   /** DM text is encrypted before it leaves this device. */
   secureSend?: boolean;
+  /** Report "typing…" to the other members of this conversation. */
+  typingConversationId?: string | null;
   ref?: Ref<MessageComposerHandle>;
 }) {
   const [value, setValue] = useState(initialValue ?? "");
@@ -63,6 +67,7 @@ export default function MessageComposer({
   const [paused, setPaused] = useState(false);
   const [elapsedMs, setElapsedMs] = useState(0);
   const recorderRef = useRef<VoiceMessageRecorder | null>(null);
+  const typing = useTypingSender(typingConversationId);
 
   useEffect(() => {
     if (!recording || preparing || uploading || paused) return;
@@ -211,7 +216,10 @@ export default function MessageComposer({
       <CommentComposer
         ref={ref}
         value={value}
-        onChange={setValue}
+        onChange={(next) => {
+          setValue(next);
+          typing.onDraftChange(isTiptapEmpty(next));
+        }}
         busy={busy}
         mentionMembers={mentionMembers}
         allowMentionAll={allowMentionAll}
@@ -245,6 +253,7 @@ export default function MessageComposer({
                 ]),
               )
             : raw;
+          typing.stop();
           const sent = await onSubmit(value, attachments, mentioned);
           if (sent !== false) setValue("");
         }}

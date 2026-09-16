@@ -14,7 +14,7 @@ export function getVoiceCall(callId: string) {
 
 export function actOnVoiceCall(
   callId: string,
-  action: "accept" | "decline" | "cancel" | "end" | "fail" | "heartbeat",
+  action: "accept" | "decline" | "cancel" | "end" | "fail" | "heartbeat" | "ringing",
   reason?: string,
 ) {
   return apiFetch<VoiceCallSession>(`/api/teams/chat/calls/${callId}/actions`, {

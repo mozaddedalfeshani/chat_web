@@ -211,6 +211,7 @@ export default function ChatTimeline({
         submitLabel={composerSubmitLabel}
         initialValue={composerInitialValue}
         isGroup={isGroup}
+        conversationId={conversationId}
       />
     </FileDropZone>
   );

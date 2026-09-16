@@ -48,6 +48,7 @@ export default function TimelineFooter({
   submitLabel,
   initialValue,
   isGroup,
+  conversationId,
 }: {
   showComposer: boolean;
   peerLeft: boolean;
@@ -67,6 +68,7 @@ export default function TimelineFooter({
   submitLabel?: string;
   initialValue?: string;
   isGroup: boolean;
+  conversationId?: string | null;
 }) {
   if (peerLeft) {
     return (
@@ -137,6 +139,7 @@ export default function TimelineFooter({
         initialValue={initialValue}
         allowMentionAll={isGroup}
         secureSend={!isGroup}
+        typingConversationId={conversationId}
       />
     </>
   );

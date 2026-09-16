@@ -269,6 +269,15 @@ export type ChatReceiptsUpdatedEvent = {
   receipts: ChatReceiptUpdate[];
 };
 
+/** Relayed draft state of another member. Never stored, expires client-side. */
+export type ChatTypingEvent = {
+  type: "chat.typing";
+  conversation_id: string;
+  from_user_id: string;
+  typing_user_name?: string;
+  typing?: boolean;
+};
+
 export type ChatWsEvent =
   | ChatMessageCreatedEvent
   | ChatMessageUpdatedEvent

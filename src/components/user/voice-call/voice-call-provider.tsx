@@ -22,6 +22,8 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
   const engineRef = useRef<VoicePeerEngine | null>(null);
   const pendingRef = useRef<VoiceCallSignal[]>([]);
   const finishedCallsRef = useRef(new FinishedCallMemory());
+  /** `call.ringing` can beat the start response that names the call. */
+  const ringingCallsRef = useRef(new Set<string>());
   const operationEpochRef = useRef(0);
   const timerRef = useRef<ReturnType<typeof setTimeout>[]>([]);
   const hangUpRef = useRef<() => Promise<void>>(async () => {});
@@ -48,6 +50,7 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
     await engineRef.current?.dispose();
     engineRef.current = null;
     pendingRef.current = [];
+    ringingCallsRef.current.clear();
     callRef.current = null;
     iceRef.current = [];
     setView(failed ? { ...viewRef.current, phase: "failed", error: failed } : idleView);
@@ -136,7 +139,8 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
       }
       callRef.current = session.call;
       iceRef.current = session.ice_servers ?? [];
-      setView({ ...viewRef.current, phase: "outgoing-ringing" });
+      const remoteRinging = Boolean(session.call.callee_ringing_at) || ringingCallsRef.current.has(session.call.id);
+      setView({ ...viewRef.current, phase: "outgoing-ringing", remoteRinging });
     } catch (error) { await reset(callError(error)); }
   }, [reset, setView]);
 
@@ -194,6 +198,16 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
         && isFreshRingingCall(event.call)) {
         callRef.current = event.call;
         setView({ phase: "incoming-ringing", mode: event.call.mode ?? "audio", ...peerDetails(event.call, currentUserId), muted: false });
+        // Tell the caller this device is ringing. Fire-and-forget: a late or
+        // duplicate report is a no-op on the server.
+        void api.actOnVoiceCall(event.call.id, "ringing").catch(() => {});
+      } else if (event.type === "call.ringing" && event.call) {
+        // Remembered only while this tab is placing a call, so an idle tab
+        // of the same account never accumulates ids.
+        if (event.call.id !== callRef.current?.id) {
+          if (viewRef.current.phase === "starting") ringingCallsRef.current.add(event.call.id);
+        }
+        else if (viewRef.current.phase === "outgoing-ringing") setView({ ...viewRef.current, remoteRinging: true });
       } else if (event.type === "call.accepted" && event.call && event.call.id === callRef.current?.id) {
         // One account, several signed-in devices: every one of them rings, and
         // `call.accepted` is the only word any of them gets that somebody
@@ -216,6 +230,7 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
         if (session.call.status === "accepted" && viewRef.current.phase === "outgoing-ringing") return beginAccepted(session, true);
         // Answered elsewhere while this tab's socket was down.
         if (session.call.status === "accepted" && viewRef.current.phase === "incoming-ringing") return reset();
+        if (session.call.callee_ringing_at && viewRef.current.phase === "outgoing-ringing") setView({ ...viewRef.current, remoteRinging: true });
       }).catch(() => {});
     },
   }), [beginAccepted, currentUserId, fail, reset, setView]);

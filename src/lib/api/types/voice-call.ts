@@ -28,6 +28,8 @@ export type VoiceCall = {
   expires_at: string;
   accepted_at?: string;
   ended_at?: string;
+  /** First moment a callee device reported it is ringing. */
+  callee_ringing_at?: string;
   ended_by?: string;
   end_reason?: string;
   created_at: string;
@@ -71,6 +73,7 @@ export type VoiceCallWsEvent = {
     | "call.ended"
     | "call.failed"
     | "call.missed"
+    | "call.ringing"
     | "call.signal";
   call?: VoiceCall;
   call_id?: string;
