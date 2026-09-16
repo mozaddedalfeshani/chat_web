@@ -9,5 +9,8 @@ export function typingLabel(names: string[], isGroup: boolean): string {
   const shown = names.map((n) => n.trim() || "Someone");
   if (shown.length === 1) return `${shown[0]} is typing…`;
   if (shown.length === 2) return `${shown[0]} and ${shown[1]} are typing…`;
-  return `${shown.length} people are typing…`;
+  if (shown.length === 3) {
+    return `${shown[0]}, ${shown[1]} and ${shown[2]} are typing…`;
+  }
+  return `${shown[0]}, ${shown[1]} and ${shown.length - 2} others are typing…`;
 }
