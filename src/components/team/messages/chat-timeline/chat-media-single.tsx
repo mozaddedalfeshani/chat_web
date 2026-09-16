@@ -4,6 +4,7 @@ import { LoaderCircle, Play } from "lucide-react";
 import type { ChatMessageAttachment } from "@/lib/api";
 import { useLocalAsset } from "./use-local-asset";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
+import { chatMediaFrame, chatMediaPlaceholder } from "./chat-media-size";
 
 function isVideo(attachment: ChatMessageAttachment) {
   return (attachment.content_type ?? "").toLowerCase().startsWith("video/");
@@ -20,21 +21,21 @@ export default function SingleMedia({ attachment }: { attachment: ChatMessageAtt
 
   if (!localUrl) {
     return (
-      <span className="flex h-40 w-[min(20rem,60vw)] items-center justify-center bg-black/20">
+      <span className={chatMediaPlaceholder}>
         <LoaderCircle className="h-4 w-4 animate-spin text-white/70" />
       </span>
     );
   }
   if (isVideo(attachment)) {
     return (
-      <span className="relative block" onContextMenu={menu.onContextMenu}>
+      <span className="relative block w-full" onContextMenu={menu.onContextMenu}>
         {menu.menu}
         <video
           src={localUrl}
           preload="metadata"
           muted
           playsInline
-          className="max-h-80 w-full max-w-[min(30rem,75vw)] object-cover"
+          className={chatMediaFrame}
         />
         <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <span className="flex h-11 w-11 items-center justify-center rounded-full bg-black/55">
@@ -51,7 +52,7 @@ export default function SingleMedia({ attachment }: { attachment: ChatMessageAtt
         alt={attachment.file_name}
         loading="lazy"
         onContextMenu={menu.onContextMenu}
-        className="max-h-80 w-full max-w-[min(30rem,75vw)] object-cover"
+        className={chatMediaFrame}
       />
       {menu.menu}
     </>

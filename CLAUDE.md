@@ -36,6 +36,11 @@ Three columns on desktop: icon rail, conversation list (`--sig-*` tokens, same h
 
 Message timeline uses the desktop bubble system (`chat-timeline/chat-bubble/`): one neutral `--sig-bubble` fill for both sides, grouped corners, hover toolbar, quoted replies, server-side link previews (`GET /api/link-preview`), and a Signal-style media lightbox.
 
+A picture or video (caption or not) fills the bubble: width
+`min(32rem, 100vw - chrome)`, height follows the file, `max-height` is
+`min(70dvh, 420px)` — a ceiling, not a size to fill. Time + ticks sit on the
+image (bottom-right, no scrim). Quotes keep the text-bubble path.
+
 ## Sidebar search is chats, then messages
 
 `chat-sidebar/conversation-search.ts`. Same order as Signal-Android and

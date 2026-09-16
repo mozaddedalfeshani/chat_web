@@ -23,7 +23,8 @@ import { extractUrls, isTiptapEmpty } from "@/components/team/board/tiptap/utils
 import { openExternal } from "@/lib/files/asset-actions";
 import { cn } from "@/lib/utils";
 import { chatInitials } from "../../chat-utils";
-import { bubbleRadius, isMediaOnly } from "./bubble-shape";
+import { chatMediaBubbleWidth } from "../chat-media-size";
+import { bubbleRadius, isMediaBubble } from "./bubble-shape";
 import BubbleBody from "./bubble-body";
 import BubbleToolbar from "./bubble-toolbar";
 import {
@@ -88,7 +89,7 @@ export default function ChatBubble({
   // stack of five messages shows one face rather than five.
   const showAvatar = !outgoing && isGroupConversation && !groupedBelow;
   const showAuthor = !outgoing && isGroupConversation && !groupedAbove;
-  const mediaOnly = isMediaOnly(message);
+  const mediaBubble = isMediaBubble(message);
 
   async function saveEdit() {
     if (!onEditMessage || isTiptapEmpty(editDraft)) return;
@@ -311,8 +312,10 @@ export default function ChatBubble({
       >
         <div
           className={cn(
-            "min-w-0 max-w-[min(50vw,32rem)] overflow-hidden",
-            mediaOnly ? "p-1" : "px-3 py-2",
+            "min-w-0 overflow-hidden",
+            mediaBubble
+              ? cn(chatMediaBubbleWidth, "p-0")
+              : "max-w-[min(50vw,32rem)] px-3 py-2",
           )}
           style={{
             ...bubbleRadius({ outgoing, groupedAbove, groupedBelow }),
@@ -327,7 +330,7 @@ export default function ChatBubble({
             message={message}
             outgoing={outgoing}
             showAuthor={showAuthor}
-            mediaOnly={mediaOnly}
+            mediaBubble={mediaBubble}
             onJumpToMessage={onJumpToMessage}
           />
         </div>

@@ -16,18 +16,23 @@ export default function BubbleMeta({
   message,
   outgoing,
   inset = false,
+  onMedia = false,
 }: {
   message: ChatMessage;
   outgoing: boolean;
   /** Media-only bubbles have no padding of their own. */
   inset?: boolean;
+  /** Time sits on the photo: light ink + shadow, no extra gap. */
+  onMedia?: boolean;
 }) {
   return (
     <div
       className={cn(
-        "mt-1 flex items-center justify-end gap-1 text-[11px] leading-none",
-        inset && "px-2 pb-1",
-        "text-[var(--sig-label-2)]",
+        "flex items-center justify-end gap-1 text-[11px] leading-none",
+        onMedia
+          ? "mt-0 text-white [text-shadow:0_1px_6px_rgba(0,0,0,0.8)]"
+          : "mt-1 text-[var(--sig-label-2)]",
+        inset && !onMedia && "px-2 pb-1",
       )}
     >
       {message.edited_at ? <span>Edited</span> : null}

@@ -42,14 +42,26 @@ export function bubbleRadius({
   } as const;
 }
 
-/** True when the message is nothing but images/video: Signal drops the bubble
- * padding so the media reaches the rounded edge. */
-export function isMediaOnly(message: ChatMessage) {
+function isImageOrVideo(message: ChatMessage) {
   const attachments = message.attachments ?? [];
   if (attachments.length === 0) return false;
-  if (message.body && message.body.replace(/<[^>]*>/g, "").trim()) return false;
   return attachments.every((a) => {
     const type = (a.content_type ?? "").toLowerCase();
     return type.startsWith("image/") || type.startsWith("video/");
   });
+}
+
+/** Picture/video bubble — caption or not. Time sits on the media. A quote
+ *  needs the inset, so a quoted photo keeps the text-bubble path. */
+export function isMediaBubble(message: ChatMessage) {
+  if (message.quote) return false;
+  return isImageOrVideo(message);
+}
+
+/** True when the message is nothing but images/video: Signal drops the bubble
+ * padding so the media reaches the rounded edge. */
+export function isMediaOnly(message: ChatMessage) {
+  if (!isMediaBubble(message)) return false;
+  if (message.body && message.body.replace(/<[^>]*>/g, "").trim()) return false;
+  return true;
 }

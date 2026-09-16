@@ -109,12 +109,15 @@ function MediaTile({
 export default function ChatMediaGrid({
   attachments,
   className,
+  flush = false,
   senderName,
   senderAvatarUrl,
   sentAt,
 }: {
   attachments: ChatMessageAttachment[];
   className?: string;
+  /** Media-bubble: no inner radius — the bubble already clips. */
+  flush?: boolean;
   /** Who sent it and when — Signal's lightbox names both above the picture. */
   senderName?: string;
   senderAvatarUrl?: string;
@@ -137,15 +140,20 @@ export default function ChatMediaGrid({
           type="button"
           onClick={() => setViewerIndex(0)}
           aria-label={`Open ${tiles[0].file_name}`}
-          className={cn("block overflow-hidden rounded-[12px]", className)}
+          className={cn(
+            "block w-full overflow-hidden",
+            !flush && "rounded-[12px]",
+            className,
+          )}
         >
           <SingleMedia attachment={tiles[0]} />
         </button>
       ) : (
         <div
           className={cn(
-            "grid aspect-[4/3] w-[min(30rem,75vw)] max-w-full gap-[2px] overflow-hidden rounded-[12px]",
+            "grid aspect-[4/3] w-full gap-[2px] overflow-hidden",
             "grid-cols-6 grid-rows-2",
+            !flush && "rounded-[12px]",
             className,
           )}
         >
