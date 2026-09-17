@@ -45,6 +45,11 @@ export type VoiceIceServer = {
 export type VoiceCallSession = {
   call: VoiceCall;
   ice_servers?: VoiceIceServer[];
+  /**
+   * False when another device of this account placed or answered the call.
+   * The server pins a call to that one sign-in; absent on older servers.
+   */
+  can_control?: boolean;
 };
 
 /**

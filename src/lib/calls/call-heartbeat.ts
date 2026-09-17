@@ -18,6 +18,8 @@ const HEARTBEAT_MS = 20_000;
 export function startCallHeartbeat(
   callId: string,
   onEndedRemotely: (call: VoiceCall) => void,
+  /** Another device of this account owns the call now. */
+  onLostControl?: () => void,
 ) {
   let stopped = false;
   const timer = setInterval(async () => {
@@ -35,6 +37,11 @@ export function startCallHeartbeat(
       // is exactly the condition a heartbeat exists to ride out, so keep
       // beating.
       const code = error instanceof Error ? error.message : "";
+      if (code === "voice_call_answered_elsewhere" && !stopped) {
+        stop();
+        onLostControl?.();
+        return;
+      }
       if (code === "invalid_voice_call_action" || code === "voice_call_not_found") stop();
     }
   }, HEARTBEAT_MS);

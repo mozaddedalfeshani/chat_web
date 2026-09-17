@@ -36,6 +36,16 @@ export function isFreshRingingCall(call: VoiceCall) {
   return Number.isFinite(expiresAt) && expiresAt > Date.now();
 }
 
+/**
+ * The server pins a 1:1 call to the sign-in that placed or answered it. Another
+ * device of the same account is refused with these codes, and that is not a
+ * failure to show anyone — the call simply lives somewhere else.
+ */
+export function lostCallControl(error: unknown) {
+  const code = error instanceof Error ? error.message : "";
+  return code === "voice_call_answered_elsewhere" || code === "voice_call_state_conflict";
+}
+
 export function callError(error: unknown) {
   const code = error instanceof Error ? `${error.name}: ${error.message}` : "";
   // The server names which side is busy. Saying "this person" when the caller

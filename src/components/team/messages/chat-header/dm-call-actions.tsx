@@ -1,6 +1,6 @@
 "use client";
 
-import { Phone, Video } from "lucide-react";
+import { Phone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import type { ChatConversation } from "@/lib/api";
@@ -8,8 +8,8 @@ import { useVoiceCall } from "@/components/user/voice-call/voice-call-context";
 import { chatConvLabel } from "../chat-utils";
 
 /**
- * Voice, video and screen sharing share one call. Video opens the camera
- * before the first offer; a camera that will not open still places the call.
+ * One Call button, and it starts with audio — the phone's rule. Camera and
+ * screen sharing are both turned on from the controls once connected.
  */
 export default function DmCallActions({
   conv,
@@ -31,7 +31,7 @@ export default function DmCallActions({
       size="sm"
       className={cn(
         "h-7 shrink-0 gap-1.5 px-2.5 text-xs",
-        capsule ? "rounded-none" : "rounded-full",
+        capsule ? "rounded-r-full" : "rounded-full",
       )}
       disabled={disabled}
       onClick={() => void voiceCall.start(conv)}
@@ -39,38 +39,15 @@ export default function DmCallActions({
       title={
         unavailable
           ? "This teammate is unavailable"
-          : "Start voice call (screen sharing is available after connecting)"
+          : "Start call (camera and screen sharing are available after connecting)"
       }
     >
       <Phone className="size-4" />
       <span className="hidden sm:inline">Call</span>
     </Button>
   );
-  const videoBtn = (
-    <Button
-      type="button"
-      variant={capsule ? "ghost" : "secondary"}
-      size="sm"
-      className={cn(
-        "h-7 shrink-0 gap-1.5 px-2.5 text-xs",
-        capsule ? "rounded-r-full" : "rounded-full",
-      )}
-      disabled={disabled}
-      onClick={() => void voiceCall.start(conv, { video: true })}
-      aria-label={`Video call ${name}`}
-      title={unavailable ? "This teammate is unavailable" : "Start video call"}
-    >
-      <Video className="size-4" />
-      <span className="hidden sm:inline">Video</span>
-    </Button>
-  );
 
-  if (capsule) return <>{btn}{videoBtn}</>;
+  if (capsule) return btn;
 
-  return (
-    <div className="ml-auto flex shrink-0 items-center gap-1">
-      {btn}
-      {videoBtn}
-    </div>
-  );
+  return <div className="ml-auto flex shrink-0 items-center gap-1">{btn}</div>;
 }

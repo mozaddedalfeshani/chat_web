@@ -10,7 +10,7 @@ import { cameraErrorMessage } from "@/lib/calls/voice-media";
 import { useCallMediaToggles } from "./use-call-media-toggles";
 import { useCallRingtone } from "@/lib/calls/use-call-ringtone";
 import { VoiceCallContext, type WebCallView } from "./voice-call-context";
-import { RING_EXPIRY_MS, callError, callStartable, idleView, isFreshRingingCall, peerDetails, terminalCallEvents } from "./voice-call-helpers";
+import { RING_EXPIRY_MS, callError, callStartable, lostCallControl, idleView, isFreshRingingCall, peerDetails, terminalCallEvents } from "./voice-call-helpers";
 import VoiceCallOverlay from "./voice-call-overlay";
 import { FinishedCallMemory } from "./finished-call-memory";
 
@@ -91,6 +91,8 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
     heartbeatRef.current = startCallHeartbeat(session.call.id, (call) => {
       if (callRef.current?.id !== call.id) return;
       void reset(call.status === "ended" ? undefined : callError(new Error(call.end_reason || call.status)));
+    }, () => {
+      if (callRef.current?.id === session.call.id) void reset();
     });
     if (!screenOnly && !media.microphone) {
       setView({ ...viewRef.current, microphoneUnavailable: true, muted: true });
@@ -158,13 +160,15 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
       const session = await api.actOnVoiceCall(call.id, "accept");
       if (operationEpoch !== operationEpochRef.current) {
         finishedCallsRef.current.remember(call.id);
-        void api.actOnVoiceCall(call.id, "end").catch(() => {});
+        if (session.can_control !== false) void api.actOnVoiceCall(call.id, "end").catch(() => {});
         return;
       }
+      // Another device of this account won the answer: end here, quietly.
+      if (session.can_control === false) return void reset();
       await beginAccepted(session, false);
     } catch (error) {
       if (operationEpoch === operationEpochRef.current) {
-        await reset(callError(error));
+        await reset(lostCallControl(error) ? undefined : callError(error));
       }
     }
   }, [beginAccepted, reset, setView]);
@@ -227,6 +231,8 @@ export default function VoiceCallProvider({ children, currentUserId }: { childre
       if (!call) return;
       void api.getVoiceCall(call.id).then((session) => {
         if (["declined", "cancelled", "missed", "ended", "failed"].includes(session.call.status)) return reset();
+        // Another device of this account answered or holds the call.
+        if (session.can_control === false) return reset();
         if (session.call.status === "accepted" && viewRef.current.phase === "outgoing-ringing") return beginAccepted(session, true);
         // Answered elsewhere while this tab's socket was down.
         if (session.call.status === "accepted" && viewRef.current.phase === "incoming-ringing") return reset();
