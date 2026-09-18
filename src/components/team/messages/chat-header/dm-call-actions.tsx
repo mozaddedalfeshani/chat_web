@@ -35,15 +35,15 @@ export default function DmCallActions({
       )}
       disabled={disabled}
       onClick={() => void voiceCall.start(conv)}
-      aria-label={`Call ${name}`}
+      aria-label={`Talk with ${name}`}
       title={
         unavailable
           ? "This teammate is unavailable"
-          : "Start call (camera and screen sharing are available after connecting)"
+          : "Talk (camera and screen sharing are available after connecting)"
       }
     >
       <Phone className="size-4" />
-      <span className="hidden sm:inline">Call</span>
+      <span className="hidden sm:inline">Talk</span>
     </Button>
   );
 

@@ -73,7 +73,7 @@ export default function GroupCallAction({
       disabled={busyElsewhere || joiningThis || outOfMinutes}
       onClick={() => void groupCall.join(conversation.id)}
       title={blockedReason}
-      aria-label={active ? "Join group call" : "Start group call"}
+      aria-label={active ? "Join meet" : "Start a meet"}
     >
       {joiningThis ? (
         <LoaderCircle className="h-4 w-4 animate-spin" />
@@ -87,7 +87,7 @@ export default function GroupCallAction({
             ? "Join"
             : outOfMinutes
               ? "No minutes"
-              : "Start call"}
+              : "Meet"}
       </span>
       {active ? (
         <span className="flex items-center gap-0.5 text-xs opacity-80">
