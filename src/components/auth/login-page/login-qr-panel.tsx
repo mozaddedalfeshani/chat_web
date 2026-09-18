@@ -28,7 +28,7 @@ export default function LoginQrPanel() {
             : "";
 
   return (
-    <div className="flex w-full shrink-0 flex-col items-center lg:w-[280px]">
+    <div className="flex w-full flex-col items-center">
       <div className="flex h-[264px] w-[264px] items-center justify-center">
         {imageUrl && !dead ? (
           // eslint-disable-next-line @next/next/no-img-element -- data URI QR

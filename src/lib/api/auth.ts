@@ -31,6 +31,15 @@ export function consumeSlackReturnPath(): string {
   return stored ?? "/user/settings";
 }
 
+/**
+ * Google sign-in. Goes to this app's own route, not the API origin: that route
+ * redirects onward so the Go API can set its OAuth state cookie on its own
+ * host, and so the browser bundle never carries the API origin.
+ */
+export function loginWithGoogle() {
+  window.location.href = "/auth/google/start";
+}
+
 export function loginWithGitHub() {
   window.location.href = `${API_BASE}/auth/github`;
 }

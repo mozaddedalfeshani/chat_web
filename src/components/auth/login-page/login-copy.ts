@@ -1,10 +1,10 @@
-/** Chat-web login — QR only. Brand copy is SEO-visible; layout stays WhatsApp-Web-like. */
+/** Chat-web login — QR or Google. Brand copy is SEO-visible; layout stays WhatsApp-Web-like. */
 export const LOGIN_COPY = {
   brand: "AbabilX",
   product: "AbabilX Chat",
   /** Primary H1 — brand gate for "AbabilX Chat" / "chat AbabilX". */
   title: "AbabilX Chat",
-  lead: "Scan to log in on the web",
+  lead: "Scan the code, or continue with Google",
   step1: "Scan the QR code with your phone's camera",
   step2: "Open AbabilX on the phone",
   step3: "Confirm to link this browser",
@@ -15,6 +15,12 @@ export const LOGIN_COPY = {
   qrApproved: "Signed in. Opening chat…",
   qrExpiresIn: "Expires in",
   qrRefresh: "New code",
+  or: "or",
+  googleButton: "Continue with Google",
+  googleLeaving: "Redirecting to Google\u2026",
+  googleHint: "No phone nearby? Sign in on this browser.",
+  errAuthFailed: "Sign-in did not complete. Try again.",
+  errAuthUnavailable: "Sign-in is unavailable right now. Try again later.",
   e2ee: "Your personal messages are end-to-end encrypted",
   /** Crawlable product summary — real copy, not hidden keyword stuffing. */
   aboutTitle: "Secure messaging from AbabilX",

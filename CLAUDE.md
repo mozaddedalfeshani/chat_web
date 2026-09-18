@@ -27,7 +27,7 @@ in both trees, so a clean eslint run is not the bar.
 ## Layout
 
 - `src/app/**/page.tsx` — Server Components only. They compose feature folders.
-- `src/components/auth/login-page/` — WhatsApp-Web-style QR login. Sign-in is phone QR only.
+- `src/components/auth/login-page/` — WhatsApp-Web-style login: phone QR, or Google (see below).
 - `src/components/sidebar/app-mode-rail/` — left icon rail (Chats + theme + account). Chat-only: no Board/Wall.
 - `src/components/user-shell/` — signed-in chrome + call/chat providers
 - `src/components/team/messages/` — chat UI (desktop-style: rail | list | pane)
@@ -40,6 +40,37 @@ A picture or video (caption or not) fills the bubble: width
 `min(32rem, 100vw - chrome)`, height follows the file, `max-height` is
 `min(70dvh, 420px)` — a ceiling, not a size to fill. Time + ticks sit on the
 image (bottom-right, no scrim). Quotes keep the text-bubble path.
+
+## Sign-in: phone QR, or Google
+
+Two ways in, both ending in the same place — a one-time code traded by the BFF
+for httpOnly cookies. No token ever reaches JS.
+
+```
+QR      phone approves  -> /backend/auth/qr/poll -> BFF exchanges the code
+Google  /auth/google/start -> {API}/auth/google?client=chat -> Google
+        -> {API}/auth/google/callback -> here /auth/google/callback?code=
+        -> /backend/auth/exchange
+```
+
+- **`/auth/google/start` is a redirect, not a `/backend` proxy hop, and that is
+  the whole point.** The Go handler sets an httpOnly `oauth_state` cookie and
+  re-checks it when Google comes back. Proxied, that cookie would be set on a
+  fetch this server made and never reach the browser, so the CSRF check would
+  pass on an empty cookie and silently protect nothing. A real navigation puts
+  it on the API's own origin, which Google's top-level redirect sends it back
+  to (SameSite=Lax). Redirecting from a route handler also keeps the API origin
+  out of the browser bundle, like every other call here.
+- **`client=chat` is what makes the code come back to this app.** The API serves
+  two web front ends; its `FRONTEND_URL` is the workspace one. The hint travels
+  as a `c.` state prefix (authoritative — it round-tripped through Google) plus
+  an `oauth_client` cookie as backup, and the server resolves it to
+  `CHAT_FRONTEND_URL`. See `ababilx-server/handlers/auth/oauth_client.go`.
+- **Server env**: set `CHAT_FRONTEND_URL` on the Go API (falls back to
+  `FRONTEND_URL`). Google Cloud needs no new redirect URI — the registered one
+  is still `{API}/auth/google/callback`.
+- A failed hop lands back on `/` as `?error=`, rendered by
+  `login-error-notice.tsx`. Never fail silently: a dead button reads as a bug.
 
 ## Sidebar search is chats, then messages
 
@@ -67,7 +98,7 @@ Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_SITE_URL` in `.env.local`.
 
 ## Search Console / SEO gate
 
-This app is a signed-in chat client. Crawlers may index only `/` (QR login).
+This app is a signed-in chat client. Crawlers may index only `/` (the login page).
 `src/app/sitemap.ts` lists that one URL; `src/app/robots.ts` disallows
 `/user/`, `/auth/`, `/api/`, `/hooks/`, `/backend/`. Signed-in and callback
 layouts also send `noindex`.

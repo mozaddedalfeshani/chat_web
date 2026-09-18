@@ -1,5 +1,5 @@
 import LoginHero from "./login-hero";
-import LoginQrPanel from "./login-qr-panel";
+import LoginAuthPanel from "./login-auth-panel";
 
 export default function LoginHeroSection() {
   return (
@@ -9,7 +9,7 @@ export default function LoginHeroSection() {
     >
       <div className="flex w-full max-w-[900px] flex-col gap-10 rounded-[12px] bg-white px-8 py-10 shadow-[0_1px_3px_rgba(11,20,26,0.08)] sm:px-12 sm:py-12 lg:flex-row lg:items-center lg:justify-between">
         <LoginHero />
-        <LoginQrPanel />
+        <LoginAuthPanel />
       </div>
     </section>
   );
