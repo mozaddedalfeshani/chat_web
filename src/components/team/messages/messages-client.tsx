@@ -27,6 +27,7 @@ import { useMessageRequest } from "./use-message-request";
 import { rememberDeletedMessage } from "@/lib/messages/deletions";
 import type { ChatMessage } from "@/lib/api";
 import MessageVaultGate from "./message-vault-gate";
+import HistoryBridge from "./history-import/history-bridge";
 import { useMessageVaultStore } from "@/store/message-vault-store";
 import { useUIStore } from "@/store/ui-store";
 import { editEncryptedChat } from "@/lib/chat-e2ee/dm-edit";
@@ -457,6 +458,7 @@ export default function MessagesClient() {
 
   return (
     <div className="flex h-[100dvh] min-h-0">
+      <HistoryBridge language={appLanguage} />
       <ChatSidebar
         {...sidebarProps}
         className={cn(
@@ -547,8 +549,9 @@ export default function MessagesClient() {
                 sending={sending}
                 isFreeTier={isFreeTier}
                 peerLeft={
-                  activeConv?.type === "dm" &&
-                  (activeConv.can_message === false || !!activeConv.peer_left)
+                  !!activeConv?.local_only ||
+                  (activeConv?.type === "dm" &&
+                    (activeConv.can_message === false || !!activeConv.peer_left))
                 }
                 lockReason={activeConv?.lock_reason}
                 peerName={activeConv?.peer_user_name}

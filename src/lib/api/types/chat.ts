@@ -95,6 +95,12 @@ export type ChatConversation = {
    * keyed is always false.
    */
   plaintext_until_keyed?: boolean;
+  /**
+   * Client-only. A conversation this browser holds history for but the server
+   * no longer lists (left, or imported from the phone). Readable, never
+   * writable: sending stays the server's decision.
+   */
+  local_only?: boolean;
 };
 
 export type ChatMember = {
@@ -141,7 +147,19 @@ export type ChatMessage = {
   /** Main-timeline sort key: created_at, or latest thread reply time. */
   last_activity_at?: string;
   edited_at?: string | null;
+  /**
+   * Set by an explicit delete AND by the 180-day retention purge. Only
+   * `content_purged` tells them apart, and the difference decides whether a
+   * phone's archived copy may restore the message (lib/history/merge.ts).
+   */
   deleted_at?: string | null;
+  /**
+   * Server-issued, monotonic per message (migration 0141). Zero or absent means
+   * the server never stamped this row: unknown, never "oldest".
+   */
+  revision?: number;
+  /** The server let the content go at 180 days. Not a deletion. */
+  content_purged?: boolean;
   user_name?: string;
   user_avatar_url?: string;
   attachments?: ChatMessageAttachment[];

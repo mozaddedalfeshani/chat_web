@@ -2,7 +2,10 @@
 
 import { Menu01Icon, Message01Icon } from "hugeicons-react";
 import type { AppUser } from "@/lib/api";
-import { logout } from "@/lib/api";
+import { logOutAndForgetHistory } from "@/lib/history/sign-out";
+import { historyCopy } from "@/lib/history/copy";
+import { historyEnabled } from "@/lib/history/flag";
+import { useHistoryImportStore } from "@/store/history-import-store";
 import { t } from "@/lib/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -22,8 +25,8 @@ export default function RailNav({ user }: { user: AppUser | null }) {
   const toggleRail = useUIStore((s) => s.toggleRail);
   const language = user?.app_language ?? "en";
 
-  function handleLogout() {
-    logout();
+  async function handleLogout() {
+    await logOutAndForgetHistory(user?.id);
     window.location.assign("/");
   }
 
@@ -82,12 +85,24 @@ export default function RailNav({ user }: { user: AppUser | null }) {
               <p className="truncate px-2 py-2 text-[13px] text-[var(--sig-label)]">
                 {user.name || user.email}
               </p>
+              {historyEnabled() ? (
+                <button
+                  type="button"
+                  onClick={() => useHistoryImportStore.getState().setOpen(true)}
+                  className="flex w-full items-center rounded-md px-2 py-2 text-left text-[13px] text-[var(--sig-label)] transition-colors hover:bg-[var(--sig-fill)]"
+                >
+                  {historyCopy(language, "settingsEntry")}
+                </button>
+              ) : null}
               <button
                 type="button"
-                onClick={handleLogout}
-                className="flex w-full items-center rounded-md px-2 py-2 text-left text-[13px] text-[var(--sig-danger)] transition-colors hover:bg-[var(--sig-fill)]"
+                onClick={() => void handleLogout()}
+                className="flex w-full flex-col items-start rounded-md px-2 py-2 text-left text-[13px] text-[var(--sig-danger)] transition-colors hover:bg-[var(--sig-fill)]"
               >
                 {t(language, "settings.logoutAction")}
+                <span className="mt-0.5 text-[11px] text-[var(--sig-label-2)]">
+                  {historyCopy(language, "logoutNote")}
+                </span>
               </button>
             </PopoverContent>
           </Popover>

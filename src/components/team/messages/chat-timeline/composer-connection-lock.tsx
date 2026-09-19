@@ -30,7 +30,9 @@ export default function ComposerConnectionLock({
         ? `Request sent. You can message ${name} once they accept.`
         : lockReason === "account_deleted"
           ? "This account was deleted."
-          : "This user has left the team. You cannot send messages to them.";
+          : lockReason === "local_only"
+            ? "This history is kept in this browser. You're not in this conversation any more, so you can read it but not send."
+            : "This user has left the team. You cannot send messages to them.";
 
   async function requestConnect() {
     if (!peerUserId || busy) return;

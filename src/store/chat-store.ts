@@ -33,6 +33,18 @@ import {
 import { sendEncryptedChat } from "@/lib/chat-e2ee/dm-send";
 import { isEncryptedConversation } from "@/lib/chat-e2ee/eligible";
 import { acknowledgeMessages } from "@/lib/messages/device";
+import {
+  composeLatest,
+  composeOlder,
+  composeThread,
+  persistRawMessages,
+  type FeedHistoryState,
+} from "@/store/chat-feed-history";
+import {
+  persistRealtimeEvent,
+  syncSidebarHistory,
+  withLocalOnlyConversations,
+} from "@/store/chat-sidebar-history";
 
 const FEED_STALE_MS = 45_000;
 
@@ -98,7 +110,14 @@ export type ChatFeed = {
   nextCursor: string;
   hasMore: boolean;
   fetchedAt: number;
+  /** Where the durable-history read stopped (main timeline only). */
+  history?: FeedHistoryState;
 };
+
+function dedupeById(messages: ChatMessage[]) {
+  const seen = new Set<string>();
+  return messages.filter((m) => (seen.has(m.id) ? false : (seen.add(m.id), true)));
+}
 
 /** Stable snapshot for selectors — never call emptyFeed() inside getSnapshot. */
 export const EMPTY_FEED: ChatFeed = {
@@ -235,6 +254,8 @@ interface ChatState {
   dms: ChatConversation[];
   channels: ChatConversation[];
   sidebarLoading: boolean;
+  /** When the conversation list last loaded successfully; 0 before the first. */
+  sidebarFetchedAt: number;
   currentUserId: string;
 
   activeConversationId: string | null;
@@ -338,6 +359,7 @@ export const useChatStore = create<ChatState>()(
       dms: [],
       channels: [],
       sidebarLoading: false,
+      sidebarFetchedAt: 0,
       currentUserId: "",
 
       activeConversationId: null,
@@ -382,6 +404,7 @@ export const useChatStore = create<ChatState>()(
         if (!opts?.silent) set({ sidebarLoading: true });
         try {
           const markers = await syncChatDeletions(get().currentUserId);
+          syncSidebarHistory(get().currentUserId, markers);
           set((state) => ({
             dms: state.dms.filter((item) => conversationSurvives(item, markers)),
             channels: state.channels.filter((item) => conversationSurvives(item, markers)),
@@ -390,7 +413,11 @@ export const useChatStore = create<ChatState>()(
           }));
           // Chat is scope-blind since migration 0145 — one membership-driven
           // list, personal and converted groups alike, no scope to narrow.
-          const data = await api.listAllChatConversations();
+          const data = await withLocalOnlyConversations(
+            get().currentUserId,
+            await api.listAllChatConversations(),
+            markers,
+          );
           // Gives back keys other members lost, without waiting for them to open
           // the chat. Once per unlocked identity; later refreshes are free.
           void fillConversationKeyGaps(get().currentUserId);
@@ -424,6 +451,7 @@ export const useChatStore = create<ChatState>()(
                 : channels,
             };
           });
+          set({ sidebarFetchedAt: Date.now() });
         } catch (e) {
           if (expectedTeamBoundaryError(e)) {
             get().resetTeamChatState();
@@ -532,11 +560,19 @@ export const useChatStore = create<ChatState>()(
             limit: 100,
             thread: threadRootId || undefined,
           });
-          const messages = get().currentUserId
-            ? await decryptChatMessages(page.messages, get().currentUserId)
-            : page.messages;
-          const visible = messages.filter((m) => messageSurvives(m, deletionSnapshot(get().currentUserId)));
+          const userId = get().currentUserId;
+          // Merged into the durable history first, then read back from it —
+          // never swapped in wholesale (chat-feed-history.ts).
+          const composed = threadRootId
+            ? null
+            : await composeLatest(userId, conversationId, page);
+          const raw = composed
+            ? composed.raw
+            : await composeThread(userId, conversationId, threadRootId!, page);
+          const messages = userId ? await decryptChatMessages(raw, userId) : raw;
+          const visible = messages.filter((m) => messageSurvives(m, deletionSnapshot(userId)));
           const sorted = threadRootId ? visible : [...visible].reverse();
+          const hasMore = composed ? composed.hasMore : page.has_more;
           set((s) => ({
             feeds: {
               ...s.feeds,
@@ -544,9 +580,12 @@ export const useChatStore = create<ChatState>()(
                 messages: sorted,
                 loading: false,
                 loadingMore: false,
-                nextCursor: page.next_cursor,
-                hasMore: page.has_more,
+                nextCursor: composed
+                  ? composed.history.serverCursor || (hasMore ? "local" : "")
+                  : page.next_cursor,
+                hasMore,
                 fetchedAt: Date.now(),
+                history: composed?.history,
               },
             },
           }));
@@ -594,15 +633,39 @@ export const useChatStore = create<ChatState>()(
         }));
 
         try {
-          const page = await api.listChatMessages(conversationId, {
-            cursor: feed.nextCursor,
-            limit: 100,
-            thread: threadRootId || undefined,
-          });
-          const messages = get().currentUserId
-            ? await decryptChatMessages(page.messages, get().currentUserId)
-            : page.messages;
-          const visible = messages.filter((m) => messageSurvives(m, deletionSnapshot(get().currentUserId)));
+          const userId = get().currentUserId;
+          // Only messages the server handed over are acknowledged; rows read
+          // back from the durable history (an import) were never delivered
+          // to this device by the server and must not report so.
+          const served: string[] = [];
+          const fetchServer = async (cursor: string) => {
+            const page = await api.listChatMessages(conversationId, {
+              cursor,
+              limit: 100,
+              thread: threadRootId || undefined,
+            });
+            served.push(...page.messages.map((message) => message.id));
+            return page;
+          };
+          let raw: ChatMessage[];
+          let nextCursor: string;
+          let hasMore: boolean;
+          let history = feed.history;
+          if (!threadRootId && feed.history) {
+            const composed = await composeOlder(userId, conversationId, feed.history, fetchServer);
+            raw = composed.raw;
+            history = composed.history;
+            hasMore = composed.hasMore;
+            nextCursor = history.serverCursor || (hasMore ? "local" : "");
+          } else {
+            const page = await fetchServer(feed.nextCursor);
+            void persistRawMessages(userId, page.messages);
+            raw = page.messages;
+            nextCursor = page.next_cursor;
+            hasMore = page.has_more;
+          }
+          const messages = userId ? await decryptChatMessages(raw, userId) : raw;
+          const visible = messages.filter((m) => messageSurvives(m, deletionSnapshot(userId)));
           const sorted = threadRootId ? visible : [...visible].reverse();
           set((s) => {
             const current = s.feeds[key] ?? emptyFeed();
@@ -610,29 +673,24 @@ export const useChatStore = create<ChatState>()(
               feeds: {
                 ...s.feeds,
                 [key]: {
-                  messages: [...sorted, ...current.messages],
+                  messages: dedupeById([...sorted, ...current.messages]),
                   loading: false,
                   loadingMore: false,
-                  nextCursor: page.next_cursor,
-                  hasMore: page.has_more,
+                  nextCursor,
+                  hasMore,
                   fetchedAt: Date.now(),
+                  history,
                 },
               },
             };
           });
           rememberLocalMessages(conversationId, sorted);
-          void acknowledgeMessages(
-            "delivered",
-            page.messages.map((message) => message.id),
-          ).catch(() => {});
+          void acknowledgeMessages("delivered", served).catch(() => {});
           if (
             get().activeConversationId === conversationId &&
             document.visibilityState === "visible"
           ) {
-            void acknowledgeMessages(
-              "read",
-              page.messages.map((message) => message.id),
-            ).catch(() => {});
+            void acknowledgeMessages("read", served).catch(() => {});
           }
         } catch (e) {
           if (expectedTeamBoundaryError(e)) {
@@ -872,6 +930,7 @@ export const useChatStore = create<ChatState>()(
                   : undefined,
               )
             : await deliver({ body });
+        void persistRawMessages(currentUserId, [rawMessage]);
         const msg = currentUserId
           ? await decryptChatMessage(rawMessage, currentUserId)
           : rawMessage;
@@ -1057,6 +1116,8 @@ export const useChatStore = create<ChatState>()(
                 type === "chat.conversation.updated" ||
                 type === "chat.conversation.deleted"
               ) {
+                // Raw, before decryption: the durable copy is stored sealed.
+                persistRealtimeEvent(get().currentUserId, ev as ChatWsEvent);
                 get().handleWsEvent(ev as ChatWsEvent);
               }
             },

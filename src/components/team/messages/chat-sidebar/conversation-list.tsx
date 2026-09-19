@@ -10,6 +10,7 @@ import ConversationSearchSection from "./conversation-search-section";
 import AddPeopleCta from "./add-people-cta";
 import StartConversationSection from "./start-conversation-section";
 import { sortConversations } from "./conversation-sort";
+import { useStoredHistorySearch } from "./use-stored-history-search";
 import {
   splitConversationSearch,
   type ConversationSearchHit,
@@ -67,12 +68,22 @@ export default function ConversationList({
   );
 
   const searching = dmSearchQuery.trim().length > 0;
-  const { chats, messages } = useMemo(() => {
-    const scoped = sortConversations([...channels, ...dms]).filter(
-      (conv) => !unreadOnly || conv.unread_count > 0,
-    );
-    return splitConversationSearch(scoped, dmSearchQuery, localMessageSearchHit);
-  }, [channels, dms, dmSearchQuery, unreadOnly]);
+  const scoped = useMemo(
+    () =>
+      sortConversations([...channels, ...dms]).filter(
+        (conv) => !unreadOnly || conv.unread_count > 0,
+      ),
+    [channels, dms, unreadOnly],
+  );
+  const storedHits = useStoredHistorySearch(currentUserId, scoped, dmSearchQuery);
+  const { chats, messages } = useMemo(
+    () =>
+      splitConversationSearch(scoped, dmSearchQuery, (id, q) => {
+        const stored = storedHits.get(id);
+        return localMessageSearchHit(id, q) ?? (stored ? { snippet: stored.snippet, messageId: stored.messageId } : null);
+      }),
+    [scoped, dmSearchQuery, storedHits],
+  );
 
   const empty = chats.length === 0 && messages.length === 0;
   const dmPeerIds = new Set(dms.map((d) => d.peer_user_id).filter(Boolean));

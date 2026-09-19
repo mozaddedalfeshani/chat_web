@@ -128,3 +128,45 @@ Do not keyword-stuff hidden text; keep copy visible and honest.
 After deploy, submit `https://chat.ababilx.com/sitemap.xml` in Search
 Console. Optional HTML-tag verify: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`.
 Canonical production origin: `https://chat.ababilx.com`.
+
+## Durable history and phone import (behind `NEXT_PUBLIC_HISTORY_IMPORT=1`)
+
+Off by default; off means the chat behaves exactly as before. Contract:
+`ababilx-server/docs/history-transfer-v2-protocol.md` (fixtures copied into
+`src/lib/history/fixtures/`, pinned by the `*.test.mjs` beside the code — run
+`bun test src`).
+
+```
+server page / WS event -> merge (lib/history/merge.ts) -> IndexedDB -> read back -> decrypt -> feed
+phone batch            -> stage invisible -> validate -> ONE activating write -> visible
+```
+
+- **One database per account**, `ababilx-history:<userId>`, payloads AES-GCM
+  under a non-extractable key kept in the same database. Writes resolve on
+  transaction `complete`. Messages are stored as they arrived (E2EE bodies stay
+  ciphertext) and decrypted on read.
+- **The feed reads through the store** (`store/chat-feed-history.ts`): a server
+  page is merged, never swapped in. While the server has older pages, a local
+  read stops at the oldest server row seen, so imported rows never paper over a
+  stretch the server has not been asked for yet.
+- **One merge function** for pages, WS events, background sync and imports —
+  the section 7 table. Retention sets `deleted_at` too; only `content_purged`
+  tells a 180-day placeholder from a deletion, and only a deletion wins.
+- **Background sync** (`lib/history/sync/server-sync.ts`): two conversations at
+  a time, durable cursors, no receipts at all. The import prompt appears once
+  the first pass settles, an empty server included.
+- **Imported conversations the server no longer lists stay readable** as
+  `local_only` rows with the composer closed (`lock_reason: "local_only"`).
+- **Media**: `useLocalAsset` is the one choke point; imported files are served
+  by `public/history-media-sw.js` from sealed 1 MiB pieces with Range, so video
+  seeks. No worker → blob for files ≤ 64 MiB, the CDN URL otherwise.
+- **Import** (`lib/history/transfer/`): Web Locks pick the one tab that runs it;
+  the journal (`jobs.ts`) is what a reload resumes from; acks follow durable
+  staging, commits follow activation, and the job completes only when the seal
+  names the batch received last.
+- **Explicit logout** (`lib/history/sign-out.ts`, the rail menu) deletes the
+  account's history database. A forced 401 does not. A different account
+  signing in deletes every other account's history database.
+- Not verified in a real browser here (no browser automation in this repo):
+  quota/eviction, reload mid-batch, SW Range seeking, two tabs. Those are the
+  manual acceptance steps before turning the flag on.

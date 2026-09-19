@@ -4,7 +4,8 @@ import { useState } from "react";
 import { LoaderCircle, Play } from "lucide-react";
 import type { ChatMessageAttachment } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useLocalAsset } from "./use-local-asset";
+import { useLocalAssetState } from "./use-local-asset";
+import UnavailableMedia from "./unavailable-media";
 import MediaLightbox from "./media-lightbox";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
 import SingleMedia from "./chat-media-single";
@@ -41,7 +42,9 @@ function MediaTile({
   overflow?: number;
   onOpen: () => void;
 }) {
-  const localUrl = useLocalAsset(attachment.file_url);
+  const asset = useLocalAssetState(attachment.file_url);
+  const localUrl = asset.src;
+  const [broken, setBroken] = useState(false);
   const video = isVideo(attachment);
   // Right-click answers about the picture under the cursor, not the bubble
   // around it — Save, Copy, Open in browser.
@@ -62,13 +65,16 @@ function MediaTile({
         className,
       )}
     >
-      {localUrl ? (
+      {broken && asset.unavailable ? (
+        <UnavailableMedia />
+      ) : localUrl ? (
         video ? (
           <video
             src={localUrl}
             preload="metadata"
             muted
             playsInline
+            onError={() => setBroken(true)}
             className="h-full w-full object-cover"
           />
         ) : (
@@ -76,6 +82,7 @@ function MediaTile({
             src={localUrl}
             alt={attachment.file_name}
             loading="lazy"
+            onError={() => setBroken(true)}
             className="h-full w-full object-cover transition-transform duration-200 group-hover/tile:scale-[1.02]"
           />
         )

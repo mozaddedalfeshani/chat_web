@@ -1,8 +1,10 @@
 "use client";
 
+import { useState } from "react";
 import { LoaderCircle, Play } from "lucide-react";
 import type { ChatMessageAttachment } from "@/lib/api";
-import { useLocalAsset } from "./use-local-asset";
+import { useLocalAssetState } from "./use-local-asset";
+import UnavailableMedia from "./unavailable-media";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
 import { chatMediaFrame, chatMediaPlaceholder } from "./chat-media-size";
 
@@ -12,13 +14,16 @@ function isVideo(attachment: ChatMessageAttachment) {
 
 /** A lone photo or video keeps its own ratio instead of joining a mosaic. */
 export default function SingleMedia({ attachment }: { attachment: ChatMessageAttachment }) {
-  const localUrl = useLocalAsset(attachment.file_url);
+  const asset = useLocalAssetState(attachment.file_url);
+  const localUrl = asset.src;
+  const [broken, setBroken] = useState(false);
   const menu = useAssetMenu({
     url: attachment.file_url,
     fileName: attachment.file_name,
     kind: isVideo(attachment) ? "video" : "image",
   });
 
+  if (broken && asset.unavailable) return <UnavailableMedia className={chatMediaPlaceholder} />;
   if (!localUrl) {
     return (
       <span className={chatMediaPlaceholder}>
@@ -35,6 +40,7 @@ export default function SingleMedia({ attachment }: { attachment: ChatMessageAtt
           preload="metadata"
           muted
           playsInline
+          onError={() => setBroken(true)}
           className={chatMediaFrame}
         />
         <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
@@ -51,6 +57,7 @@ export default function SingleMedia({ attachment }: { attachment: ChatMessageAtt
         src={localUrl}
         alt={attachment.file_name}
         loading="lazy"
+        onError={() => setBroken(true)}
         onContextMenu={menu.onContextMenu}
         className={chatMediaFrame}
       />
