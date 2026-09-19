@@ -41,10 +41,10 @@ A picture or video (caption or not) fills the bubble: width
 `min(70dvh, 420px)` — a ceiling, not a size to fill. Time + ticks sit on the
 image (bottom-right, no scrim). Quotes keep the text-bubble path.
 
-## Sign-in: phone QR, or Google
+## Sign-in: phone QR, Google, or email
 
-Two ways in, both ending in the same place — a one-time code traded by the BFF
-for httpOnly cookies. No token ever reaches JS.
+Three ways in, all ending in the same place — httpOnly cookies set by the BFF.
+No token ever reaches JS.
 
 ```
 QR      phone approves  -> /backend/auth/qr/poll -> BFF exchanges the code
@@ -69,6 +69,13 @@ Google  /auth/google/start -> {API}/auth/google?client=chat -> Google
 - **Server env**: set `CHAT_FRONTEND_URL` on the Go API (falls back to
   `FRONTEND_URL`). Google Cloud needs no new redirect URI — the registered one
   is still `{API}/auth/google/callback`.
+- **Email + password** (`login-page/email/`, `lib/api/email-auth.ts`) posts to
+  `/backend/auth/email/*`. The BFF adds `X-APP-KEY` from server-only
+  `ABABILX_APP_KEY` (`lib/server/email-auth-forward.ts`, never
+  `NEXT_PUBLIC_`), skips the 401 refresh retry there (a wrong password is not
+  an expired session), and turns a successful answer into the httpOnly
+  cookies like a QR approval. `lib/api/app-key.ts` is an older, unused
+  browser-side helper with a different header name — do not wire it up.
 - A failed hop lands back on `/` as `?error=`, rendered by
   `login-error-notice.tsx`. Never fail silently: a dead button reads as a bug.
 

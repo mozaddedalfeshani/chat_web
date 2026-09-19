@@ -1,9 +1,10 @@
+import LoginEmailPanel from "./email/login-email-panel";
 import LoginErrorNotice from "./login-error-notice";
 import LoginGoogleButton from "./login-google-button";
 import LoginQrPanel from "./login-qr-panel";
 import { LOGIN_COPY } from "./login-copy";
 
-/** Both ways in, stacked: scan the code, or fall through to Google. */
+/** Every way in, stacked: scan the code, or fall through to Google or email. */
 export default function LoginAuthPanel() {
   return (
     <div className="flex w-full shrink-0 flex-col items-center gap-4 lg:w-[280px]">
@@ -15,6 +16,7 @@ export default function LoginAuthPanel() {
         <span className="h-px flex-1 bg-[#e9edef]" />
       </div>
       <LoginGoogleButton />
+      <LoginEmailPanel />
       <p className="text-center text-[13px] leading-5 text-[#667781]">
         {LOGIN_COPY.googleHint}
       </p>
