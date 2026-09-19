@@ -2,9 +2,9 @@
 
 import type { ChatConversation } from "@/lib/api";
 import ConversationRow from "../conversation-row";
-import { chatConvLabel, chatInitials, isNoteToSelf } from "../chat-utils";
+import { chatConvLabel, chatInitials, isAccountDeleted, isNoteToSelf } from "../chat-utils";
 import GroupAvatarStack from "./group-avatar-stack";
-import { Bookmark01Icon, Link01Icon } from "hugeicons-react";
+import { Bookmark01Icon, Link01Icon, UserIcon } from "hugeicons-react";
 import { useTypingLabel } from "@/lib/chat-typing/use-typing-label";
 
 /** One row in the unified list — a group (stacked avatars) or a DM (peer avatar). */
@@ -72,6 +72,19 @@ export default function ConversationListItem({
         avatarNode={
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--indigo)_15%,transparent)] text-[var(--indigo)]">
             <Bookmark01Icon size={22} />
+          </div>
+        }
+      />
+    );
+  }
+
+  if (isAccountDeleted(conv)) {
+    return (
+      <ConversationRow
+        {...shared}
+        avatarNode={
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[var(--sig-fill)] text-[var(--sig-label-2)]">
+            <UserIcon size={22} />
           </div>
         }
       />

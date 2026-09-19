@@ -21,7 +21,10 @@ export default function DmCallActions({
 }) {
   const voiceCall = useVoiceCall();
   const name = chatConvLabel(conv);
-  const unavailable = !!conv.peer_left;
+  const unavailable =
+    !!conv.peer_left ||
+    conv.can_message === false ||
+    conv.lock_reason === "account_deleted";
   const disabled = voiceCall.active || unavailable;
 
   const btn = (

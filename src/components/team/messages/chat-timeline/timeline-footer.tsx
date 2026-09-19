@@ -7,6 +7,7 @@ import MessageComposer, {
   type MessageComposerHandle,
 } from "./message-composer";
 import MessageRequestBar from "./message-request-bar";
+import ComposerConnectionLock from "./composer-connection-lock";
 import ReplyPreviewBar from "./reply-preview-bar";
 
 export type TimelineSend = (
@@ -32,6 +33,9 @@ export type TimelineMessageRequest = {
 export default function TimelineFooter({
   showComposer,
   peerLeft,
+  lockReason,
+  peerName,
+  peerUserId,
   messageRequest,
   readOnlyLabel,
   composerRef,
@@ -52,6 +56,9 @@ export default function TimelineFooter({
 }: {
   showComposer: boolean;
   peerLeft: boolean;
+  lockReason?: string;
+  peerName?: string;
+  peerUserId?: string;
   messageRequest?: TimelineMessageRequest;
   readOnlyLabel?: string;
   composerRef: Ref<MessageComposerHandle>;
@@ -72,16 +79,11 @@ export default function TimelineFooter({
 }) {
   if (peerLeft) {
     return (
-      <div
-        className="shrink-0 border-t px-4 py-3 text-center text-xs"
-        style={{
-          borderColor: "var(--sig-border)",
-          background: "var(--sig-bg)",
-          color: "var(--sig-label-2)",
-        }}
-      >
-        This user has left the team. You cannot send messages to them.
-      </div>
+      <ComposerConnectionLock
+        lockReason={lockReason}
+        peerName={peerName ?? ""}
+        peerUserId={peerUserId}
+      />
     );
   }
   if (messageRequest) return <MessageRequestBar {...messageRequest} />;

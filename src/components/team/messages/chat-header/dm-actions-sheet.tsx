@@ -59,6 +59,7 @@ export default function DmActionsSheet({
   peerAvatar,
   muted,
   noteToSelf = false,
+  accountDeleted = false,
   onViewProfile,
   onSearch,
   onToggleMute,
@@ -71,6 +72,8 @@ export default function DmActionsSheet({
   muted: boolean;
   /** Note to Self: the "peer" is the viewer, so profile and presence go. */
   noteToSelf?: boolean;
+  /** Deleted peer: no profile, no presence, generic avatar. */
+  accountDeleted?: boolean;
   onViewProfile: () => void;
   onSearch: () => void;
   onToggleMute: () => void;
@@ -87,6 +90,13 @@ export default function DmActionsSheet({
               }}>
               <Bookmark01Icon size={24} />
             </span>
+          ) : accountDeleted ? (
+            <span
+              className="flex h-14 w-14 items-center justify-center rounded-full text-[var(--sig-label-2)]"
+              style={{ background: "var(--sig-fill)" }}
+            >
+              <UserIcon size={24} />
+            </span>
           ) : (
             <Avatar className="h-14 w-14">
               <AvatarImage src={peerAvatar} alt={peerName} />
@@ -100,13 +110,13 @@ export default function DmActionsSheet({
             <span className="text-xs text-[var(--text-muted)]">
               Messages and files you send here stay between your own devices.
             </span>
-          ) : (
+          ) : accountDeleted ? null : (
             <PeerCallOrStatus userId={peerUserId} />
           )}
         </DrawerHeader>
 
         <div className="mt-1">
-          {noteToSelf ? null : (
+          {noteToSelf || accountDeleted ? null : (
             <ActionRow
               icon={<UserIcon size={18} />}
               label="View profile"

@@ -269,10 +269,16 @@ export default function MessagesClient() {
 
   const openProfile = useCallback(
     (userId: string) => {
+      if (
+        activeConv?.lock_reason === "account_deleted" &&
+        activeConv.peer_user_id === userId
+      ) {
+        return;
+      }
       setThreadRootId(null);
       setProfileUserId(userId);
     },
-    [setThreadRootId],
+    [activeConv?.lock_reason, activeConv?.peer_user_id, setThreadRootId],
   );
 
   const profileMember = profileUserId
@@ -542,6 +548,9 @@ export default function MessagesClient() {
                   activeConv?.type === "dm" &&
                   (activeConv.can_message === false || !!activeConv.peer_left)
                 }
+                lockReason={activeConv?.lock_reason}
+                peerName={activeConv?.peer_user_name}
+                peerUserId={activeConv?.peer_user_id}
                 messageRequest={messageRequest}
                 isGroup={activeConv?.type !== "dm"}
                 highlightMessageId={highlightId}

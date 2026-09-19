@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ShieldAlert } from "lucide-react";
 import { useChatStore } from "@/store/chat-store";
 import { formatSafetyNumber } from "@/lib/chat-e2ee/safety-number";
-import { chatConvLabel } from "../chat-utils";
+import { chatConvLabel, isAccountDeleted } from "../chat-utils";
 import { useSafetyNumber } from "./use-safety-number";
 import SafetyNumberDigits from "./safety-number-digits";
 
@@ -29,7 +29,8 @@ export default function SafetyNumberAlert() {
   // A safety number is a comparison with somebody else. In a note to self the
   // peer is the viewer, so there is nothing to compare and no substitution to
   // catch — the key on both ends is the same key.
-  const isDM = conv?.type === "dm" && !conv.is_self;
+  const isDM =
+    conv?.type === "dm" && !conv.is_self && !isAccountDeleted(conv);
   const safety = useSafetyNumber(isDM ? conv?.peer_user_id : undefined, !!isDM);
 
   if (!conv || !isDM || safety.trust !== "changed") return null;

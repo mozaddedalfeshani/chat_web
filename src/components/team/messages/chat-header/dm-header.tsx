@@ -6,7 +6,7 @@ import { LockKeyhole } from "lucide-react";
 import type { ChatConversation } from "@/lib/api";
 import type { TeamMember } from "@/lib/api/types/team";
 import PeerCallOrStatus from "@/components/shared/peer-call-or-status";
-import { chatConvLabel, isNoteToSelf } from "../chat-utils";
+import { chatConvLabel, isAccountDeleted, isNoteToSelf } from "../chat-utils";
 import { cn } from "@/lib/utils";
 import DmActionsSheet from "./dm-actions-sheet";
 import DmProfileDialog from "./dm-profile-dialog";
@@ -38,7 +38,9 @@ export default function DmHeader({
   const [sheetOpen, setSheetOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const selfNote = isNoteToSelf(conv);
-  const typingText = useTypingLabel(selfNote ? null : conv.id, false);
+  const accountDeleted = isAccountDeleted(conv);
+  const hidePeerActions = selfNote || accountDeleted;
+  const typingText = useTypingLabel(hidePeerActions ? null : conv.id, false);
   const label = chatConvLabel(conv);
   const peerMember =
     (conv.peer_user_id
@@ -59,12 +61,12 @@ export default function DmHeader({
       <div className="flex shrink-0 items-center gap-0 rounded-full border border-[var(--border)] bg-[var(--surface2)] shadow-sm">
         <button
           type="button"
-          onClick={() => (selfNote ? setSheetOpen(true) : openProfile())}
+          onClick={() => (hidePeerActions ? setSheetOpen(true) : openProfile())}
           className={cn(
             "flex flex-col items-start justify-center gap-0.5 truncate rounded-l-full py-1 pl-3 pr-2 transition-colors",
             "hover:bg-white/[0.06] [data-theme=light]:hover:bg-black/[0.04]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--indigo)]",
-            selfNote && "rounded-r-full pr-3",
+            hidePeerActions && "rounded-r-full pr-3",
           )}
           aria-label="Conversation actions"
         >
@@ -88,7 +90,7 @@ export default function DmHeader({
               />
             ) : null}
           </span>
-          {selfNote ? null : typingText ? (
+          {hidePeerActions ? null : typingText ? (
             <span className="text-[11px] font-medium text-[var(--indigo)]">
               {typingText}
             </span>
@@ -96,7 +98,7 @@ export default function DmHeader({
             <PeerCallOrStatus userId={conv.peer_user_id} compact />
           )}
         </button>
-        {selfNote ? null : (
+        {hidePeerActions ? null : (
           <>
             <div className="h-5 w-px bg-[var(--border)]" />
             <DmCallActions conv={conv} capsule />
@@ -112,6 +114,7 @@ export default function DmHeader({
         peerAvatar={conv.peer_user_avatar}
         muted={!!conv.muted}
         noteToSelf={selfNote}
+        accountDeleted={accountDeleted}
         onViewProfile={openProfile}
         onSearch={() => {
           setSheetOpen(false);
@@ -122,7 +125,7 @@ export default function DmHeader({
           onToggleMute();
         }}
       />
-      {selfNote ? null : (
+      {hidePeerActions ? null : (
         <DmProfileDialog
           open={profileOpen}
           onOpenChange={setProfileOpen}

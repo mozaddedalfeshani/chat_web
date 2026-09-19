@@ -45,6 +45,9 @@ export default function ChatTimeline({
   threadRepliesByRoot = {},
   showComposer = true,
   peerLeft = false,
+  lockReason,
+  peerName,
+  peerUserId,
   messageRequest,
   composerPlaceholder,
   composerSubmitLabel,
@@ -80,6 +83,9 @@ export default function ChatTimeline({
   threadRepliesByRoot?: Record<string, ChatMessage[]>;
   showComposer?: boolean;
   peerLeft?: boolean;
+  lockReason?: string;
+  peerName?: string;
+  peerUserId?: string;
   messageRequest?: TimelineMessageRequest;
   composerPlaceholder?: string;
   composerSubmitLabel?: string;
@@ -195,6 +201,9 @@ export default function ChatTimeline({
       <TimelineFooter
         showComposer={composerVisible}
         peerLeft={peerLeft}
+        lockReason={lockReason}
+        peerName={peerName}
+        peerUserId={peerUserId}
         messageRequest={messageRequest}
         readOnlyLabel={readOnlyText}
         composerRef={composerRef}

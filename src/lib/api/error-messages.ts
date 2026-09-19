@@ -28,6 +28,8 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Add the country code to search by phone, e.g. +8801712345678. Numbers are stored with their country code, so a local number matches nobody.",
   member_needs_secure_messages:
     "This chat is encrypted, and that person has not set up secure messages yet. Ask them to open AbabilX once, then add them.",
+  request_rejected_cooldown: "Try again later",
+  request_already_pending: "Request already sent",
   secure_message_required:
     "This chat is end-to-end encrypted. Update AbabilX to send here.",
   files_locked:

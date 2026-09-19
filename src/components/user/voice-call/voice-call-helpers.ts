@@ -3,7 +3,13 @@ import type { WebCallView } from "./voice-call-context";
 
 /** Only idle, two-person DMs with the peer still in the team can be called. */
 export function callStartable(view: WebCallView, conversation: ChatConversation) {
-  return view.phase === "idle" && conversation.type === "dm" && !conversation.peer_left;
+  return (
+    view.phase === "idle" &&
+    conversation.type === "dm" &&
+    !conversation.peer_left &&
+    conversation.can_message !== false &&
+    conversation.lock_reason !== "account_deleted"
+  );
 }
 
 export const idleView: WebCallView = {

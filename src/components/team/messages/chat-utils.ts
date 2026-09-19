@@ -83,6 +83,10 @@ export function isNoteToSelf(conv?: { is_self?: boolean } | null) {
   return !!conv?.is_self;
 }
 
+export function isAccountDeleted(conv?: { lock_reason?: string } | null) {
+  return conv?.lock_reason === "account_deleted";
+}
+
 export function chatConvLabel(conv: {
   type: string;
   name?: string;

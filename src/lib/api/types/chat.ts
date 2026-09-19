@@ -42,10 +42,15 @@ export type ChatConversation = {
    */
   is_self?: boolean;
   /**
-   * Whether the viewer may post here. Only a block closes a DM now —
-   * acceptance is not a precondition for sending.
+   * Whether the viewer may post here. A block, a removed connection, a pending
+   * reconnect, or a deleted peer all close a DM; `lock_reason` says which.
    */
   can_message?: boolean;
+  /**
+   * Why the composer is closed. Omitted/empty when the viewer may send.
+   * `blocked` | `connection_removed` | `reconnect_requested` | `account_deleted`.
+   */
+  lock_reason?: string;
   /**
    * Signal-style message request on a personal DM, from this viewer's side.
    * "incoming" means the peer wrote first and the viewer has not answered, so
