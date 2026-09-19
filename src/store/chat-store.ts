@@ -35,6 +35,8 @@ import { isEncryptedConversation } from "@/lib/chat-e2ee/eligible";
 import { acknowledgeMessages } from "@/lib/messages/device";
 import {
   composeLatest,
+  composeLocalLatest,
+  composeLocalOlder,
   composeOlder,
   composeThread,
   persistRawMessages,
@@ -556,16 +558,22 @@ export const useChatStore = create<ChatState>()(
         }
 
         try {
-          const page = await api.listChatMessages(conversationId, {
-            limit: 100,
-            thread: threadRootId || undefined,
-          });
           const userId = get().currentUserId;
+          const conversation = [...get().dms, ...get().channels].find((item) => item.id === conversationId);
+          const localOnly = !threadRootId && conversation?.local_only === true;
+          const page = localOnly
+            ? { messages: [], has_more: false, next_cursor: "" }
+            : await api.listChatMessages(conversationId, {
+                limit: 100,
+                thread: threadRootId || undefined,
+              });
           // Merged into the durable history first, then read back from it —
           // never swapped in wholesale (chat-feed-history.ts).
           const composed = threadRootId
             ? null
-            : await composeLatest(userId, conversationId, page);
+            : localOnly
+              ? await composeLocalLatest(userId, conversationId)
+              : await composeLatest(userId, conversationId, page);
           const raw = composed
             ? composed.raw
             : await composeThread(userId, conversationId, threadRootId!, page);
@@ -638,6 +646,8 @@ export const useChatStore = create<ChatState>()(
           // back from the durable history (an import) were never delivered
           // to this device by the server and must not report so.
           const served: string[] = [];
+          const conversation = [...get().dms, ...get().channels].find((item) => item.id === conversationId);
+          const localOnly = !threadRootId && conversation?.local_only === true;
           const fetchServer = async (cursor: string) => {
             const page = await api.listChatMessages(conversationId, {
               cursor,
@@ -652,7 +662,9 @@ export const useChatStore = create<ChatState>()(
           let hasMore: boolean;
           let history = feed.history;
           if (!threadRootId && feed.history) {
-            const composed = await composeOlder(userId, conversationId, feed.history, fetchServer);
+            const composed = localOnly
+              ? await composeLocalOlder(userId, conversationId, feed.history)
+              : await composeOlder(userId, conversationId, feed.history, fetchServer);
             raw = composed.raw;
             history = composed.history;
             hasMore = composed.hasMore;

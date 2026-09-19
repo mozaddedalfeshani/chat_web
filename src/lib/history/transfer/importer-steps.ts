@@ -5,7 +5,7 @@ import { applyDeletionMarkers } from "../repo/messages-write";
 import { readyFiles } from "../repo/files";
 import { transferApi, type JobState } from "./api";
 import { dropStagedJob } from "./staging";
-import type { ImportJob } from "./jobs";
+import { saveJob, type ImportJob } from "./jobs";
 import { aad, openJson, sealJson } from "./v2-crypto";
 
 export const sleep = (ms: number, signal?: AbortSignal) =>
@@ -27,9 +27,15 @@ export function isQuotaError(error: unknown) {
 
 /** The files this browser already holds, sealed for the phone to skip. */
 export async function sendDestinationInventory(userId: string, job: ImportJob) {
-  const files = await readyFiles(userId);
-  const ciphertext = await sealJson(job.transferKey!, aad.destInventory(job.id), { v: 2, complete_files: files });
-  await transferApi.putDestInventory(job.id, ciphertext);
+  if (!job.destInventoryCiphertext) {
+    const files = await readyFiles(userId);
+    job.destInventoryCiphertext = await sealJson(job.transferKey!, aad.destInventory(job.id), {
+      v: 2,
+      complete_files: files,
+    });
+    await saveJob(userId, job);
+  }
+  await transferApi.putDestInventory(job.id, job.destInventoryCiphertext);
 }
 
 export async function openSourceInventory(job: ImportJob, state: JobState) {

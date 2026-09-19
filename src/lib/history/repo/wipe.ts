@@ -38,8 +38,14 @@ function deleteDatabase(name: string): Promise<void> {
     const request = indexedDB.deleteDatabase(name);
     request.onsuccess = () => resolve();
     request.onerror = () => reject(request.error);
-    // Another tab still holds it open; its onversionchange closes it, after
-    // which the delete completes on its own. Nothing to wait on here.
-    request.onblocked = () => resolve();
+    // Keep waiting for the real `success`: resolving (or logging out) here
+    // would leave the other tab holding the account database. The event lets
+    // the shell explain why sign-out is waiting without pretending deletion
+    // already finished.
+    request.onblocked = () => {
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("ababilx:history-delete-blocked"));
+      }
+    };
   });
 }

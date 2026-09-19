@@ -55,8 +55,18 @@ export async function writeFileSlice(
   await writeTx(db, [S.files, S.fileChunks], async (tx) => {
     const files = tx.objectStore(S.files);
     const current = await req<FileRecord | undefined>(files.get(meta.url_key));
-    if (current?.status === "ready") return;
-    files.put({ ...meta, status: "partial", done: current?.done ?? [], updated_at: Date.now() });
+    if (
+      current?.status === "ready" &&
+      current.sha256 === meta.sha256 &&
+      current.size === meta.size
+    ) return;
+    const replacing = current?.status === "ready" || current?.status === "unavailable";
+    if (replacing) {
+      tx.objectStore(S.fileChunks).delete(
+        IDBKeyRange.bound([meta.url_key, -Infinity], [meta.url_key, Infinity]),
+      );
+    }
+    files.put({ ...meta, status: "partial", done: replacing ? [] : current?.done ?? [], updated_at: Date.now() });
     for (const piece of pieces) tx.objectStore(S.fileChunks).put(piece);
   });
 }

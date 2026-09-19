@@ -70,4 +70,47 @@ describe("runImport against a phone-format relay", () => {
     assert.equal((await readJob(user, id)).status, "cancelled");
     await deleteAccountHistory(user);
   });
+
+  it("resumes final reconciliation after refresh before the seal arrives", async () => {
+    const user = `run-final-${Date.now()}`;
+    const id = "21111111-2222-3333-4444-555555555555";
+    server = new FakeServer(id);
+    const keys = await newJob(user, id);
+    await server.approve(keys.publicJwk);
+    await server.addMessages([
+      { t: "header", v: 2, transfer_id: id, batch: 0 },
+      { t: "end", messages: 0, conversations: 0 },
+    ], true);
+    server.batches[0].status = "committed";
+    const interrupted = await readJob(user, id);
+    interrupted.transferKey = server.key;
+    interrupted.status = "receiving";
+    interrupted.destInventorySent = true;
+    interrupted.batches[0] = { kind: "messages", final: true, state: "committed", staged: [], acked: [] };
+    interrupted.finalizingBatch = 0;
+    await saveJob(user, interrupted);
+    await server.sealJob(0);
+    const finished = await runImport(user, id, () => {}, new AbortController().signal);
+    assert.equal(finished.status, "finished");
+    await deleteAccountHistory(user);
+  });
+
+  it("retries destination inventory with byte-identical ciphertext", async () => {
+    const user = `run-inventory-${Date.now()}`;
+    const id = "31111111-2222-3333-4444-555555555555";
+    server = new FakeServer(id);
+    server.failDestInventoryOnce = true;
+    const keys = await newJob(user, id);
+    await server.approve(keys.publicJwk);
+    await server.addMessages([
+      { t: "header", v: 2, transfer_id: id, batch: 0 },
+      { t: "end", messages: 0, conversations: 0 },
+    ], true);
+    await server.sealJob(0);
+    const finished = await runImport(user, id, () => {}, new AbortController().signal);
+    assert.equal(finished.status, "finished");
+    assert.equal(server.destInventoryAttempts.length, 2);
+    assert.equal(server.destInventoryAttempts[0], server.destInventoryAttempts[1]);
+    await deleteAccountHistory(user);
+  });
 });

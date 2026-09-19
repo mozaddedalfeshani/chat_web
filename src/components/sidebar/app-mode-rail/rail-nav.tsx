@@ -1,11 +1,13 @@
 "use client";
 
+import { useEffect } from "react";
 import { Menu01Icon, Message01Icon } from "hugeicons-react";
 import type { AppUser } from "@/lib/api";
 import { logOutAndForgetHistory } from "@/lib/history/sign-out";
 import { historyCopy } from "@/lib/history/copy";
 import { historyEnabled } from "@/lib/history/flag";
 import { useHistoryImportStore } from "@/store/history-import-store";
+import { toast } from "sonner";
 import { t } from "@/lib/i18n";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ThemeToggle } from "@/components/ui/theme-toggle";
@@ -25,9 +27,19 @@ export default function RailNav({ user }: { user: AppUser | null }) {
   const toggleRail = useUIStore((s) => s.toggleRail);
   const language = user?.app_language ?? "en";
 
+  useEffect(() => {
+    const blocked = () => toast.error("Close other AbabilX tabs to finish logging out.");
+    window.addEventListener("ababilx:history-delete-blocked", blocked);
+    return () => window.removeEventListener("ababilx:history-delete-blocked", blocked);
+  }, []);
+
   async function handleLogout() {
-    await logOutAndForgetHistory(user?.id);
-    window.location.assign("/");
+    try {
+      await logOutAndForgetHistory(user?.id);
+      window.location.assign("/");
+    } catch {
+      toast.error("Close other AbabilX tabs, then try logging out again.");
+    }
   }
 
   return (

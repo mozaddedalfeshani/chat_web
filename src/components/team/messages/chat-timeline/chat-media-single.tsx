@@ -18,7 +18,7 @@ export default function SingleMedia({ attachment }: { attachment: ChatMessageAtt
   const localUrl = asset.src;
   const [broken, setBroken] = useState(false);
   const menu = useAssetMenu({
-    url: attachment.file_url,
+    url: localUrl,
     fileName: attachment.file_name,
     kind: isVideo(attachment) ? "video" : "image",
   });

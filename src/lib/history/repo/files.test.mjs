@@ -54,4 +54,22 @@ describe("imported file pieces", () => {
     assert.equal((await getFile(user, "k3")).status, "ready", "a verified file is never downgraded");
     await deleteAccountHistory(user);
   });
+
+  it("a later valid transfer replaces unavailable or mismatched ready bytes", async () => {
+    const user = `files-replace-${Date.now()}`;
+    const good = bytes(2048, 9);
+    const goodMeta = { url_key: "same", size: good.length, sha256: new Sha256().update(good).hex(), file_name: "new", content_type: "image/png", segs: 1 };
+    await markUnavailable(user, { ...goodMeta, sha256: "", size: 1 });
+    await writeFileSlice(user, goodMeta, 0, good);
+    await markSegmentDone(user, "same", 0);
+    assert.equal(await verifyFile(user, "same"), "ready");
+
+    const newer = bytes(1024, 17);
+    const newerMeta = { ...goodMeta, size: newer.length, sha256: new Sha256().update(newer).hex() };
+    await writeFileSlice(user, newerMeta, 0, newer);
+    await markSegmentDone(user, "same", 0);
+    assert.equal(await verifyFile(user, "same"), "ready");
+    assert.deepEqual(await collect(readFileRange(user, "same", 0, newer.length)), newer);
+    await deleteAccountHistory(user);
+  });
 });

@@ -25,6 +25,9 @@ export class FakeServer {
     this.destInventory = "";
     this.seal = "";
     this.envelope = "";
+    this.afterCommit = null;
+    this.failDestInventoryOnce = false;
+    this.destInventoryAttempts = [];
   }
 
   /** The phone scans `k`, seals a fresh transfer key to it and approves. */
@@ -74,7 +77,14 @@ export class FakeServer {
           dest_inventory_ciphertext: this.destInventory, expires_at: new Date(Date.now() + 86400000).toISOString() },
         live: !this.completed, batches: this.batches, outstanding_bytes: 0,
       }),
-      putDestInventory: async (_id, ct) => { this.destInventory = ct; },
+      putDestInventory: async (_id, ct) => {
+        this.destInventoryAttempts.push(ct);
+        this.destInventory = ct;
+        if (this.failDestInventoryOnce) {
+          this.failDestInventoryOnce = false;
+          throw new Error("lost response");
+        }
+      },
       chunks: async (_id, batch, after) => ({
         chunks: [...this.objects.keys()].filter((k) => Number(k.split("/")[0]) === batch)
           .map((k) => Number(k.split("/")[1])).filter((i) => i > after).sort((a, b) => a - b)
@@ -87,6 +97,7 @@ export class FakeServer {
         const row = this.batches[batch];
         for (let i = 0; i < row.chunk_count; i += 1) if (!this.acked.has(`${batch}/${i}`)) throw new Error("commit before every ack");
         row.status = "committed";
+        if (this.afterCommit) await this.afterCommit(batch);
       },
       complete: async () => {
         if (!this.seal || this.batches.some((b) => b.status !== "committed")) throw new Error("incomplete");

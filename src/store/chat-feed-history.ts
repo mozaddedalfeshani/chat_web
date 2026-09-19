@@ -78,7 +78,8 @@ export async function composeLatest(
   page: ChatMessagesPage,
 ): Promise<ComposedPage> {
   const server = fromServer(page);
-  if (!(await persistRawMessages(userId, page.messages))) return server;
+  if (!historyEnabled() || !userId) return server;
+  if (page.messages.length > 0 && !(await persistRawMessages(userId, page.messages))) return server;
   try {
     const local = await readLocalFeed(userId, {
       conversationId,
@@ -93,6 +94,42 @@ export async function composeLatest(
   } catch {
     return server;
   }
+}
+
+/** A conversation that exists only in the phone import has no server page to
+ * request. Read it directly from the durable store. */
+export async function composeLocalLatest(
+  userId: string,
+  conversationId: string,
+): Promise<ComposedPage> {
+  const local = await readLocalFeed(userId, { conversationId, limit: PAGE });
+  return {
+    raw: local.messages,
+    hasMore: local.messages.length >= PAGE,
+    history: {
+      localEdge: local.edge,
+      serverFloor: null,
+      serverCursor: "",
+      serverHasMore: false,
+    },
+  };
+}
+
+export async function composeLocalOlder(
+  userId: string,
+  conversationId: string,
+  state: FeedHistoryState,
+): Promise<ComposedPage> {
+  const local = await readLocalFeed(userId, {
+    conversationId,
+    limit: PAGE,
+    before: state.localEdge,
+  });
+  return {
+    raw: local.messages,
+    hasMore: local.messages.length >= PAGE,
+    history: { ...state, localEdge: local.edge ?? state.localEdge },
+  };
 }
 
 /** The next older page, filling from the server when the store runs out. */

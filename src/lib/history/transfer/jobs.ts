@@ -40,6 +40,10 @@ export type ImportJob = {
   code: string;
   transferKey?: CryptoKey;
   destInventorySent: boolean;
+  /** Persisted before the first PUT so retries resend byte-identical bytes. */
+  destInventoryCiphertext?: string;
+  /** Final batch awaiting the job seal/completion handshake. */
+  finalizingBatch?: number;
   inventory?: { messages: number; files: number; file_bytes: number; message_bytes_estimate: number; missing_files: number };
   batches: Record<number, BatchJournal>;
   counts: ImportCounts;

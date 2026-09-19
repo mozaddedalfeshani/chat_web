@@ -6,6 +6,7 @@ import {
   saveAssetsToFolder,
   saveAssetToDownloads,
 } from "@/lib/files/asset-actions";
+import { resolveLocalAsset } from "@/lib/history/media/local-asset";
 
 /** Plain text of a message body, TipTap JSON or not. */
 export function messagePlainText(message: ChatMessage) {
@@ -22,9 +23,10 @@ export async function copyText(text: string) {
   }
 }
 
-export async function copyImage(attachment: ChatMessageAttachment) {
+export async function copyImage(userId: string, attachment: ChatMessageAttachment) {
   try {
-    await copyImageToClipboard(attachment.file_url);
+    const asset = await resolveLocalAsset(userId, attachment.file_url);
+    await copyImageToClipboard(asset.src ?? attachment.file_url);
     toast.success("Image copied");
   } catch {
     toast.error("Could not copy image");
@@ -38,17 +40,21 @@ export async function copyImage(attachment: ChatMessageAttachment) {
  * all inside WKWebView — the menu row looked like it worked and no file ever
  * appeared. The bytes are already on this machine; Rust writes them out.
  */
-export async function saveAttachments(attachments: ChatMessageAttachment[]) {
+export async function saveAttachments(userId: string, attachments: ChatMessageAttachment[]) {
   try {
+    const resolved = await Promise.all(attachments.map(async (attachment) => ({
+      attachment,
+      url: (await resolveLocalAsset(userId, attachment.file_url)).src ?? attachment.file_url,
+    })));
     if (attachments.length === 1) {
-      const only = attachments[0];
-      const outcome = await saveAssetToDownloads(only.file_url, only.file_name);
+      const only = resolved[0];
+      const outcome = await saveAssetToDownloads(only.url, only.attachment.file_name);
       if (outcome.saved) toast.success("Saved");
       return;
     }
     // One folder chosen once, rather than a save panel per attachment.
     const outcome = await saveAssetsToFolder(
-      attachments.map((a) => ({ url: a.file_url, fileName: a.file_name })),
+      resolved.map(({ attachment, url }) => ({ url, fileName: attachment.file_name })),
     );
     if (outcome.saved) toast.success(`${outcome.count ?? attachments.length} files saved`);
   } catch (error) {

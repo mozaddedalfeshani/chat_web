@@ -74,7 +74,10 @@ export default function ImportDialog({ language }: { language?: string | null })
             <Button onClick={() => void resumeImport(userId, view.id)}>{t("resume")}</Button>
           ) : null}
           {!active ? (
-            <Button disabled={starting || !userId} onClick={() => void beginImport(userId)}>
+            <Button
+              disabled={starting || !userId}
+              onClick={() => void (view?.status === "failed" ? resumeImport(userId, view.id) : beginImport(userId))}
+            >
               {view && view.status !== "finished" ? t("retry") : t("importStart")}
             </Button>
           ) : null}

@@ -10,7 +10,7 @@ export default function ChatAttachment({ attachment }: { attachment: ChatMessage
   const localUrl = useLocalAsset(attachment.file_url);
   const type = attachment.content_type.toLowerCase();
   const menu = useAssetMenu({
-    url: attachment.file_url,
+    url: localUrl,
     fileName: attachment.file_name,
     kind: type.startsWith("audio/") ? "audio" : "file",
   });
@@ -50,7 +50,7 @@ export default function ChatAttachment({ attachment }: { attachment: ChatMessage
         {/* Save and Open in browser, rather than the row being one dead
             `<a download>` — WKWebView never honoured that anchor. */}
         <AssetActionButtons
-          url={attachment.file_url}
+          url={localUrl}
           fileName={attachment.file_name}
           variant="inline"
           className="ms-1 shrink-0"

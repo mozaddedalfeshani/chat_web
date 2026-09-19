@@ -79,7 +79,7 @@ export default function ChatBubble({
   const [editBusy, setEditBusy] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [deleteBusy, setDeleteBusy] = useState(false);
-  const [menu, setMenu] = useState<{ x: number; y: number } | null>(null);
+  const [menu, setMenu] = useState<{ x: number; y: number; selected: string } | null>(null);
   const [infoOpen, setInfoOpen] = useState(false);
   const bubbleRef = useRef<HTMLDivElement>(null);
 
@@ -118,7 +118,7 @@ export default function ChatBubble({
   }
 
   /** Signal's order: download, reply, react, forward, edit, copy, info, delete. */
-  function buildMenuItems(): BubbleMenuItem[] {
+  function buildMenuItems(selected: string): BubbleMenuItem[] {
     const items: BubbleMenuItem[] = [];
     const attachments = message.attachments ?? [];
     const savable = attachments.filter((a) => !a.locked && a.file_url);
@@ -126,7 +126,6 @@ export default function ChatBubble({
       (a.content_type ?? "").toLowerCase().startsWith("image/"),
     );
     const media = savable.filter(isMediaAttachment);
-    const selected = selectionInside(bubbleRef.current);
     const text = selected || messagePlainText(message);
     // The link the author led with — the one the preview card is about.
     const link = extractUrls(message.body ?? "")[0];
@@ -141,7 +140,7 @@ export default function ChatBubble({
               ? "Save media"
               : "Save file",
         icon: <Download01Icon size={18} />,
-        onSelect: () => void saveAttachments(savable),
+        onSelect: () => void saveAttachments(currentUserId, savable),
       });
     }
     if (onReply) {
@@ -213,7 +212,7 @@ export default function ChatBubble({
         key: "copy-image",
         label: "Copy image",
         icon: <Image01Icon size={17} />,
-        onSelect: () => void copyImage(images[0]),
+        onSelect: () => void copyImage(currentUserId, images[0]),
       });
     }
     items.push({
@@ -260,7 +259,11 @@ export default function ChatBubble({
         const target = event.target as HTMLElement;
         if (target.closest("input, textarea, [contenteditable='true']")) return;
         event.preventDefault();
-        setMenu({ x: event.clientX, y: event.clientY });
+        setMenu({
+          x: event.clientX,
+          y: event.clientY,
+          selected: selectionInside(bubbleRef.current),
+        });
       }}
       className={cn(
         "group/bubble flex items-end gap-2 px-3",
@@ -346,7 +349,7 @@ export default function ChatBubble({
         <BubbleContextMenu
           x={menu.x}
           y={menu.y}
-          items={buildMenuItems()}
+          items={buildMenuItems(menu.selected)}
           onClose={() => setMenu(null)}
         />
       ) : null}

@@ -49,7 +49,7 @@ function MediaTile({
   // Right-click answers about the picture under the cursor, not the bubble
   // around it — Save, Copy, Open in browser.
   const menu = useAssetMenu({
-    url: attachment.file_url,
+    url: localUrl,
     fileName: attachment.file_name,
     kind: video ? "video" : "image",
   });

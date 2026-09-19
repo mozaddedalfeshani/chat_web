@@ -40,19 +40,28 @@ export async function runImport(
     onTick({ job });
   };
   let failures = 0;
+  let waitingPolls = 0;
+
+  if (job.status === "failed" || job.status === "paused") {
+    job.status = job.transferKey ? "receiving" : "waiting";
+    job.pauseReason = undefined;
+    job.error = undefined;
+    await save();
+  }
 
   while (!signal.aborted) {
     let state: JobState;
     try {
       state = await transferApi.job(job.id);
-      failures = 0;
       if (job.status === "paused" && job.pauseReason === "offline") {
         job.status = job.transferKey ? "receiving" : "waiting";
         job.pauseReason = undefined;
         await save();
       }
     } catch (error) {
-      if (error instanceof ApiError) return settleClosed(userId, job, error, save);
+      if (error instanceof ApiError && isTerminalApiError(error)) {
+        return settleClosed(userId, job, error, save);
+      }
       failures += 1;
       if (failures >= 3 && job.status !== "paused") {
         job.status = "paused";
@@ -98,8 +107,31 @@ export async function runImport(
       while (job.batches[next]?.state === "committed") next += 1;
       const row = state.batches.find((b) => b.batch === next);
       if (!row) {
+        const finalBatch = job.finalizingBatch ?? Object.entries(job.batches)
+          .find(([, batch]) => batch.final && batch.state === "committed")?.[0];
+        if (finalBatch !== undefined) {
+          const number = Number(finalBatch);
+          if (await finishWithSeal(userId, job, state, number)) {
+            job.status = "finished";
+            job.finalizingBatch = undefined;
+            await save();
+            return job;
+          }
+        }
+        waitingPolls += 1;
+        if (waitingPolls >= 3 && job.status !== "paused") {
+          job.status = "paused";
+          job.pauseReason = "phone";
+          await save();
+        }
         await sleep(POLL_MS, signal);
         continue;
+      }
+      waitingPolls = 0;
+      if (job.status === "paused" && job.pauseReason === "phone") {
+        job.status = "receiving";
+        job.pauseReason = undefined;
+        await save();
       }
       const journal = journalFor(job, next, row.kind, row.final);
       if (journal.state === "downloading" && row.status !== "committed") {
@@ -111,7 +143,10 @@ export async function runImport(
         }
         const held = await downloadBatch({
           userId, jobId: job.id, batch: next, kind: row.kind, key: job.transferKey, signal,
-          onStaged: (n) => onTick({ job, batch: next, held: n, chunks: row.chunk_count, batchKind: row.kind }),
+          onStaged: (n) => {
+            failures = 0;
+            onTick({ job, batch: next, held: n, chunks: row.chunk_count, batchKind: row.kind });
+          },
         });
         if (row.status !== "finalized" || held < row.chunk_count) {
           await sleep(POLL_MS, signal);
@@ -134,13 +169,16 @@ export async function runImport(
       if (journal.state !== "committed") {
         await transferApi.commit(job.id, next);
         journal.state = "committed";
+        if (row.final) job.finalizingBatch = next;
         await dropStagedBatch(userId, job.id, next).catch(() => {});
         await save();
+        failures = 0;
       }
       if (row.final) {
         const fresh = await transferApi.job(job.id);
         if (await finishWithSeal(userId, job, fresh, next)) {
           job.status = "finished";
+          job.finalizingBatch = undefined;
           await save();
           return job;
         }
@@ -153,7 +191,9 @@ export async function runImport(
         await save();
         return job;
       }
-      if (error instanceof ApiError) return settleClosed(userId, job, error, save);
+      if (error instanceof ApiError && isTerminalApiError(error)) {
+        return settleClosed(userId, job, error, save);
+      }
       job.error = error instanceof Error ? error.message : "import failed";
       failures += 1;
       if (failures >= 5) {
@@ -165,6 +205,16 @@ export async function runImport(
     }
   }
   return job;
+}
+
+function isTerminalApiError(error: ApiError) {
+  if (error.status >= 500 || error.status === 429 || error.status === 0) return false;
+  return [
+    "history_transfer_closed",
+    "history_transfer_not_found",
+    "history_transfer_wrong_device",
+    "history_transfer_version_mismatch",
+  ].includes(error.message);
 }
 
 async function settleClosed(userId: string, job: ImportJob, error: ApiError, save: () => Promise<void>) {

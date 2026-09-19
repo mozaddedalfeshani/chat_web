@@ -12,12 +12,7 @@ import { deleteAccountHistory } from "./repo/wipe";
  */
 export async function logOutAndForgetHistory(userId: string | undefined) {
   if (userId) {
-    try {
-      await deleteAccountHistory(userId);
-    } catch {
-      // A delete blocked by another tab finishes when that tab lets go; the
-      // sign-out itself must never wait on it.
-    }
+    await deleteAccountHistory(userId);
   }
   logout();
 }

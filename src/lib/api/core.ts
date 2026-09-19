@@ -108,10 +108,12 @@ export function clearWsAccessToken() {
 
 export class ApiError extends Error {
   data: Record<string, unknown>;
-  constructor(code: string, data: Record<string, unknown>) {
+  status: number;
+  constructor(code: string, data: Record<string, unknown>, status = 0) {
     super(code);
     this.name = "ApiError";
     this.data = data;
+    this.status = status;
   }
 }
 
@@ -132,7 +134,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
 
   const json = await res.json().catch(() => null);
   if (!json || !json.success) {
-    throw new ApiError(json?.error ?? "api error", json ?? {});
+    throw new ApiError(json?.error ?? "api error", json ?? {}, res.status);
   }
   return json.data as T;
 }

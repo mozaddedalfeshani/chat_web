@@ -39,13 +39,16 @@ export async function processMediaBatch(userId: string, jobId: string, descripto
 
   for (const entry of descriptor.files) {
     const current = await getFile(userId, entry.url_key);
-    if (current?.status === "ready") continue;
+    if (
+      current?.status === "ready" &&
+      current.sha256 === entry.sha256 &&
+      current.size === entry.size
+    ) continue;
     if (entry.status !== "available") {
       await markUnavailable(userId, metaOf(entry));
       outcome.unavailable += 1;
       continue;
     }
-    if (current?.status === "unavailable") continue;
     const start = entry.stream_offset ?? 0;
     const length = entry.length ?? 0;
     const hash = new Sha256();

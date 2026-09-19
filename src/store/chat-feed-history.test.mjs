@@ -2,7 +2,7 @@ import "fake-indexeddb/auto";
 process.env.NEXT_PUBLIC_HISTORY_IMPORT = "1";
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
-import { composeLatest, composeOlder, persistRawMessages } from "./chat-feed-history.ts";
+import { composeLatest, composeLocalLatest, composeLocalOlder, composeOlder, persistRawMessages } from "./chat-feed-history.ts";
 import { deleteAccountHistory } from "../lib/history/repo/wipe.ts";
 
 const at = (i) => new Date(Date.UTC(2026, 0, 1) + i * 60_000).toISOString();
@@ -54,6 +54,26 @@ describe("feed reads through the durable history", () => {
     const page = { messages: [msg("new", at(1))], has_more: false, next_cursor: "" };
     const composed = await composeLatest(user, "c1", page);
     assert.deepEqual(composed.raw.map((m) => m.id), ["new", "old"]);
+    await deleteAccountHistory(user);
+  });
+
+  it("an empty server page still returns phone-only history", async () => {
+    const user = `feed-empty-${Date.now()}`;
+    await persistRawMessages(user, [msg("phone-only", "2020-01-01T00:00:00Z")], "phone");
+    const composed = await composeLatest(user, "c1", { messages: [], has_more: false, next_cursor: "" });
+    assert.deepEqual(composed.raw.map((m) => m.id), ["phone-only"]);
+    await deleteAccountHistory(user);
+  });
+
+  it("local-only feeds paginate entirely from IndexedDB", async () => {
+    const user = `feed-local-${Date.now()}`;
+    const imported = Array.from({ length: 130 }, (_, i) => msg(`l${i}`, at(i)));
+    await persistRawMessages(user, imported, "phone");
+    const first = await composeLocalLatest(user, "c1");
+    const older = await composeLocalOlder(user, "c1", first.history);
+    assert.equal(first.raw.length, 100);
+    assert.equal(older.raw.length, 30);
+    assert.equal(new Set([...first.raw, ...older.raw].map((m) => m.id)).size, 130);
     await deleteAccountHistory(user);
   });
 });
