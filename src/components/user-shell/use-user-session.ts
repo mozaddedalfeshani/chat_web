@@ -11,6 +11,7 @@ import {
 } from "@/lib/api";
 import { initAccent } from "@/lib/accent";
 import { applyTheme, getStoredTheme } from "@/lib/theme";
+import { shipDefaultIfFreshInstall } from "@/lib/chat/chat-wallpaper";
 
 export function useUserSession() {
   const router = useRouter();
@@ -60,6 +61,8 @@ export function useUserSession() {
   useEffect(() => {
     applyTheme(getStoredTheme());
     initAccent();
+    // Fresh installs only — upgrades keep plain / existing wallpaper choices.
+    shipDefaultIfFreshInstall();
   }, []);
 
   return { user };

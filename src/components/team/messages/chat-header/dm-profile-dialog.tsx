@@ -12,6 +12,7 @@ import type { TeamMember } from "@/lib/api/types/team";
 import PeerCallOrStatus from "@/components/shared/peer-call-or-status";
 import { chatInitials } from "../chat-utils";
 import SafetyNumberSection from "../safety-number";
+import WallpaperRow from "../wallpaper/wallpaper-row";
 
 function InfoRow({
   icon,
@@ -38,6 +39,7 @@ function InfoRow({
 export default function DmProfileDialog({
   open,
   onOpenChange,
+  conversationId,
   peerUserId,
   peerName,
   peerAvatar,
@@ -45,6 +47,7 @@ export default function DmProfileDialog({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  conversationId: string;
   peerUserId?: string;
   peerName: string;
   peerAvatar?: string;
@@ -107,6 +110,7 @@ export default function DmProfileDialog({
               value={peerName}
             />
           ) : null}
+          <WallpaperRow conversationId={conversationId} />
           <SafetyNumberSection peerUserId={peerUserId} peerName={peerName} />
         </div>
       </DialogContent>

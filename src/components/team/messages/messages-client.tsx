@@ -19,6 +19,7 @@ import { useConversationUrlSync } from "./use-conversation-url-sync";
 import { useChatFocus } from "@/lib/hooks/use-chat-focus";
 import ChatEmptyState from "./chat-empty-state";
 import ChatHeader from "./chat-header";
+import WallpaperSurface from "./wallpaper/wallpaper-surface";
 import ForwardDialog from "./chat-forward/forward-dialog";
 import { extractMentionUserIds } from "@/components/team/board/tiptap/utils";
 import { selectActiveConversation, useChatStore } from "@/store/chat-store";
@@ -492,6 +493,7 @@ export default function MessagesClient() {
             style={{ background: "var(--sig-bg)" }}
           >
             {activeConv ? (
+              <WallpaperSurface conversationId={activeConv.id}>
               <ChatTimeline
                 key={activeConv.id}
                 conversationId={activeConv.id}
@@ -557,6 +559,7 @@ export default function MessagesClient() {
                 composerInitialValue={draftParam ?? undefined}
                 onOpenProfile={openProfile}
               />
+              </WallpaperSurface>
             ) : (
               <ChatEmptyState language={appLanguage} />
             )}
@@ -568,6 +571,12 @@ export default function MessagesClient() {
               member={profileMember}
               fallbackName={profileFallbackName}
               fallbackAvatar={profileFallbackAvatar}
+              conversationId={
+                activeConv?.type === "dm" &&
+                activeConv.peer_user_id === profileUserId
+                  ? activeConv.id
+                  : null
+              }
               onClose={() => setProfileUserId(null)}
               channels={channels}
               currentUserId={currentUserId}

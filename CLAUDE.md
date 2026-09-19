@@ -36,6 +36,14 @@ Three columns on desktop: icon rail, conversation list (`--sig-*` tokens, same h
 
 Message timeline uses the desktop bubble system (`chat-timeline/chat-bubble/`): one neutral `--sig-bubble` fill for both sides, grouped corners, hover toolbar, quoted replies, server-side link previews (`GET /api/link-preview`), and a Signal-style media lightbox.
 
+## Chat wallpaper
+
+Device-local (`localStorage`), same keys/JSON as mobile and desktop. The bundled
+`mobile` preset swaps `/wallpapers/webs_light.jpg` and `webs_dark.jpg` with
+theme. `shipDefaultIfFreshInstall` (from the signed-in shell) writes that preset
+only on a brand-new browser profile; upgrades and an explicit "None" stay plain.
+Picker: DM profile / actions sheet, group details → Chat color & wallpaper.
+
 A picture or video (caption or not) fills the bubble: width
 `min(32rem, 100vw - chrome)`, height follows the file, `max-height` is
 `min(70dvh, 420px)` — a ceiling, not a size to fill. Time + ticks sit on the

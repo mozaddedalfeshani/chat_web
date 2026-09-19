@@ -11,12 +11,14 @@ import { chatConvLabel, chatInitials } from "../chat-utils";
 import GroupAvatarStack from "../chat-sidebar/group-avatar-stack";
 import ProfileHero from "./profile-hero";
 import ProfileContact from "./profile-contact";
+import WallpaperRow from "../wallpaper/wallpaper-row";
 
 export default function ChatProfilePanel({
   userId,
   member,
   fallbackName,
   fallbackAvatar,
+  conversationId,
   onClose,
   channels,
   currentUserId,
@@ -27,6 +29,8 @@ export default function ChatProfilePanel({
   member: TeamMember | null;
   fallbackName: string;
   fallbackAvatar?: string;
+  /** When set (usually the open DM), offers a wallpaper row for this chat. */
+  conversationId?: string | null;
   onClose: () => void;
   channels: ChatConversation[];
   currentUserId: string;
@@ -93,6 +97,10 @@ export default function ChatProfilePanel({
           </div>
 
           <PeerCallOrStatus userId={userId} />
+
+          {conversationId ? (
+            <WallpaperRow conversationId={conversationId} />
+          ) : null}
 
           {!isSelf ? (
             <Button

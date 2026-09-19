@@ -22,6 +22,7 @@ import GroupIdentitySection from "./group-identity-section";
 import GroupPermissionsSection from "./group-permissions-section";
 import ActionRow from "./action-row";
 import WebhookSettingsSection from "./webhook-settings-section";
+import WallpaperRow from "../wallpaper/wallpaper-row";
 
 /**
  * Every group answers to its own `my_role` + permission switches since
@@ -81,6 +82,10 @@ export default function GroupDetailsDialog({
 
         <div className="min-h-0 flex-1 space-y-4 overflow-y-auto px-5 py-4">
           <GroupIdentitySection conv={conv} canEdit={canEditInfo} onUpdated={onRenamed} />
+
+          <div className="space-y-0.5">
+            <WallpaperRow conversationId={conv.id} />
+          </div>
 
           {canManage ? (
             <GroupPermissionsSection conv={conv} onUpdated={onRenamed} />

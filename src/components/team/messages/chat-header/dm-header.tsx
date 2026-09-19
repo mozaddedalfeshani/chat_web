@@ -109,6 +109,7 @@ export default function DmHeader({
       <DmActionsSheet
         open={sheetOpen}
         onOpenChange={setSheetOpen}
+        conversationId={conv.id}
         peerUserId={conv.peer_user_id}
         peerName={label}
         peerAvatar={conv.peer_user_avatar}
@@ -129,6 +130,7 @@ export default function DmHeader({
         <DmProfileDialog
           open={profileOpen}
           onOpenChange={setProfileOpen}
+          conversationId={conv.id}
           peerUserId={conv.peer_user_id}
           peerName={label}
           peerAvatar={conv.peer_user_avatar}

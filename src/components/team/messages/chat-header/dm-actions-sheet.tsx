@@ -1,11 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import {
   UserIcon,
   Search01Icon,
   Notification01Icon,
   NotificationOff01Icon,
   Bookmark01Icon,
+  PaintBoardIcon,
 } from "hugeicons-react";
 import {
   Drawer,
@@ -16,6 +18,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PeerCallOrStatus from "@/components/shared/peer-call-or-status";
 import { chatInitials } from "../chat-utils";
+import WallpaperDialog from "../wallpaper/wallpaper-dialog";
 
 function ActionRow({
   icon,
@@ -54,6 +57,7 @@ function ActionRow({
 export default function DmActionsSheet({
   open,
   onOpenChange,
+  conversationId,
   peerUserId,
   peerName,
   peerAvatar,
@@ -66,6 +70,7 @@ export default function DmActionsSheet({
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  conversationId: string;
   peerUserId?: string;
   peerName: string;
   peerAvatar?: string;
@@ -78,7 +83,10 @@ export default function DmActionsSheet({
   onSearch: () => void;
   onToggleMute: () => void;
 }) {
+  const [wallpaperOpen, setWallpaperOpen] = useState(false);
+
   return (
+    <>
     <Drawer open={open} onOpenChange={onOpenChange}>
       <DrawerContent className="pb-4">
         <DrawerHeader className="flex flex-col items-center gap-2 pb-2 text-center">
@@ -124,6 +132,14 @@ export default function DmActionsSheet({
             />
           )}
           <ActionRow
+            icon={<PaintBoardIcon size={18} />}
+            label="Chat color & wallpaper"
+            onClick={() => {
+              onOpenChange(false);
+              setWallpaperOpen(true);
+            }}
+          />
+          <ActionRow
             icon={<Search01Icon size={18} />}
             label="Search in conversation"
             onClick={onSearch}
@@ -147,5 +163,11 @@ export default function DmActionsSheet({
         </div>
       </DrawerContent>
     </Drawer>
+    <WallpaperDialog
+      conversationId={conversationId}
+      open={wallpaperOpen}
+      onOpenChange={setWallpaperOpen}
+    />
+    </>
   );
 }
