@@ -48,6 +48,7 @@ export default function ChatThreadPanel({
 
   return (
     <CommentThreadPanel
+      markdown
       rootId={rootId}
       messages={threadMessages}
       members={members}

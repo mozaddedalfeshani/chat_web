@@ -6,6 +6,8 @@ import { Link01Icon, MessageMultiple01Icon } from "hugeicons-react";
 import type { ChatMessage } from "@/lib/api";
 import CommentAttachments from "@/components/team/board/comments/attachments";
 import { AddReactionButton, ReactionChips } from "@/components/shared/reaction-bar";
+import { MarkdownBody } from "@/components/team/board/tiptap/viewer";
+import { markdownSourceOf } from "@/components/team/board/tiptap/markdown-source";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { cn } from "@/lib/utils";
 import { webhookSourceName } from "../chat-message-utils";
@@ -31,6 +33,8 @@ export default function WebhookMessageRow({
 }) {
   const [reactionOpen, setReactionOpen] = useState(false);
   const source = webhookSourceName(message);
+  // Feeds post what their integration wrote, and that is usually markdown.
+  const markdown = markdownSourceOf(message.body);
   const avatarURL = message.user_avatar_url?.trim();
   const hasActions = !!onToggleReaction || !!onOpenThread;
 
@@ -57,7 +61,12 @@ export default function WebhookMessageRow({
             {messageTime(message.created_at)}
           </time>
         </div>
-        {message.body ? (
+        {markdown != null ? (
+          <MarkdownBody
+            source={markdown}
+            className="mt-1 text-sm leading-relaxed text-[var(--text)]"
+          />
+        ) : message.body ? (
           <p className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-[var(--text)]">
             {message.body}
           </p>

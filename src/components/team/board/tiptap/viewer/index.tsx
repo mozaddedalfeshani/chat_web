@@ -1,7 +1,7 @@
 "use client";
 
 import { useEditor, EditorContent } from "@tiptap/react";
-import { useEffect, Fragment, useState } from "react";
+import { useEffect, Fragment, useMemo, useState } from "react";
 import { cn } from "@/lib/utils";
 import {
   buildTiptapExtensions,
@@ -10,7 +10,9 @@ import {
   TIPTAP_PROSE_CLASSES,
   extractUrls,
   unescapeLiteralEscapes,
+  markdownToTiptapJson,
 } from "../utils";
+import { keepLineBreaks, markdownSourceOf } from "../markdown-source";
 
 interface MicrolinkResponse {
   status: string;
@@ -177,17 +179,24 @@ export function linkifyText(text: string) {
 export default function TiptapViewer({
   value,
   className,
+  markdown = false,
 }: {
   value: string;
   className?: string;
+  /** Draw a body written as markdown (a bot, a feed, a paste from an AI
+   *  assistant) as markdown. Chat only; see `markdownSourceOf`. */
+  markdown?: boolean;
 }) {
   if (!value?.trim()) return null;
 
+  const source = markdown ? markdownSourceOf(value) : null;
   const urls = extractUrls(value).slice(0, 3);
 
   return (
     <div className="flex flex-col gap-1 w-full">
-      {isPlainCommentBody(value) ? (
+      {source != null ? (
+        <MarkdownBody source={source} className={className} />
+      ) : isPlainCommentBody(value) ? (
         <p
           className={cn(
             "whitespace-pre-wrap break-words text-foreground/90",
@@ -207,6 +216,24 @@ export default function TiptapViewer({
       ) : null}
     </div>
   );
+}
+
+/** Markdown source through the same GFM pipeline the editor already carries
+ *  (`@tiptap/markdown`), so tables, code, quotes and lists look exactly like
+ *  a body typed with the toolbar. Converting builds a headless editor, so it
+ *  runs once per source, not per render. */
+export function MarkdownBody({
+  source,
+  className,
+}: {
+  source: string;
+  className?: string;
+}) {
+  const doc = useMemo(
+    () => markdownToTiptapJson(keepLineBreaks(source)),
+    [source],
+  );
+  return <TiptapViewerInner value={doc} className={className} />;
 }
 
 function TiptapViewerInner({

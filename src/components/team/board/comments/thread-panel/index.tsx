@@ -36,6 +36,7 @@ export default function CommentThreadPanel<T extends ThreadMessage>({
   deferUpload = false,
   showSendToDM = false,
   assigneeId = null,
+  markdown = false,
 }: {
   rootId: string;
   messages: T[];
@@ -73,6 +74,8 @@ export default function CommentThreadPanel<T extends ThreadMessage>({
   deferUpload?: boolean;
   showSendToDM?: boolean;
   assigneeId?: string | null;
+  /** Draw markdown bodies as markdown — the chat thread, not a board. */
+  markdown?: boolean;
 }) {
   const { byId, repliesByParent } = useMemo(
     () => buildCommentThreads(messages),
@@ -145,6 +148,7 @@ export default function CommentThreadPanel<T extends ThreadMessage>({
           currentUserId={currentUserId}
           reactionBusy={reactionBusy}
           hideThread
+          markdown={markdown}
           avatarClassName={avatarClassName}
           onToggleReaction={(emoji) => onToggleReaction(emoji, root.id)}
           onEditSave={(body) => onEditMessage(root.id, body)}
@@ -158,6 +162,7 @@ export default function CommentThreadPanel<T extends ThreadMessage>({
             currentUserId={currentUserId}
             reactionBusy={reactionBusy}
             hideThread
+            markdown={markdown}
             avatarClassName={avatarClassName}
             onToggleReaction={(emoji) => onToggleReaction(emoji, r.id)}
             onEditSave={(body) => onEditMessage(r.id, body)}

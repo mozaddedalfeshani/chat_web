@@ -13,6 +13,17 @@ import { authorColorVar } from "./author-color";
 import BubbleMeta from "./bubble-meta";
 import BubbleQuote from "./bubble-quote";
 
+/** Markdown inside a bubble: headings sized off the 14px body instead of the
+ *  board's page-sized ones, and block margins tightened to bubble scale. */
+const BUBBLE_MARKDOWN = [
+  "[&_h1]:mt-1 [&_h1]:mb-1 [&_h1]:text-[18px] [&_h1]:leading-snug",
+  "[&_h2]:mt-1 [&_h2]:mb-1 [&_h2]:text-[16px] [&_h2]:leading-snug",
+  "[&_h3]:mt-1 [&_h3]:mb-0.5 [&_h3]:text-[15px] [&_h3]:leading-snug",
+  "[&_ul]:my-1 [&_ol]:my-1 [&_li]:my-0.5 [&_p]:my-0.5",
+  "[&_blockquote]:my-1 [&_pre]:my-1 [&_hr]:my-2 [&_table]:my-1",
+  "[&_table]:block [&_table]:overflow-x-auto",
+].join(" ");
+
 /** Everything inside the coloured bubble: author line, forward note, body,
  * attachments and the timestamp footer. */
 export default function BubbleBody({
@@ -122,7 +133,8 @@ export default function BubbleBody({
         <div className={cn(mediaBubble && "px-3 py-2")}>
           <TiptapViewer
             value={message.body}
-            className="text-[14px] leading-[1.35]"
+            markdown
+            className={cn("text-[14px] leading-[1.35]", BUBBLE_MARKDOWN)}
           />
         </div>
       ) : null}

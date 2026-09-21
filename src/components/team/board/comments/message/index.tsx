@@ -89,6 +89,7 @@ export default function CommentMessage({
   hideThread,
   avatarClassName,
   onAvatarClick,
+  markdown = false,
 }: {
   message: ThreadMessage;
   currentUserId: string;
@@ -103,6 +104,8 @@ export default function CommentMessage({
   hideThread?: boolean;
   avatarClassName?: string;
   onAvatarClick?: (userId: string) => void;
+  /** Render a markdown body as markdown (chat only; boards keep their own). */
+  markdown?: boolean;
 }) {
   const reactions = (message.reactions ?? []) as KanbanReactionGroup[];
   const isReply = variant === "reply";
@@ -303,7 +306,7 @@ export default function CommentMessage({
                 </div>
               ) : null}
               {!isTiptapEmpty(message.body) ? (
-                <TiptapViewer value={message.body} className="mt-0.5 text-sm leading-relaxed" />
+                <TiptapViewer value={message.body} markdown={markdown} className="mt-0.5 text-sm leading-relaxed" />
               ) : null}
               <CommentAttachments attachments={message.attachments ?? []} />
               <ReactionChips

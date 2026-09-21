@@ -121,6 +121,7 @@ export default function TimelineContent({
                       </div>
                     ) : (
                       <CommentMessage
+                        markdown
                         message={thread}
                         currentUserId={currentUserId}
                         avatarClassName="rounded-md"

@@ -170,3 +170,28 @@ phone batch            -> stage invisible -> validate -> ONE activating write ->
 - Not verified in a real browser here (no browser automation in this repo):
   quota/eviction, reload mid-batch, SW Range seeking, two tabs. Those are the
   manual acceptance steps before turning the flag on.
+
+## Markdown in messages (2026-09-21)
+
+Bots, webhook feeds and pastes from an AI assistant send markdown as literal
+text. `board/tiptap/markdown-source.ts` (`markdownSourceOf`) decides whether a
+body is markdown; if so it goes through the editor's own GFM pipeline
+(`markdownToTiptapJson`, `@tiptap/markdown`) and renders as a TipTap doc, so a
+table or code block looks exactly like one typed with the toolbar.
+
+- **Only plain TipTap qualifies** (unmarked paragraphs + hard breaks, or legacy
+  plain text) and **only when it looks like markdown**. Real marks, lists and
+  mentions keep the normal renderer; ordinary chat is untouched.
+- **Byte-for-byte the mobile rule** (`ababilx-mobile/lib/features/messages/
+  markdown/message_markdown_source.dart`, rendered there with `gpt_markdown`).
+  Change both, or a message is formatted on one device and raw on the other.
+  The test beside it carries the same cases as the Dart test.
+- `keepLineBreaks` turns each single newline into a markdown hard break —
+  marked would fold it into a space, and the phone keeps it.
+- Opt-in: `TiptapViewer markdown`, `CommentMessage markdown`,
+  `CommentThreadPanel markdown` — the chat bubble, chat thread and timeline
+  rows. Webhook rows use `MarkdownBody` directly. Boards are unchanged.
+- Links are TipTap's Link mark, whose `isAllowedUri` already refuses
+  `javascript:` and friends.
+- `Ababil-X-frontend` carries the same files (it has no chat-bubble dir; its
+  timeline is `CommentMessage`).
