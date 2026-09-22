@@ -58,12 +58,12 @@ export default function DmHeader({
 
   return (
     <>
-      <div className="flex shrink-0 items-center gap-0 rounded-full border border-[var(--border)] bg-[var(--surface2)] shadow-sm">
+      <div className="flex w-max max-w-full shrink-0 items-center gap-0 rounded-full border border-[var(--border)] bg-[var(--surface2)]">
         <button
           type="button"
           onClick={() => (hidePeerActions ? setSheetOpen(true) : openProfile())}
           className={cn(
-            "flex flex-col items-start justify-center gap-0.5 truncate rounded-l-full py-1 pl-3 pr-2 transition-colors",
+            "flex w-max min-w-0 max-w-[min(100%,24rem)] flex-col items-start justify-center gap-0.5 rounded-l-full py-1 pl-3 pr-2 transition-colors",
             "hover:bg-white/[0.06] [data-theme=light]:hover:bg-black/[0.04]",
             "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--indigo)]",
             hidePeerActions && "rounded-r-full pr-3",
@@ -91,7 +91,7 @@ export default function DmHeader({
             ) : null}
           </span>
           {hidePeerActions ? null : typingText ? (
-            <span className="text-[11px] font-medium text-[var(--indigo)]">
+            <span className="whitespace-nowrap text-[11px] font-medium text-[var(--indigo)]">
               {typingText}
             </span>
           ) : (
