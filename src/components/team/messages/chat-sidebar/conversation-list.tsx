@@ -135,7 +135,15 @@ export default function ConversationList({
                   ? t(language, "chat.noUnread")
                   : t(language, "chat.noConversations")}
             </p>
-            {onOpenPeople && !unreadOnly && !searching ? (
+            {searching ? null : unreadOnly ? (
+              <button
+                type="button"
+                onClick={() => setUnreadOnly(false)}
+                className="mt-3 inline-flex items-center justify-center rounded-lg bg-[var(--sig-fill-pressed)] px-3 py-2 text-[13px] font-medium text-[var(--sig-label)] transition-colors hover:bg-[var(--sig-fill)]"
+              >
+                {t(language, "chat.showAllMessages")}
+              </button>
+            ) : onOpenPeople ? (
               <AddPeopleCta
                 onClick={onOpenPeople}
                 label="Find people to message"
@@ -182,7 +190,7 @@ export default function ConversationList({
           />
         )}
 
-        {!searching ? (
+        {!searching && !unreadOnly ? (
           <StartConversationSection
             members={members}
             currentUserId={currentUserId}
