@@ -60,6 +60,8 @@ export type ChatConversation = {
   request_state?: "none" | "incoming" | "outgoing";
   // Whether the current member has muted this conversation (suppresses its notifications).
   muted?: boolean;
+  // Account-local sidebar pin. The server allows at most four.
+  pinned?: boolean;
   // Group roster preview (channels only) for the stacked avatar in the sidebar.
   member_avatars?: string[];
   member_count?: number;
@@ -237,6 +239,26 @@ export type ChatMessagesPage = {
 export type ChatSidebar = {
   channels: ChatConversation[];
   dms: ChatConversation[];
+};
+
+export type ChatMediaPage = {
+  items: ChatMessageAttachment[];
+  next_cursor?: string;
+  has_more: boolean;
+};
+
+export type ChatGroupSummary = {
+  id: string;
+  scope: ChatScope;
+  type: "group" | "webhook";
+  name: string;
+  avatar_url?: string;
+  member_count: number;
+};
+
+export type ChatGroupsInCommon = {
+  in_common: ChatGroupSummary[];
+  can_add: ChatGroupSummary[];
 };
 
 export type ChatAttachmentInput = {

@@ -85,3 +85,27 @@ export type VoiceCallWsEvent = {
   from_user_id?: string;
   signal?: VoiceCallSignal;
 };
+
+export type CallLogEntry = {
+  id: string;
+  kind: "direct" | "group";
+  scope: "personal" | "workspace";
+  conversation_id: string;
+  team_id?: string;
+  mode: VoiceCallMode | "group";
+  status: string;
+  direction: "incoming" | "outgoing";
+  missed: boolean;
+  peer_user_id?: string;
+  title: string;
+  avatar_url?: string;
+  started_at: string;
+  answered_at?: string;
+  ended_at?: string;
+  duration_sec: number;
+};
+
+export type CallLogPage = {
+  calls: CallLogEntry[];
+  next_cursor?: string;
+};

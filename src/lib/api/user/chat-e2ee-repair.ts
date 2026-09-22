@@ -12,7 +12,7 @@ export function reportUnreadableChatE2EEEnvelope(
   publicKey: JsonWebKey,
 ) {
   return apiFetch<{ removed: boolean }>(
-    `/api/teams/chat/conversations/${conversationId}/e2ee-key/unreadable`,
+    `/api/chat/conversations/${conversationId}/e2ee-key/unreadable`,
     {
       method: "POST",
       headers: jsonHeaders,
@@ -23,5 +23,5 @@ export function reportUnreadableChatE2EEEnvelope(
 
 /** Conversations where this account holds a key version another member lost. */
 export function getChatE2EEFillableGaps() {
-  return apiFetch<{ conversation_ids: string[] }>("/api/teams/chat/e2ee/gaps");
+  return apiFetch<{ conversation_ids: string[] }>("/api/chat/e2ee/gaps");
 }

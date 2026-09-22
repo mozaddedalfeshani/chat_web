@@ -34,6 +34,8 @@ import { editEncryptedChat } from "@/lib/chat-e2ee/dm-edit";
 import MessageStorageNoticeDialog, {
   hasSeenMessageStorageNotice,
 } from "./message-storage-notice-dialog";
+import { useGroupMembers } from "./chat-header/use-group-members";
+import { chatMentionMembers } from "./chat-mention-members";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -125,6 +127,10 @@ export default function MessagesClient() {
   );
 
   const activeConv = useChatStore(selectActiveConversation);
+  const { members: conversationRoster } = useGroupMembers(
+    activeConv && activeConv.type !== "dm" ? activeConv.id : null,
+    !!activeConv && activeConv.type !== "dm",
+  );
   // Stands in for the composer on a DM a stranger opened; undefined otherwise.
   const messageRequest = useMessageRequest(activeConv ?? null);
   const showStorageNotice =
@@ -267,7 +273,10 @@ export default function MessagesClient() {
   }, [activeConversationId, mainChat.messages, prefetchThreadSummaries]);
 
   const members = detail?.members ?? [];
-  const mentionMembers = members.filter((m) => m.status === "active");
+  const mentionMembers = useMemo(
+    () => chatMentionMembers(activeConv ?? null, conversationRoster),
+    [activeConv, conversationRoster],
+  );
 
   const openProfile = useCallback(
     (userId: string) => {
@@ -280,7 +289,7 @@ export default function MessagesClient() {
       setThreadRootId(null);
       setProfileUserId(userId);
     },
-    [activeConv?.lock_reason, activeConv?.peer_user_id, setThreadRootId],
+    [activeConv, setThreadRootId],
   );
 
   const profileMember = profileUserId
@@ -427,7 +436,7 @@ export default function MessagesClient() {
   }
 
   const sidebarProps = {
-    members: mentionMembers,
+    members: members.filter((member) => member.status === "active"),
     onSelect: selectConversation,
     onStartDM: handleStartDM,
     language: appLanguage,
@@ -581,7 +590,6 @@ export default function MessagesClient() {
                   : null
               }
               onClose={() => setProfileUserId(null)}
-              channels={channels}
               currentUserId={currentUserId}
               onOpenConversation={selectConversation}
               onStartDM={handleStartDM}
@@ -641,7 +649,7 @@ export default function MessagesClient() {
         }}
         message={forwardMessage}
         channels={channels}
-        members={mentionMembers}
+        members={members.filter((member) => member.status === "active")}
         language={appLanguage}
         currentUserId={currentUserId ?? undefined}
       />

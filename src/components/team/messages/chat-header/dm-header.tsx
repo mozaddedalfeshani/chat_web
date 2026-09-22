@@ -28,12 +28,16 @@ export default function DmHeader({
   onOpenProfile,
   onSearch,
   onToggleMute,
+  onTogglePin,
+  onReport,
 }: {
   conv: ChatConversation;
   teamMembers: TeamMember[];
   onOpenProfile?: (userId: string) => void;
   onSearch: () => void;
   onToggleMute: () => void;
+  onTogglePin: () => void;
+  onReport: (block: boolean) => void;
 }) {
   const [sheetOpen, setSheetOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -114,6 +118,7 @@ export default function DmHeader({
         peerName={label}
         peerAvatar={conv.peer_user_avatar}
         muted={!!conv.muted}
+        pinned={!!conv.pinned}
         noteToSelf={selfNote}
         accountDeleted={accountDeleted}
         onViewProfile={openProfile}
@@ -125,6 +130,11 @@ export default function DmHeader({
           setSheetOpen(false);
           onToggleMute();
         }}
+        onTogglePin={() => {
+          setSheetOpen(false);
+          onTogglePin();
+        }}
+        onReport={onReport}
       />
       {hidePeerActions ? null : (
         <DmProfileDialog

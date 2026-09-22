@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Cancel01Icon, Mail01Icon, Message01Icon, UserGroupIcon } from "hugeicons-react";
 import { Button } from "@/components/ui/button";
 import type { TeamMember } from "@/lib/api/types/team";
-import type { ChatConversation } from "@/lib/api";
+import { api, type ChatGroupSummary } from "@/lib/api";
 import ImagePreviewDialog from "@/components/team/board/dialogs/image-preview";
 import PeerCallOrStatus from "@/components/shared/peer-call-or-status";
-import { chatConvLabel, chatInitials } from "../chat-utils";
+import { chatInitials } from "../chat-utils";
 import GroupAvatarStack from "../chat-sidebar/group-avatar-stack";
 import ProfileHero from "./profile-hero";
 import ProfileContact from "./profile-contact";
@@ -20,7 +20,6 @@ export default function ChatProfilePanel({
   fallbackAvatar,
   conversationId,
   onClose,
-  channels,
   currentUserId,
   onOpenConversation,
   onStartDM,
@@ -32,12 +31,15 @@ export default function ChatProfilePanel({
   /** When set (usually the open DM), offers a wallpaper row for this chat. */
   conversationId?: string | null;
   onClose: () => void;
-  channels: ChatConversation[];
   currentUserId: string;
   onOpenConversation: (id: string) => void;
   onStartDM: (userId: string) => void;
 }) {
   const [photoOpen, setPhotoOpen] = useState(false);
+  const [groupResult, setGroupResult] = useState<{
+    userId: string;
+    groups: ChatGroupSummary[];
+  }>({ userId: "", groups: [] });
   const name = member?.name || fallbackName;
   const avatar = member?.avatar_url || fallbackAvatar;
   const role = member?.role
@@ -46,18 +48,26 @@ export default function ChatProfilePanel({
   const title = member?.tags?.filter(Boolean)[0] ?? role;
   const username = member?.username || member?.github_username;
   const isSelf = userId === currentUserId;
+  const commonGroups =
+    !isSelf && groupResult.userId === userId ? groupResult.groups : [];
 
-  const commonGroups = useMemo(
-    () =>
-      channels.filter(
-        (c) =>
-          c.type !== "dm" &&
-          c.member_avatars !== undefined &&
-          c.member_count !== undefined &&
-          c.member_count > 0,
-      ),
-    [channels],
-  );
+  useEffect(() => {
+    if (!userId || isSelf) return;
+    let cancelled = false;
+    api
+      .listChatGroupsInCommon(userId)
+      .then((result) => {
+        if (!cancelled) {
+          setGroupResult({ userId, groups: result.in_common ?? [] });
+        }
+      })
+      .catch(() => {
+        if (!cancelled) setGroupResult({ userId, groups: [] });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [isSelf, userId]);
 
   return (
     <aside
@@ -135,7 +145,7 @@ export default function ChatProfilePanel({
           {commonGroups.length > 0 ? (
             <div>
               <h4 className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                Channels
+                Groups in common
               </h4>
               <div className="space-y-0.5">
                 {commonGroups.map((g) => (
@@ -149,15 +159,14 @@ export default function ChatProfilePanel({
                     className="flex w-full items-center gap-2.5 rounded-lg px-2 py-2 text-left transition-colors hover:bg-white/[0.05] [data-theme=light]:hover:bg-black/[0.04]"
                   >
                     <GroupAvatarStack
-                      avatars={g.member_avatars}
                       avatarUrl={g.avatar_url}
-                      name={chatConvLabel(g)}
+                      name={g.name}
                     />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium text-[var(--text)]">
-                        {chatConvLabel(g)}
+                        {g.name}
                       </p>
-                      {g.member_count ? (
+                      {g.member_count > 0 ? (
                         <p className="text-xs text-muted-foreground">
                           {g.member_count} {g.member_count === 1 ? "member" : "members"}
                         </p>

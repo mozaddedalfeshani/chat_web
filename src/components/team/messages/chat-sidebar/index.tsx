@@ -19,6 +19,8 @@ import { useUIStore } from "@/store/ui-store";
 import CreateWebhookFeedDialog from "./create-webhook-feed-dialog";
 import ConnectionsDialog from "../chat-connections/connections-dialog";
 import CreatePersonalGroupDialog from "../chat-connections/create-personal-group-dialog";
+import CallHistoryDialog from "../chat-calls/call-history-dialog";
+import { Phone } from "lucide-react";
 
 function HeaderIconButton({
   label,
@@ -61,6 +63,7 @@ export default function ChatSidebar({
   const [peopleOpen, setPeopleOpen] = useState(false);
   const [personalGroupOpen, setPersonalGroupOpen] = useState(false);
   const [webhookFeedOpen, setWebhookFeedOpen] = useState(false);
+  const [callHistoryOpen, setCallHistoryOpen] = useState(false);
   const upsertChannel = useChatStore((s) => s.upsertChannel);
   const railCollapsed = useUIStore((s) => s.railCollapsed);
   const toggleRail = useUIStore((s) => s.toggleRail);
@@ -123,6 +126,17 @@ export default function ChatSidebar({
               type="button"
               onClick={() => {
                 setMenuOpen(false);
+                setCallHistoryOpen(true);
+              }}
+              className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-[var(--sig-label)] transition-colors hover:bg-[var(--sig-fill)]"
+            >
+              <Phone size={16} />
+              Calls
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setMenuOpen(false);
                 setPersonalGroupOpen(true);
               }}
               className="flex w-full items-center gap-2 rounded-md px-2 py-2 text-left text-[13px] text-[var(--sig-label)] transition-colors hover:bg-[var(--sig-fill)]"
@@ -171,6 +185,11 @@ export default function ChatSidebar({
         onOpenChange={setWebhookFeedOpen}
         language={language}
         onCreated={handleGroupCreated}
+      />
+      <CallHistoryDialog
+        open={callHistoryOpen}
+        onOpenChange={setCallHistoryOpen}
+        onOpenConversation={onSelect}
       />
     </aside>
   );

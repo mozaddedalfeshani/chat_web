@@ -80,6 +80,7 @@ export function feedKey(conversationId: string, threadRootId?: string | null) {
 
 function sortDms(dms: ChatConversation[]) {
   return [...dms].sort((a, b) => {
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
     const aUnread = a.unread_count > 0 ? 1 : 0;
     const bUnread = b.unread_count > 0 ? 1 : 0;
     if (aUnread !== bUnread) return bUnread - aUnread;
@@ -98,6 +99,7 @@ function channelSortLabel(c: ChatConversation) {
 // doesn't jump around on every new message the way DMs sort by recency).
 function sortChannels(channels: ChatConversation[]) {
   return [...channels].sort((a, b) => {
+    if (!!a.pinned !== !!b.pinned) return a.pinned ? -1 : 1;
     const aUnread = a.unread_count > 0 ? 1 : 0;
     const bUnread = b.unread_count > 0 ? 1 : 0;
     if (aUnread !== bUnread) return bUnread - aUnread;

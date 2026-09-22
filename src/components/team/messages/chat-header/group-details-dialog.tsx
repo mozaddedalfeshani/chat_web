@@ -1,12 +1,13 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import {
   Archive02Icon,
   Delete02Icon,
   Link01Icon,
   Logout01Icon,
 } from "hugeicons-react";
+import { Flag, Images, Pin, PinOff } from "lucide-react";
 import type { ChatConversation } from "@/lib/api";
 import {
   Sheet,
@@ -23,6 +24,8 @@ import GroupPermissionsSection from "./group-permissions-section";
 import ActionRow from "./action-row";
 import WebhookSettingsSection from "./webhook-settings-section";
 import WallpaperRow from "../wallpaper/wallpaper-row";
+import SharedMediaDialog from "../chat-details/shared-media-dialog";
+import ReportConversationDialog from "../chat-details/report-conversation-dialog";
 
 /**
  * Every group answers to its own `my_role` + permission switches since
@@ -42,6 +45,8 @@ export default function GroupDetailsDialog({
   onRenamed,
   onCopyLink,
   onArchive,
+  onTogglePin,
+  onReport,
   onLeave,
   onRequestDelete,
   language,
@@ -57,11 +62,15 @@ export default function GroupDetailsDialog({
   onRenamed: (conv: ChatConversation) => void;
   onCopyLink: () => void;
   onArchive: () => void;
+  onTogglePin: () => void;
+  onReport: () => void;
   onLeave: () => void;
   onRequestDelete: () => void;
   language?: string | null;
 }) {
   const { members, reload } = useGroupMembers(conv.id, open);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
   const isWebhook = conv.type === "webhook";
   const existingIds = useMemo(
     () => new Set(members.map((m) => m.user_id)),
@@ -127,6 +136,31 @@ export default function GroupDetailsDialog({
                 onCopyLink();
               }}
             />
+            <ActionRow
+              icon={<Flag size={16} />}
+              label="Report spam"
+              danger
+              onClick={() => {
+                onOpenChange(false);
+                setReportOpen(true);
+              }}
+            />
+            <ActionRow
+              icon={conv.pinned ? <PinOff size={16} /> : <Pin size={16} />}
+              label={conv.pinned ? "Unpin conversation" : "Pin conversation"}
+              onClick={() => {
+                onOpenChange(false);
+                onTogglePin();
+              }}
+            />
+            <ActionRow
+              icon={<Images size={16} />}
+              label="Shared media and files"
+              onClick={() => {
+                onOpenChange(false);
+                setMediaOpen(true);
+              }}
+            />
             {canManage && !isWebhook ? (
               <ActionRow
                 icon={<Archive02Icon size={16} />}
@@ -159,6 +193,17 @@ export default function GroupDetailsDialog({
           </div>
         </div>
       </SheetContent>
+      <SharedMediaDialog
+        conversationId={conv.id}
+        open={mediaOpen}
+        onOpenChange={setMediaOpen}
+      />
+      <ReportConversationDialog
+        open={reportOpen}
+        onOpenChange={setReportOpen}
+        canBlock={false}
+        onReport={() => onReport()}
+      />
     </Sheet>
   );
 }

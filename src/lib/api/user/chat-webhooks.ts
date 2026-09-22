@@ -6,7 +6,7 @@ export function createChatWebhookChannel(body: {
   slug?: string;
   is_private?: boolean;
 }) {
-  return apiFetch<ChatWebhookCreated>("/api/teams/chat/webhook-channels", {
+  return apiFetch<ChatWebhookCreated>("/api/chat/webhook-channels", {
     method: "POST",
     headers: jsonHeaders,
     body: JSON.stringify(body),
@@ -15,14 +15,14 @@ export function createChatWebhookChannel(body: {
 
 export function regenerateChatWebhook(conversationId: string) {
   return apiFetch<Pick<ChatWebhookCreated, "webhook" | "url" | "token">>(
-    `/api/teams/chat/channels/${conversationId}/webhook/regenerate`,
+    `/api/chat/conversations/${conversationId}/webhook/regenerate`,
     { method: "POST" },
   );
 }
 
 export async function uploadChatWebhookAvatar(conversationId: string, file: File) {
   const draft = await apiFetch<{ upload_url: string; public_url: string }>(
-    `/api/teams/chat/channels/${conversationId}/webhook/avatar/presign`,
+    `/api/chat/conversations/${conversationId}/webhook/avatar/presign`,
     {
       method: "POST",
       headers: jsonHeaders,
@@ -36,7 +36,7 @@ export async function uploadChatWebhookAvatar(conversationId: string, file: File
   });
   if (!uploaded.ok) throw new Error("Avatar upload to storage failed");
   return apiFetch<{ avatar_url: string }>(
-    `/api/teams/chat/channels/${conversationId}/webhook/avatar`,
+    `/api/chat/conversations/${conversationId}/webhook/avatar`,
     {
       method: "PATCH",
       headers: jsonHeaders,

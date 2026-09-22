@@ -13,7 +13,7 @@ import type {
 } from "../types/chat";
 
 export function getChatE2EEVault() {
-  return apiFetch<ChatE2EEVaultStatus>("/api/teams/chat/e2ee/vault");
+  return apiFetch<ChatE2EEVaultStatus>("/api/chat/e2ee/vault");
 }
 
 /**
@@ -43,7 +43,7 @@ export function putChatE2EERecoveryVault(body: {
   salt: string;
   version: number;
 }) {
-  return apiFetch<void>("/api/teams/chat/e2ee/vault/recovery", {
+  return apiFetch<void>("/api/chat/e2ee/vault/recovery", {
     method: "PUT",
     headers: jsonHeaders,
     body: JSON.stringify(body),
@@ -126,13 +126,13 @@ export function resetChatE2EEVault(body: {
 
 export function getChatE2EEPublicKey(userId: string) {
   return apiFetch<{ public_key: JsonWebKey }>(
-    `/api/teams/chat/e2ee/users/${userId}/public-key`,
+    `/api/chat/e2ee/users/${userId}/public-key`,
   );
 }
 
 export function getChatE2EEConversationKey(conversationId: string) {
   return apiFetch<ChatE2EEConversationKeyStatus>(
-    `/api/teams/chat/conversations/${conversationId}/e2ee-key`,
+    `/api/chat/conversations/${conversationId}/e2ee-key`,
   );
 }
 
@@ -141,7 +141,7 @@ export function createChatE2EEConversationKey(
   envelopes: Record<string, ChatE2EEKeyEnvelope>,
 ) {
   return apiFetch<{ key_version: number; envelope: ChatE2EEKeyEnvelope }>(
-    `/api/teams/chat/conversations/${conversationId}/e2ee-key`,
+    `/api/chat/conversations/${conversationId}/e2ee-key`,
     {
       method: "POST",
       headers: jsonHeaders,
@@ -163,7 +163,7 @@ export function backfillChatE2EEConversationKey(
   envelopes: ChatE2EEBackfillItem[],
 ) {
   return apiFetch<{ inserted: number }>(
-    `/api/teams/chat/conversations/${conversationId}/e2ee-key/backfill`,
+    `/api/chat/conversations/${conversationId}/e2ee-key/backfill`,
     {
       method: "POST",
       headers: jsonHeaders,
@@ -183,6 +183,6 @@ export function backfillChatE2EEConversationKey(
  */
 export function getChatE2EEConversationMembers(conversationId: string) {
   return apiFetch<ChatE2EEConversationMembers>(
-    `/api/teams/chat/conversations/${conversationId}/e2ee-members`,
+    `/api/chat/conversations/${conversationId}/e2ee-members`,
   );
 }

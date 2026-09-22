@@ -19,6 +19,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import PeerCallOrStatus from "@/components/shared/peer-call-or-status";
 import { chatInitials } from "../chat-utils";
 import WallpaperDialog from "../wallpaper/wallpaper-dialog";
+import { Flag, Images, Pin, PinOff } from "lucide-react";
+import SharedMediaDialog from "../chat-details/shared-media-dialog";
+import ReportConversationDialog from "../chat-details/report-conversation-dialog";
 
 function ActionRow({
   icon,
@@ -26,19 +29,21 @@ function ActionRow({
   description,
   onClick,
   disabled,
+  danger,
 }: {
   icon: React.ReactNode;
   label: string;
   description?: string;
   onClick: () => void;
   disabled?: boolean;
+  danger?: boolean;
 }) {
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className="flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-white/[0.05] disabled:opacity-50 [data-theme=light]:hover:bg-black/[0.04]">
+      className={`flex w-full items-center gap-3 px-5 py-3 text-left transition-colors hover:bg-white/[0.05] disabled:opacity-50 [data-theme=light]:hover:bg-black/[0.04] ${danger ? "text-red-500" : ""}`}>
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--text)]" style={{ background: "var(--surface2)" }}>
         {icon}
       </span>
@@ -62,11 +67,14 @@ export default function DmActionsSheet({
   peerName,
   peerAvatar,
   muted,
+  pinned,
   noteToSelf = false,
   accountDeleted = false,
   onViewProfile,
   onSearch,
   onToggleMute,
+  onTogglePin,
+  onReport,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -75,6 +83,7 @@ export default function DmActionsSheet({
   peerName: string;
   peerAvatar?: string;
   muted: boolean;
+  pinned: boolean;
   /** Note to Self: the "peer" is the viewer, so profile and presence go. */
   noteToSelf?: boolean;
   /** Deleted peer: no profile, no presence, generic avatar. */
@@ -82,8 +91,12 @@ export default function DmActionsSheet({
   onViewProfile: () => void;
   onSearch: () => void;
   onToggleMute: () => void;
+  onTogglePin: () => void;
+  onReport: (block: boolean) => void;
 }) {
   const [wallpaperOpen, setWallpaperOpen] = useState(false);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
 
   return (
     <>
@@ -160,6 +173,31 @@ export default function DmActionsSheet({
             }
             onClick={onToggleMute}
           />
+          <ActionRow
+            icon={pinned ? <PinOff size={18} /> : <Pin size={18} />}
+            label={pinned ? "Unpin conversation" : "Pin conversation"}
+            onClick={onTogglePin}
+          />
+          <ActionRow
+            icon={<Images size={18} />}
+            label="Shared media and files"
+            onClick={() => {
+              onOpenChange(false);
+              setMediaOpen(true);
+            }}
+          />
+          {noteToSelf || accountDeleted ? null : (
+            <ActionRow
+              icon={<Flag size={18} />}
+              label="Report spam"
+              description="Report this conversation, with an option to block"
+              danger
+              onClick={() => {
+                onOpenChange(false);
+                setReportOpen(true);
+              }}
+            />
+          )}
         </div>
       </DrawerContent>
     </Drawer>
@@ -167,6 +205,17 @@ export default function DmActionsSheet({
       conversationId={conversationId}
       open={wallpaperOpen}
       onOpenChange={setWallpaperOpen}
+    />
+    <SharedMediaDialog
+      conversationId={conversationId}
+      open={mediaOpen}
+      onOpenChange={setMediaOpen}
+    />
+    <ReportConversationDialog
+      open={reportOpen}
+      onOpenChange={setReportOpen}
+      canBlock
+      onReport={onReport}
     />
     </>
   );

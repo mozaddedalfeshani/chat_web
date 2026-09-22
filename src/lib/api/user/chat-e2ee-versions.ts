@@ -14,6 +14,6 @@ export function getChatE2EEConversationKeyVersions(
 ) {
   const query = encodeURIComponent(versions.join(","));
   return apiFetch<ChatE2EEKeyVersions>(
-    `/api/teams/chat/conversations/${conversationId}/e2ee-keys?versions=${query}`,
+    `/api/chat/conversations/${conversationId}/e2ee-keys?versions=${query}`,
   );
 }

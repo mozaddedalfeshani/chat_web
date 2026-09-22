@@ -146,6 +146,8 @@ export default function ChatHeader({
             onRenamed={upsertChannel}
             onCopyLink={() => void actions.copyLink()}
             onArchive={() => void actions.archive()}
+            onTogglePin={() => void actions.togglePin()}
+            onReport={() => void actions.report(false)}
             onLeave={() => void actions.leave()}
             onRequestDelete={() => {
               setDetailsOpen(false);
@@ -169,6 +171,8 @@ export default function ChatHeader({
           onOpenProfile={onOpenProfile}
           onSearch={openConversationSearch}
           onToggleMute={() => void actions.toggleMute()}
+          onTogglePin={() => void actions.togglePin()}
+          onReport={(block) => void actions.report(block)}
         />
       ) : (
         <h2 className="flex min-w-0 items-center gap-1.5 truncate text-base font-semibold">

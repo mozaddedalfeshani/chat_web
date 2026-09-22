@@ -87,5 +87,40 @@ export function useChatHeaderActions(
     }
   }
 
-  return { copyLink, archive, leave, deleteGroup, toggleMute };
+  async function togglePin() {
+    if (!activeConv) return;
+    const next = !activeConv.pinned;
+    try {
+      await api.pinChatConversation(activeConv.id, next);
+      await fetchSidebar({ silent: true });
+      toast.success(next ? "Conversation pinned" : "Conversation unpinned");
+    } catch (e) {
+      toast.error(friendlyError(e, "Failed to update pin"));
+    }
+  }
+
+  async function report(block: boolean) {
+    if (!activeConv) return;
+    try {
+      const result = await api.reportChatConversation(activeConv.id, { block });
+      if (block && !result.blocked) {
+        toast.error("Conversation reported, but blocking failed");
+        return;
+      }
+      toast.success(block ? "Conversation reported and blocked" : "Conversation reported");
+      if (result.blocked) exitConversation();
+    } catch (e) {
+      toast.error(friendlyError(e, "Failed to report conversation"));
+    }
+  }
+
+  return {
+    copyLink,
+    archive,
+    leave,
+    deleteGroup,
+    toggleMute,
+    togglePin,
+    report,
+  };
 }
