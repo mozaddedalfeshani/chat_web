@@ -123,7 +123,7 @@ export default function SetStatusDialog({
           </span>
           <Input
             value={text}
-            maxLength={100}
+            maxLength={40}
             placeholder="What's your status?"
             onChange={(e) => setText(e.target.value)}
             onKeyDown={(e) => {
