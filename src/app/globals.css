@@ -348,6 +348,21 @@
   }
 }
 
+/*
+ * Bangla text is drawn in Noto Sans Bengali, the same face as the phone
+ * (SIL OFL 1.1). One variable woff2 (weights 100-900), subset to the Bengali
+ * block. The unicode-range keeps every other character on the font it had,
+ * and the file is only fetched once Bangla appears on screen.
+ */
+@font-face {
+  font-family: "Noto Sans Bengali";
+  src: url("/fonts/noto-sans-bengali.woff2") format("woff2");
+  font-weight: 100 900;
+  font-style: normal;
+  font-display: swap;
+  unicode-range: U+0964-0965, U+0980-09FE, U+200C-200D, U+25CC;
+}
+
 * {
   box-sizing: border-box;
 }

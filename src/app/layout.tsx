@@ -20,6 +20,9 @@ const poppins = Poppins({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
   variable: "--font-poppins",
+  // Poppins has no Bangla glyphs. Appended to --font-poppins, so every
+  // place that uses it draws Bangla in Noto Sans Bengali (globals.css).
+  fallback: ['"Noto Sans Bengali"'],
 });
 
 export const viewport: Viewport = {
