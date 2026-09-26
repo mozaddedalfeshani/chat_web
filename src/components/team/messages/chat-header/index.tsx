@@ -109,8 +109,8 @@ export default function ChatHeader({
               aria-label={t(language, "chat.groupDetails")}
             >
               <span className="flex min-w-0 flex-col items-start">
-                <span className="flex max-w-full items-center gap-1">
-                  <span className="truncate">{chatConvLabel(activeConv)}</span>
+                <span className="flex min-w-0 max-w-full items-center gap-1">
+                  <span className="min-w-0 truncate">{chatConvLabel(activeConv)}</span>
                   <MuteBadge conv={activeConv} />
                 </span>
                 {activeConv.type !== "webhook" ? (
