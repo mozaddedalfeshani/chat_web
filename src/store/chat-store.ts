@@ -292,7 +292,6 @@ interface ChatState {
   ) => void;
   upsertDM: (dm: ChatConversation) => void;
   upsertChannel: (channel: ChatConversation) => void;
-  setConversationMuted: (conversationId: string, muted: boolean) => void;
 
   loadFeed: (
     conversationId: string,
@@ -523,16 +522,6 @@ export const useChatStore = create<ChatState>()(
         });
       },
 
-      setConversationMuted: (conversationId, muted) => {
-        set((s) => ({
-          dms: s.dms.map((d) =>
-            d.id === conversationId ? { ...d, muted } : d,
-          ),
-          channels: s.channels.map((c) =>
-            c.id === conversationId ? { ...c, muted } : c,
-          ),
-        }));
-      },
 
       loadFeed: async (conversationId, threadRootId, opts) => {
         const key = feedKey(conversationId, threadRootId);

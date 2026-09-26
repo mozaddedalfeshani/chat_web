@@ -14,6 +14,7 @@ import GroupDetailsDialog from "./group-details-dialog";
 import DeleteGroupDialog from "./delete-group-dialog";
 import DmHeader from "./dm-header";
 import GroupCallAction from "./group-call-action";
+import MuteBadge from "@/lib/chat-mute/mute-badge";
 import { useChatHeaderActions } from "./use-chat-header-actions";
 import { t } from "@/lib/i18n";
 
@@ -108,7 +109,10 @@ export default function ChatHeader({
               aria-label={t(language, "chat.groupDetails")}
             >
               <span className="flex min-w-0 flex-col items-start">
-                <span className="truncate">{chatConvLabel(activeConv)}</span>
+                <span className="flex max-w-full items-center gap-1">
+                  <span className="truncate">{chatConvLabel(activeConv)}</span>
+                  <MuteBadge conv={activeConv} />
+                </span>
                 {activeConv.type !== "webhook" ? (
                   <GroupTypingLine conversationId={activeConv.id} />
                 ) : null}
@@ -170,7 +174,6 @@ export default function ChatHeader({
           teamMembers={teamMembers}
           onOpenProfile={onOpenProfile}
           onSearch={openConversationSearch}
-          onToggleMute={() => void actions.toggleMute()}
           onTogglePin={() => void actions.togglePin()}
           onReport={(block) => void actions.report(block)}
         />

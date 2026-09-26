@@ -178,17 +178,6 @@ export function markChatConversationRead(conversationId: string) {
   );
 }
 
-export function muteChatConversation(conversationId: string, muted: boolean) {
-  return apiFetch<{ muted: boolean }>(
-    `/api/chat/conversations/${conversationId}/mute`,
-    {
-      method: "POST",
-      headers: jsonHeaders,
-      body: JSON.stringify({ muted }),
-    },
-  );
-}
-
 export function searchChatMessages(q: string, limit = 20) {
   const params = new URLSearchParams();
   params.set("q", q);

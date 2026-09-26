@@ -21,7 +21,6 @@ export function useChatHeaderActions(
   const messagesBase = messageBasePath(pathname);
   const setActiveConversationId = useChatStore((s) => s.setActiveConversationId);
   const fetchSidebar = useChatStore((s) => s.fetchSidebar);
-  const setConversationMuted = useChatStore((s) => s.setConversationMuted);
 
   function exitConversation() {
     setActiveConversationId(null);
@@ -74,18 +73,6 @@ export function useChatHeaderActions(
     }
   }
 
-  async function toggleMute() {
-    if (!activeConv) return;
-    const next = !activeConv.muted;
-    setConversationMuted(activeConv.id, next); // optimistic
-    try {
-      await api.muteChatConversation(activeConv.id, next);
-      toast.success(next ? "Notifications muted" : "Notifications unmuted");
-    } catch (e) {
-      setConversationMuted(activeConv.id, !next); // revert
-      toast.error(friendlyError(e, "Failed to update notifications"));
-    }
-  }
 
   async function togglePin() {
     if (!activeConv) return;
@@ -119,7 +106,6 @@ export function useChatHeaderActions(
     archive,
     leave,
     deleteGroup,
-    toggleMute,
     togglePin,
     report,
   };

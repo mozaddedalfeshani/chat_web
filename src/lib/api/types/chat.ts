@@ -60,6 +60,10 @@ export type ChatConversation = {
   request_state?: "none" | "incoming" | "outgoing";
   // Whether the current member has muted this conversation (suppresses its notifications).
   muted?: boolean;
+  /** When a timed mute ends (server 0162); absent = until unmuted. Set on the phone only. */
+  muted_until?: string | null;
+  /** "mentions" = only @mentions and replies notify. */
+  mute_mode?: "all" | "mentions";
   // Account-local sidebar pin. The server allows at most four.
   pinned?: boolean;
   // Group roster preview (channels only) for the stacked avatar in the sidebar.

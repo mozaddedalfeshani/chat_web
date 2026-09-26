@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Bookmark01Icon, NotificationOff01Icon } from "hugeicons-react";
+import { Bookmark01Icon } from "hugeicons-react";
+import MuteBadge from "@/lib/chat-mute/mute-badge";
+import { muteStatusLabel } from "@/lib/chat-mute/mute-status";
 import { LockKeyhole } from "lucide-react";
 import type { ChatConversation } from "@/lib/api";
 import type { TeamMember } from "@/lib/api/types/team";
@@ -20,14 +22,13 @@ import { useTypingLabel } from "@/lib/chat-typing/use-typing-label";
  * everything that addresses a second person is dropped rather than pointed
  * back at them: no call buttons (the server has no callee to ring), no
  * presence line, no profile, no safety number. What is left — the name, the
- * lock, search and mute — is all that means anything alone.
+ * lock, search and the mute status — is all that means anything alone.
  */
 export default function DmHeader({
   conv,
   teamMembers,
   onOpenProfile,
   onSearch,
-  onToggleMute,
   onTogglePin,
   onReport,
 }: {
@@ -35,7 +36,6 @@ export default function DmHeader({
   teamMembers: TeamMember[];
   onOpenProfile?: (userId: string) => void;
   onSearch: () => void;
-  onToggleMute: () => void;
   onTogglePin: () => void;
   onReport: (block: boolean) => void;
 }) {
@@ -87,12 +87,7 @@ export default function DmHeader({
               />
             )}
             <span className="truncate">{label}</span>
-            {conv.muted ? (
-              <NotificationOff01Icon
-                size={12}
-                className="shrink-0 text-muted-foreground"
-              />
-            ) : null}
+            <MuteBadge conv={conv} />
           </span>
           {hidePeerActions ? null : typingText ? (
             <span className="whitespace-nowrap text-[11px] font-medium text-[var(--indigo)]">
@@ -117,7 +112,7 @@ export default function DmHeader({
         peerUserId={conv.peer_user_id}
         peerName={label}
         peerAvatar={conv.peer_user_avatar}
-        muted={!!conv.muted}
+        muteLabel={muteStatusLabel(conv)}
         pinned={!!conv.pinned}
         noteToSelf={selfNote}
         accountDeleted={accountDeleted}
@@ -125,10 +120,6 @@ export default function DmHeader({
         onSearch={() => {
           setSheetOpen(false);
           onSearch();
-        }}
-        onToggleMute={() => {
-          setSheetOpen(false);
-          onToggleMute();
         }}
         onTogglePin={() => {
           setSheetOpen(false);

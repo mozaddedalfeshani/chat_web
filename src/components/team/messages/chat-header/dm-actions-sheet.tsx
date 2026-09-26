@@ -4,7 +4,6 @@ import { useState } from "react";
 import {
   UserIcon,
   Search01Icon,
-  Notification01Icon,
   NotificationOff01Icon,
   Bookmark01Icon,
   PaintBoardIcon,
@@ -66,13 +65,12 @@ export default function DmActionsSheet({
   peerUserId,
   peerName,
   peerAvatar,
-  muted,
+  muteLabel,
   pinned,
   noteToSelf = false,
   accountDeleted = false,
   onViewProfile,
   onSearch,
-  onToggleMute,
   onTogglePin,
   onReport,
 }: {
@@ -82,7 +80,8 @@ export default function DmActionsSheet({
   peerUserId?: string;
   peerName: string;
   peerAvatar?: string;
-  muted: boolean;
+  /** What the mute is ("Muted until 5:30 PM"), null when not muted. */
+  muteLabel: string | null;
   pinned: boolean;
   /** Note to Self: the "peer" is the viewer, so profile and presence go. */
   noteToSelf?: boolean;
@@ -90,7 +89,6 @@ export default function DmActionsSheet({
   accountDeleted?: boolean;
   onViewProfile: () => void;
   onSearch: () => void;
-  onToggleMute: () => void;
   onTogglePin: () => void;
   onReport: (block: boolean) => void;
 }) {
@@ -157,22 +155,20 @@ export default function DmActionsSheet({
             label="Search in conversation"
             onClick={onSearch}
           />
-          <ActionRow
-            icon={
-              muted ? (
-                <Notification01Icon size={18} />
-              ) : (
+          {muteLabel ? (
+            // Read-only: muting is set on the phone, the web only shows it.
+            <div className="flex w-full items-center gap-3 px-5 py-3 text-left">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-[var(--text)]" style={{ background: "var(--surface2)" }}>
                 <NotificationOff01Icon size={18} />
-              )
-            }
-            label={muted ? "Unmute notifications" : "Mute notifications"}
-            description={
-              muted
-                ? "You'll be notified about new messages again"
-                : "Stop notifications from this chat"
-            }
-            onClick={onToggleMute}
-          />
+              </span>
+              <span className="min-w-0">
+                <span className="block text-sm font-medium text-[var(--text)]">{muteLabel}</span>
+                <span className="block text-xs text-[var(--text-muted)]">
+                  Change notifications in the AbabilX app
+                </span>
+              </span>
+            </div>
+          ) : null}
           <ActionRow
             icon={pinned ? <PinOff size={18} /> : <Pin size={18} />}
             label={pinned ? "Unpin conversation" : "Pin conversation"}
