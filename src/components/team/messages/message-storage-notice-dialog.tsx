@@ -55,7 +55,7 @@ export default function MessageStorageNoticeDialog({
           <DialogTitle>Message storage is changing</DialogTitle>
           <DialogDescription className="leading-6">
             Messages sent from today will stay available in AbabilX for up to
-            six months.
+            120 days.
           </DialogDescription>
         </DialogHeader>
 

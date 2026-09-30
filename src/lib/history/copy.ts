@@ -13,7 +13,7 @@ const en = {
   serverRetry: "Some conversations did not load. Retry",
   importTitle: "Import history from your phone",
   importBody:
-    "Messages older than six months, and their photos, videos and files, are kept on your phone. Copy them to this browser from the phone.",
+    "Messages older than 120 days, and their photos, videos and files, are kept on your phone. Copy them to this browser from the phone.",
   importStart: "Import from phone",
   importLater: "Not now",
   scanTitle: "Scan this code with AbabilX on your phone",

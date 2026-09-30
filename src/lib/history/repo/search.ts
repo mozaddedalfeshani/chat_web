@@ -9,7 +9,7 @@ import { readLocalFeed } from "./messages-read";
  * is therefore bounded: at most `scanPerConversation` newest rows each, first
  * hit per conversation, cancelled by the caller when the query changes. The
  * rows imported from the phone are what makes this worth doing: the server
- * search cannot see anything past six months.
+ * search cannot see anything past 120 days.
  */
 export type StoredSearchHit = { conversationId: string; messageId: string; snippet: string };
 

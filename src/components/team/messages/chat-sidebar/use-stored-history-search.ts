@@ -11,7 +11,7 @@ const DEBOUNCE_MS = 300;
 
 /**
  * Keyword hits from the durable history — imported messages older than the
- * server's six months included. Merged with the in-memory index by the list:
+ * server's 120 days included. Merged with the in-memory index by the list:
  * that one answers instantly for what was recently on screen, this one fills
  * in the rest a moment later.
  */

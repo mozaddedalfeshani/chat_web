@@ -15,7 +15,7 @@ import { historyEnabled } from "@/lib/history/flag";
  * ```
  *
  * The server page used to become the feed outright, which threw away anything
- * older than the server's six months — the exact history an import from the
+ * older than the server's 120 days — the exact history an import from the
  * phone brings in. Now a page is only new evidence for the store.
  *
  * The floor: while the server still has older pages than the ones merged, a

@@ -164,7 +164,7 @@ export type ChatMessage = {
    * the server never stamped this row: unknown, never "oldest".
    */
   revision?: number;
-  /** The server let the content go at 180 days. Not a deletion. */
+  /** The server let the content go at 120 days. Not a deletion. */
   content_purged?: boolean;
   user_name?: string;
   user_avatar_url?: string;
