@@ -22,7 +22,9 @@ const poppins = Poppins({
   variable: "--font-poppins",
   // Poppins has no Bangla glyphs. Appended to --font-poppins, so every
   // place that uses it draws Bangla in Noto Sans Bengali (globals.css).
-  fallback: ['"Noto Sans Bengali"'],
+  // Single quotes on purpose: Next pastes this unescaped into a double-quoted
+  // JS string, so inner double quotes break the build (Next 16.3.4).
+  fallback: ["'Noto Sans Bengali'"],
 });
 
 export const viewport: Viewport = {
