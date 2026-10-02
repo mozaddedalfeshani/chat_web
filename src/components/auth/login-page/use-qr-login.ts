@@ -7,6 +7,7 @@ import {
   pollQrLogin,
   type QrLoginStatus,
 } from "@/lib/api/qr-login";
+import { persistStoredToken } from "@/lib/api/core";
 import {
   createOneScanOffer,
   finishOneScan,
@@ -81,13 +82,19 @@ export function useQrLogin(active: boolean, onApproved: () => void) {
           }
 
           const { status, identityEnvelope } = await pollQrLogin(session.token);
+          if (status === "approved") {
+            // Runs to the end even if the panel unmounts: the link key lives
+            // only in this closure. The session flag goes up last, because it
+            // makes LoginRedirect drop this page and would cut adoption short.
+            if (!cancelled) setState((prev) => ({ ...prev, status }));
+            await finishOneScan(offer, session.token, identityEnvelope);
+            persistStoredToken();
+            onApproved();
+            return;
+          }
           if (cancelled) return;
           if (status === "pending") continue;
           setState((prev) => ({ ...prev, status }));
-          if (status === "approved") {
-            await finishOneScan(offer, session.token, identityEnvelope);
-            onApproved();
-          }
           return;
         }
       } catch (err) {

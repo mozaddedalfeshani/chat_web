@@ -1,4 +1,4 @@
-import { API_BASE, jsonHeaders, persistStoredToken } from "./core";
+import { API_BASE, jsonHeaders } from "./core";
 import type { ChatE2EEIdentityEnvelope } from "./types/chat-e2ee";
 
 export type QrLoginStatus = "pending" | "approved" | "denied" | "expired";
@@ -54,8 +54,9 @@ export async function pollQrLogin(token: string): Promise<QrLoginPoll> {
   if (!res.ok || !data?.success) {
     throw new Error(data?.error || "QR login failed");
   }
+  // The caller marks the session (persistStoredToken) once the one-scan key
+  // is adopted: flipping it here unmounts the login page mid-adoption.
   const status = data.status as QrLoginStatus;
-  if (status === "approved") persistStoredToken();
   return {
     status,
     identityEnvelope: data.identity_envelope ?? undefined,
