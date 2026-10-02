@@ -96,7 +96,10 @@ export async function restoreImport(userId: string) {
   const job = await latestOpenJob(userId).catch(() => undefined);
   if (!job) return;
   useHistoryImportStore.getState().setView(viewOf(job));
-  if (job.status === "receiving" || (job.status === "paused" && job.pauseReason === "offline")) {
+  // "waiting" too: a one-scan sign-in opens the job on the login page, and
+  // this is the first screen that can poll it for the phone's approval.
+  const waiting = job.status === "waiting" && job.expiresAt > Date.now();
+  if (waiting || job.status === "receiving" || (job.status === "paused" && job.pauseReason === "offline")) {
     void resumeImport(userId, job.id);
   }
 }

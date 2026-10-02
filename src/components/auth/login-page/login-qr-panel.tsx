@@ -10,7 +10,7 @@ export default function LoginQrPanel() {
     window.location.assign("/user/messages");
   }, []);
 
-  const { status, imageUrl, error, secondsLeft, restart } = useQrLogin(
+  const { status, imageUrl, error, secondsLeft, verificationCode, restart } = useQrLogin(
     true,
     onApproved,
   );
@@ -43,8 +43,16 @@ export default function LoginQrPanel() {
           </span>
         )}
       </div>
+      {status === "pending" && verificationCode ? (
+        <p className="mt-3 text-center text-xs text-[#667781]">
+          {LOGIN_COPY.qrCodeHint}{" "}
+          <span className="font-mono text-sm font-semibold tracking-widest">
+            {verificationCode.slice(0, 3)} {verificationCode.slice(3)}
+          </span>
+        </p>
+      ) : null}
       {status === "pending" && secondsLeft > 0 ? (
-        <p className="mt-3 text-xs text-[#667781]">
+        <p className="mt-1 text-xs text-[#667781]">
           {LOGIN_COPY.qrExpiresIn} {Math.floor(secondsLeft / 60)}:
           {String(secondsLeft % 60).padStart(2, "0")}
         </p>

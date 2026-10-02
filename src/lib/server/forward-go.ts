@@ -166,7 +166,8 @@ export async function forwardToGo(
         { status: 401 },
       );
     }
-    return Response.json({ success: true, status: "approved" });
+    // One-scan QR: the sealed identity rides along, openable only by the tab.
+    return Response.json({ success: true, status: "approved", identity_envelope: json.identity_envelope });
   }
 
   if (path === "auth/exchange" && json?.success) {

@@ -7,12 +7,19 @@ import {
   pollQrLogin,
   type QrLoginStatus,
 } from "@/lib/api/qr-login";
+import {
+  createOneScanOffer,
+  finishOneScan,
+  oneScanPayload,
+} from "@/lib/one-scan/one-scan";
 
 type QrLoginState = {
   status: QrLoginStatus | "loading" | "error";
   imageUrl: string;
   error: string;
   secondsLeft: number;
+  /** Six digits over the QR's message key; the phone shows the same. */
+  verificationCode: string;
 };
 
 const INITIAL: QrLoginState = {
@@ -20,6 +27,7 @@ const INITIAL: QrLoginState = {
   imageUrl: "",
   error: "",
   secondsLeft: 0,
+  verificationCode: "",
 };
 
 export function useQrLogin(active: boolean, onApproved: () => void) {
@@ -37,12 +45,15 @@ export function useQrLogin(active: boolean, onApproved: () => void) {
 
     const run = async () => {
       try {
-        const session = await createQrLoginSession("AbabilX Chat Web");
-        const imageUrl = await QRCode.toDataURL(session.qrPayload, {
-          margin: 1,
-          width: 320,
-          errorCorrectionLevel: "M",
-        });
+        const [session, offer] = await Promise.all([
+          createQrLoginSession("AbabilX Chat Web"),
+          createOneScanOffer(),
+        ]);
+        // Two keys make a dense code; "L" keeps the modules large enough.
+        const imageUrl = await QRCode.toDataURL(
+          oneScanPayload(session.qrPayload, offer),
+          { margin: 1, width: 320, errorCorrectionLevel: "L" },
+        );
         if (cancelled) return;
         setState({
           status: "pending",
@@ -52,6 +63,7 @@ export function useQrLogin(active: boolean, onApproved: () => void) {
             0,
             Math.round((session.expiresAt - Date.now()) / 1000),
           ),
+          verificationCode: offer.link.verificationCode,
         });
 
         while (!cancelled) {
@@ -68,11 +80,14 @@ export function useQrLogin(active: boolean, onApproved: () => void) {
             return;
           }
 
-          const status = await pollQrLogin(session.token);
+          const { status, identityEnvelope } = await pollQrLogin(session.token);
           if (cancelled) return;
           if (status === "pending") continue;
           setState((prev) => ({ ...prev, status }));
-          if (status === "approved") onApproved();
+          if (status === "approved") {
+            await finishOneScan(offer, session.token, identityEnvelope);
+            onApproved();
+          }
           return;
         }
       } catch (err) {
@@ -82,6 +97,7 @@ export function useQrLogin(active: boolean, onApproved: () => void) {
           imageUrl: "",
           error: err instanceof Error ? err.message : "QR login failed",
           secondsLeft: 0,
+          verificationCode: "",
         });
       }
     };

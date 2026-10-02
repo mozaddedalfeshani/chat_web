@@ -56,12 +56,15 @@ const post = <T>(path: string, body?: unknown) =>
   apiFetch<T>(path, { method: "POST", headers: jsonHeaders, body: body === undefined ? undefined : JSON.stringify(body) });
 
 export const transferApi = {
-  create: (deviceName: string, publicKeyParam: string) =>
+  create: (deviceName: string, publicKeyParam: string, loginToken?: string) =>
     post<TransferCreated>(BASE, {
       device_name: deviceName,
       client: "web",
       public_key: publicKeyParam,
       transfer_version: 2,
+      // One-scan sign-in: the phone that approved it finds this job by the
+      // sign-in token instead of scanning a history code.
+      ...(loginToken ? { login_token: loginToken } : {}),
     }),
   job: (id: string) => apiFetch<JobState>(`${BASE}/${id}/v2`),
   putDestInventory: (id: string, ciphertext: string) =>

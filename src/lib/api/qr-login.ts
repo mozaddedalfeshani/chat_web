@@ -1,6 +1,13 @@
 import { API_BASE, jsonHeaders, persistStoredToken } from "./core";
+import type { ChatE2EEIdentityEnvelope } from "./types/chat-e2ee";
 
 export type QrLoginStatus = "pending" | "approved" | "denied" | "expired";
+
+export type QrLoginPoll = {
+  status: QrLoginStatus;
+  /** One-scan QR: the phone's message identity, sealed to this tab's `k`. */
+  identityEnvelope?: ChatE2EEIdentityEnvelope;
+};
 
 export type QrLoginSession = {
   token: string;
@@ -35,19 +42,22 @@ export async function createQrLoginSession(
  * Polls one handshake. The Next BFF exchanges the one-time code and sets
  * httpOnly cookies; this client only learns that the phone approved.
  */
-export async function pollQrLogin(token: string): Promise<QrLoginStatus> {
+export async function pollQrLogin(token: string): Promise<QrLoginPoll> {
   const res = await fetch(`${API_BASE}/auth/qr/poll`, {
     method: "POST",
     headers: jsonHeaders,
     credentials: "include",
     body: JSON.stringify({ token }),
   });
-  if (res.status === 429) return "pending";
+  if (res.status === 429) return { status: "pending" };
   const data = await res.json().catch(() => null);
   if (!res.ok || !data?.success) {
     throw new Error(data?.error || "QR login failed");
   }
   const status = data.status as QrLoginStatus;
   if (status === "approved") persistStoredToken();
-  return status;
+  return {
+    status,
+    identityEnvelope: data.identity_envelope ?? undefined,
+  };
 }

@@ -25,15 +25,24 @@ export function deviceName() {
   return os ? `${browser} on ${os}` : browser;
 }
 
-export async function startImport(userId: string): Promise<ImportJob> {
+export type DestinationKeys = Awaited<ReturnType<typeof newDestinationKeys>>;
+
+/**
+ * `keys` + `loginToken` come from a one-scan sign-in: the key already went out
+ * in the sign-in QR, so the job must use that pair, not a fresh one.
+ */
+export async function startImport(
+  userId: string,
+  oneScan?: { keys: DestinationKeys; loginToken: string },
+): Promise<ImportJob> {
   // Asked on the user's own action, as browsers expect. A refusal is fine —
   // the import still works; the browser may just evict it under pressure,
   // which the import screen says plainly.
   void navigator.storage?.persist?.().catch(() => false);
-  const keys = await newDestinationKeys();
+  const keys = oneScan?.keys ?? (await newDestinationKeys());
   let created;
   try {
-    created = await transferApi.create(deviceName(), keys.param);
+    created = await transferApi.create(deviceName(), keys.param, oneScan?.loginToken);
   } catch (error) {
     if (error instanceof ApiError && error.message === "history_transfer_active") {
       throw new TransferActiveElsewhere(String(error.data?.data && (error.data.data as Record<string, unknown>).destination_device_name || ""));
