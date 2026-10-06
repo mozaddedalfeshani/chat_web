@@ -15,10 +15,10 @@ export type MeSession = {
    */
   independent_chat?: boolean;
   /**
-   * Rollout switch for encrypted chat files (server 0168). A client READS an
-   * encrypted file regardless and encrypts its own uploads only while this is
-   * on — until then, somebody on an older app would get a file they cannot
-   * open. Absent on a server that predates it, which means off.
+   * Encrypted chat files (server 0168). Always true on a current server — no
+   * env switch any more. A client READS an encrypted file regardless and
+   * encrypts its own uploads only while this is true. Absent on a server that
+   * predates 0168, which means off: that server would drop the file's key.
    */
   encrypted_attachments?: boolean;
 };
