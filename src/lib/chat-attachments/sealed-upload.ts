@@ -41,8 +41,9 @@ type UploadSecret = { key: Uint8Array; plainSize: number };
 // ciphertext would be described to the server as an ordinary file.
 const uploads = new Map<string, UploadSecret>();
 
-// The server's rollout switch, as `/api/me` last reported it. Off until told
-// otherwise: an older server has no such field and takes no ciphertext.
+// `encrypted_attachments` as `/api/me` last reported it — always true on a
+// current server. Off until told: a server older than 0168 has no such field
+// and would store the ciphertext without its key.
 let enabled = false;
 
 export function setEncryptedAttachmentsEnabled(value: boolean | undefined) {
@@ -65,9 +66,9 @@ export function forgetUploadSecret(fileUrl: string) {
 /**
  * Whether an upload into `conversation` is encrypted on this device first.
  *
- * - `enabled` is the server's rollout switch (`encrypted_attachments` on
- *   `/api/me`). Reading an encrypted file needs no switch; sending one waits
- *   until every client that might receive it can open it.
+ * - `enabled` is `encrypted_attachments` on `/api/me`: always true on a
+ *   current server, absent on one that predates 0168. Reading an encrypted
+ *   file needs no flag.
  * - The conversation has to be one whose messages are sealed, because the
  *   file's key travels sealed under the conversation key. A webhook feed has
  *   none.
