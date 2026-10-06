@@ -13,6 +13,10 @@ import type { TeamMember } from "@/lib/api/types/team";
 import VoiceRecordingBar from "../voice-recording-bar";
 import { VoiceMessageRecorder } from "../voice-recorder";
 import { useTypingSender } from "@/lib/chat-typing/use-typing-sender";
+import {
+  putPresignedUpload,
+  type PresignedUpload,
+} from "@/lib/chat-attachments/sealed-upload";
 
 const MAX_CHAT_FILES = 10;
 const MAX_VOICE_MS = 60_000;
@@ -45,7 +49,7 @@ export default function MessageComposer({
     contentType: string,
     fileName: string,
     sizeBytes?: number,
-  ) => Promise<{ upload_url: string; public_url: string }>;
+  ) => Promise<PresignedUpload>;
   onDiscard: (fileUrl: string) => Promise<void>;
   placeholder?: string;
   submitLabel?: string;
@@ -158,11 +162,7 @@ export default function MessageComposer({
         voice.sizeBytes,
       );
       publicUrl = presign.public_url;
-      const put = await fetch(presign.upload_url, {
-        method: "PUT",
-        headers: { "Content-Type": voice.contentType },
-        body: voice.blob,
-      });
+      const put = await putPresignedUpload(presign, voice.blob, voice.contentType);
       if (!put.ok) throw new Error("Upload failed");
       await onSubmit(
         textToTiptapJson(""),

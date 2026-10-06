@@ -41,6 +41,10 @@ import { ComposerAttachments } from "./attachments";
 import { isImageAttachment } from "@/components/team/shared/attachment-media";
 import { FileDropOverlay } from "@/components/team/shared/file-drop-zone/file-drop-overlay";
 import { useFileDropZone } from "@/components/team/shared/file-drop-zone/use-file-drop-zone";
+import {
+  putPresignedUpload,
+  type PresignedUpload,
+} from "@/lib/chat-attachments/sealed-upload";
 
 const DEFAULT_ALLOWED_TYPES: Record<string, string> = {
   "image/jpeg": ".jpg",
@@ -154,10 +158,7 @@ export default function CommentComposer({
     contentType: string,
     fileName: string,
     sizeBytes: number,
-  ) => Promise<{
-    upload_url: string;
-    public_url: string;
-  }>;
+  ) => Promise<PresignedUpload>;
   onDiscard: (fileUrl: string) => Promise<void>;
   busy?: boolean;
   mentionMembers: TeamMember[];
@@ -320,11 +321,7 @@ export default function CommentComposer({
 
         try {
           const presign = await onPresign(contentType, file.name, file.size);
-          const put = await fetch(presign.upload_url, {
-            method: "PUT",
-            headers: { "Content-Type": contentType },
-            body: file,
-          });
+          const put = await putPresignedUpload(presign, file, contentType);
           if (!put.ok) throw new Error(`Upload failed for ${file.name}`);
           setPending((prev) =>
             prev.map((p) =>
@@ -408,11 +405,7 @@ export default function CommentComposer({
     const contentType =
       file.type || item.content_type || "application/octet-stream";
     const presign = await onPresign(contentType, file.name, file.size);
-    const put = await fetch(presign.upload_url, {
-      method: "PUT",
-      headers: { "Content-Type": contentType },
-      body: file,
-    });
+    const put = await putPresignedUpload(presign, file, contentType);
     if (!put.ok) throw new Error(`Upload failed for ${file.name}`);
     return {
       file_url: presign.public_url,

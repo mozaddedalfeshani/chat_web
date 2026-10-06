@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@/lib/api";
+import { sealedFormAttachments } from "@/lib/chat-attachments/sealed-form";
 
 export const CHAT_PERSIST_KEY = "ababilx_chat_prefs";
 
@@ -12,7 +13,14 @@ function persistenceSafeMessage(message: ChatMessage): ChatMessage {
   const quote = message.quote?.sealed
     ? { ...message.quote, body: "", sealed: undefined }
     : message.quote;
-  return { ...message, body: "", decryption_failed: undefined, quote };
+  // An encrypted file goes back to the row the server sent: its real name
+  // and type were sealed for a reason, and localStorage is not sealed.
+  return sealedFormAttachments({
+    ...message,
+    body: "",
+    decryption_failed: undefined,
+    quote,
+  });
 }
 
 export function persistenceSafeConversations<T extends { last_message_body?: string }>(

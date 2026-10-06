@@ -1,7 +1,14 @@
 import { api } from "@/lib/api";
 import type { ChatConversation } from "@/lib/api/types/chat";
+import type { ChatMessageAttachment } from "@/lib/api/types/chat";
 import { encryptNewDMText, ChatKeyNotReady } from "./crypto";
 import { isEncryptedConversation } from "./eligible";
+import {
+  forwardableFiles,
+  needsNoFileKeys,
+  sealForwardFiles,
+  type ForwardFile,
+} from "./forward-files";
 
 /** One destination, as much of it as choosing a payload needs. */
 export type ForwardConversation = Pick<
@@ -17,10 +24,18 @@ export type ForwardPayload = {
   encryption_key_version?: number;
 };
 
+/** One encrypted file's key, sealed again for a destination (server 0168). */
+export type ForwardAttachmentSeal = {
+  file_url: string;
+  enc_meta: string;
+  enc_nonce: string;
+};
+
 export type ForwardTarget = {
   conversation_id: string;
   message: ForwardPayload;
   caption?: ForwardPayload;
+  attachments?: ForwardAttachmentSeal[];
 };
 
 type BuildForwardTargetsInput = {
@@ -37,6 +52,13 @@ type BuildForwardTargetsInput = {
   /** Team members to reach by DM; the DM is created here if it does not exist. */
   userIds: string[];
   currentUserId: string;
+  /**
+   * The forwarded message's files. The server copies their rows and points
+   * them at the same objects, but an encrypted file's key is sealed under its
+   * own conversation's key, so each destination gets that key sealed again
+   * under ITS key.
+   */
+  attachments?: ChatMessageAttachment[];
 };
 
 /**
@@ -54,8 +76,10 @@ export async function buildForwardTargets({
   conversations,
   userIds,
   currentUserId,
+  attachments = [],
 }: BuildForwardTargetsInput): Promise<ForwardTarget[]> {
   const trimmedCaption = caption?.trim() ?? "";
+  const files = forwardableFiles(attachments);
 
   const plainTarget = (conversation: ForwardConversation): ForwardTarget => ({
     conversation_id: conversation.id,
@@ -65,15 +89,19 @@ export async function buildForwardTargets({
 
   const conversationTargets = await Promise.all(
     conversations.map(async (conversation) => {
-      if (!isEncryptedConversation(conversation)) return plainTarget(conversation);
+      if (!isEncryptedConversation(conversation)) {
+        return plainTarget(needsNoFileKeys(files, conversation));
+      }
       try {
-        return await buildEncryptedTarget(conversation.id, text, trimmedCaption, currentUserId);
+        return await buildEncryptedTarget(
+          conversation.id, text, trimmedCaption, currentUserId, files,
+        );
       } catch (error) {
         // Same rule as an ordinary send: only a group the server marks
         // plaintext_until_keyed may take the text as it is. A DM or a group
         // created as one rethrows.
         if (error instanceof ChatKeyNotReady && conversation.plaintext_until_keyed) {
-          return plainTarget(conversation);
+          return plainTarget(needsNoFileKeys(files, conversation));
         }
         throw error;
       }
@@ -89,6 +117,7 @@ export async function buildForwardTargets({
         text,
         trimmedCaption,
         currentUserId,
+        files,
       ),
     ),
   );
@@ -101,15 +130,23 @@ async function buildEncryptedTarget(
   text: string,
   caption: string,
   currentUserId: string,
+  files: ForwardFile[],
 ): Promise<ForwardTarget> {
   const encrypt = (value: string) =>
     encryptNewDMText(conversationId, value, currentUserId);
 
+  // An attachment-only forward has nothing to encrypt, and the server accepts
+  // an empty payload when plaintext attachments travel with it. Encrypted
+  // files are different: their keys are sealed under the body's key version,
+  // so the message is sealed even when its text is empty.
+  const message = text.trim() || files.length ? await encrypt(text) : undefined;
   return {
     conversation_id: conversationId,
-    // An attachment-only forward has nothing to encrypt, and the server accepts
-    // an empty payload when attachments travel with it.
-    message: text.trim() ? await encrypt(text) : {},
+    message: message ?? {},
+    attachments:
+      message && files.length
+        ? await sealForwardFiles(conversationId, currentUserId, message.encryption_key_version, files)
+        : undefined,
     caption: caption ? await encrypt(caption) : undefined,
   };
 }

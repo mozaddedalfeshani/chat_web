@@ -19,6 +19,7 @@ import {
 import {
   decryptChatMessage,
   decryptChatMessages,
+  needsOpening,
 } from "@/lib/chat-e2ee/crypto";
 import { decryptSidebarPreviews } from "@/lib/chat-e2ee/sidebar-preview";
 import { fillConversationKeyGaps } from "@/lib/chat-e2ee/key-gaps";
@@ -31,6 +32,11 @@ import {
   type ChatSendBody,
 } from "@/lib/messages/outbox";
 import { sendEncryptedChat } from "@/lib/chat-e2ee/dm-send";
+import { sealAttachments } from "@/lib/chat-e2ee/attachment-seal";
+import {
+  forgetUploadSecret,
+  uploadSecretFor,
+} from "@/lib/chat-attachments/sealed-upload";
 import { isEncryptedConversation } from "@/lib/chat-e2ee/eligible";
 import { acknowledgeMessages } from "@/lib/messages/device";
 import {
@@ -913,16 +919,29 @@ export const useChatStore = create<ChatState>()(
         if (encrypted && !currentUserId) {
           throw new Error("Secure message participants are unavailable");
         }
-        const deliver = (encrypted: ChatSendBody) =>
+        // A file this device encrypted has its key sealed under the body's
+        // key version, so its message is sealed even when the text is empty —
+        // and sealed again, key and all, if the send has to re-key.
+        const sealedFiles = (attachments ?? []).some((a) => uploadSecretFor(a.file_url));
+        const deliver = async (encrypted: ChatSendBody) =>
           sendChatMessageDurably(currentUserId, activeConversationId, {
             ...encrypted,
             parent_id: parentId,
             quoted_message_id: quotedMessageId,
-            attachments,
+            attachments:
+              attachments && sealedFiles
+                ? await sealAttachments(
+                    activeConversationId,
+                    currentUserId,
+                    encrypted.encryption_key_version ?? 0,
+                    attachments,
+                    uploadSecretFor,
+                  )
+                : attachments,
             mentioned_user_ids: dm ? [] : mentionedUserIds,
           });
         const rawMessage =
-          encrypted && body.trim()
+          encrypted && (body.trim() || sealedFiles)
             ? await sendEncryptedChat(
                 activeConversationId,
                 body,
@@ -933,6 +952,9 @@ export const useChatStore = create<ChatState>()(
                   : undefined,
               )
             : await deliver({ body });
+        // Only now: a send that failed is repeated from the composer's own
+        // list, and needs the keys still filed.
+        for (const attachment of attachments ?? []) forgetUploadSecret(attachment.file_url);
         void persistRawMessages(currentUserId, [rawMessage]);
         const msg = currentUserId
           ? await decryptChatMessage(rawMessage, currentUserId)
@@ -975,8 +997,7 @@ export const useChatStore = create<ChatState>()(
           (ev.type === "chat.message.created" ||
             ev.type === "chat.message.updated") &&
           currentUserId &&
-          ((ev.message.encryption_version === 1 && !ev.message.body) ||
-            !!ev.message.quote?.encrypted_body)
+          needsOpening(ev.message)
         ) {
           void decryptChatMessage(ev.message, currentUserId).then((message) => {
             get().handleWsEvent({ ...ev, message });

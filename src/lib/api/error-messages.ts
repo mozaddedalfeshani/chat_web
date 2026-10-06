@@ -26,6 +26,10 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Reopen this lead before changing its payment records.",
   phone_needs_country_code:
     "Add the country code to search by phone, e.g. +8801712345678. Numbers are stored with their country code, so a local number matches nobody.",
+  encrypted_attachment_needs_secure_chat:
+    "Encrypted files can only be forwarded to secure chats.",
+  encrypted_attachment_invalid:
+    "This file could not be sent securely. Remove it and attach it again.",
   member_needs_secure_messages:
     "This chat is encrypted, and that person has not set up secure messages yet. Ask them to open AbabilX once, then add them.",
   request_rejected_cooldown: "Try again later",

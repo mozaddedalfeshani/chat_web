@@ -1,4 +1,5 @@
 import { extractUrls, isTiptapEmpty, tiptapToPlainText } from "@/components/team/board/tiptap/utils";
+import { isSealedWireName } from "@/lib/chat-attachments/seal-payload";
 
 export type ChatPreviewAttachment = {
   file_name: string;
@@ -74,6 +75,13 @@ export function attachmentPreviewLabel(
 ): string | null {
   if (!contentType && !fileName) return null;
   const type = contentType ?? "";
+  // An encrypted file's stored name says nothing; its kind does (0168).
+  if (isSealedWireName(fileName)) {
+    if (type.startsWith("image/")) return "📷 Photo";
+    if (type.startsWith("video/")) return "🎬 Video";
+    if (type.startsWith("audio/")) return "🎤 Audio";
+    return "📎 File";
+  }
   const name = fileName ?? "file";
   if (type.startsWith("image/") || /\.svg$/i.test(name)) return `📷 ${name}`;
   if (type.startsWith("video/")) return `🎬 ${name}`;
@@ -101,7 +109,9 @@ export function resolvePreviewAttachments(opts: {
 
 export function fileBadgeLabel(file: ChatPreviewAttachment): string {
   const name = file.file_name?.trim() ?? "";
-  if (name) return name;
+  // "file" / "voice-message" is all the server keeps of an encrypted file's
+  // name, so the kind below is the honest label.
+  if (name && !isSealedWireName(name)) return name;
   const type = file.content_type?.toLowerCase() ?? "";
   if (type.startsWith("image/")) return "Photo";
   if (type.startsWith("video/")) return "Video";

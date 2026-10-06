@@ -31,6 +31,14 @@ import HistoryBridge from "./history-import/history-bridge";
 import { useMessageVaultStore } from "@/store/message-vault-store";
 import { useUIStore } from "@/store/ui-store";
 import { editEncryptedChat } from "@/lib/chat-e2ee/dm-edit";
+import { openMessageAttachments } from "@/lib/chat-e2ee/attachment-seal";
+import {
+  encryptedAttachmentsEnabled,
+  forgetUploadSecret,
+  presignChatUpload,
+  setEncryptedAttachmentsEnabled,
+  shouldSealUpload,
+} from "@/lib/chat-attachments/sealed-upload";
 import MessageStorageNoticeDialog, {
   hasSeenMessageStorageNotice,
 } from "./message-storage-notice-dialog";
@@ -156,6 +164,7 @@ export default function MessagesClient() {
       .getMeSession()
       .then((me) => {
         useChatStore.getState().setCurrentUserId(me.id);
+        setEncryptedAttachmentsEnabled(me.encrypted_attachments);
         setAppLanguage(me.app_language ?? null);
         setSessionReady(true);
       })
@@ -410,7 +419,11 @@ export default function MessagesClient() {
           api.patchChatMessage(messageId, payload),
         )
       : await api.patchChatMessage(messageId, body);
-    const display = encrypted ? { ...updated, body } : updated;
+    // The server's answer carries the row as stored: its encrypted files
+    // have to be opened again or they would fall back to unreadable tiles.
+    const display = encrypted
+      ? await openMessageAttachments({ ...updated, body }, currentUserId)
+      : updated;
     updateFeedMessage(activeConversationId, display, null);
     updateFeedMessage(activeConversationId, display, threadRootId);
     // The reply preview under a message reads threadRepliesByRoot, not the
@@ -422,8 +435,13 @@ export default function MessagesClient() {
   function presign(contentType: string, fileName: string, sizeBytes?: number) {
     if (!activeConversationId)
       return Promise.reject(new Error("No conversation"));
-    return api.presignChatAttachment(
-      activeConversationId,
+    const conversationId = activeConversationId;
+    // Encrypted on this device first, where the chat is one that takes it
+    // (lib/chat-attachments/sealed-upload.ts).
+    return presignChatUpload(
+      (type, name, size, encrypted) =>
+        api.presignChatAttachment(conversationId, type, name, size, encrypted),
+      shouldSealUpload(encryptedAttachmentsEnabled(), activeConv),
       contentType,
       fileName,
       sizeBytes ?? 0,
@@ -431,6 +449,7 @@ export default function MessagesClient() {
   }
 
   function discard(fileUrl: string) {
+    forgetUploadSecret(fileUrl);
     if (!activeConversationId) return Promise.resolve();
     return api.discardChatUpload(activeConversationId, fileUrl);
   }

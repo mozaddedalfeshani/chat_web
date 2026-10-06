@@ -4,7 +4,8 @@ import { useState } from "react";
 import { LoaderCircle, Play } from "lucide-react";
 import type { ChatMessageAttachment } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useLocalAssetState } from "./use-local-asset";
+import { useAttachmentAsset } from "./use-attachment-asset";
+import AttachmentFetchButton from "./attachment-fetch-button";
 import UnavailableMedia from "./unavailable-media";
 import MediaLightbox from "./media-lightbox";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
@@ -42,7 +43,7 @@ function MediaTile({
   overflow?: number;
   onOpen: () => void;
 }) {
-  const asset = useLocalAssetState(attachment.file_url);
+  const asset = useAttachmentAsset(attachment);
   const localUrl = asset.src;
   const [broken, setBroken] = useState(false);
   const video = isVideo(attachment);
@@ -65,8 +66,8 @@ function MediaTile({
         className,
       )}
     >
-      {broken && asset.unavailable ? (
-        <UnavailableMedia />
+      {asset.unavailable && (broken || !localUrl) ? (
+        <UnavailableMedia sealed={!!attachment.enc_meta} />
       ) : localUrl ? (
         video ? (
           <video
@@ -88,11 +89,15 @@ function MediaTile({
         )
       ) : (
         <span className="flex h-full w-full items-center justify-center">
-          <LoaderCircle className="h-4 w-4 animate-spin text-white/70" />
+          {asset.fetch && !overflow ? (
+            <AttachmentFetchButton sizeBytes={attachment.size_bytes} onFetch={asset.fetch} />
+          ) : (
+            <LoaderCircle className="h-4 w-4 animate-spin text-white/70" />
+          )}
         </span>
       )}
 
-      {video && !overflow ? (
+      {video && !overflow && localUrl ? (
         <span className="pointer-events-none absolute inset-0 flex items-center justify-center">
           <span className="flex h-9 w-9 items-center justify-center rounded-full bg-black/55">
             <Play className="h-4 w-4 fill-white text-white" />

@@ -12,6 +12,7 @@ import {
   isCsvAttachment,
 } from "@/components/team/shared/attachment-media";
 import CsvPreview from "@/components/shared/csv-preview";
+import SealedAttachments from "./sealed-attachments";
 
 function AttachmentDownloadOverlay({
   fileName,
@@ -52,7 +53,10 @@ export default function CommentAttachments({
 
   // Locked files have no url — they render as a name + lock badge instead.
   const lockedFiles = attachments.filter(isLockedFile);
-  const openFiles = attachments.filter((a) => !isLockedFile(a));
+  // Encrypted chat files have their own renderer: every branch below draws
+  // from `file_url`, which for those is ciphertext.
+  const sealedFiles = attachments.filter((a) => !isLockedFile(a) && a.enc_meta);
+  const openFiles = attachments.filter((a) => !isLockedFile(a) && !a.enc_meta);
 
   const images = openFiles.filter((a) =>
     isImageAttachment(a.content_type, a.file_name),
@@ -205,6 +209,8 @@ export default function CommentAttachments({
           ))}
         </div>
       ) : null}
+
+      <SealedAttachments attachments={sealedFiles} />
 
       {lockedFiles.length > 0 ? (
         <div className="flex flex-wrap gap-2">

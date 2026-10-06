@@ -190,6 +190,12 @@ export function presignChatAttachment(
   contentType: string,
   fileName: string,
   sizeBytes: number,
+  /**
+   * The file was encrypted on this device first. `contentType` is then only
+   * its kind, `fileName` a generic name and `sizeBytes` the ciphertext's
+   * length; the object is stored as `<uuid>.bin`, served as octet-stream.
+   */
+  encrypted = false,
 ) {
   return apiFetch<{
     upload_url: string;
@@ -202,6 +208,7 @@ export function presignChatAttachment(
       content_type: contentType,
       file_name: fileName,
       size_bytes: sizeBytes,
+      ...(encrypted ? { encrypted: true } : {}),
     }),
   });
 }

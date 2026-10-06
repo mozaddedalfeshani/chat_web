@@ -1,4 +1,5 @@
 import type { ChatMessage } from "@/lib/api/types/chat";
+import { sealedFormAttachments } from "@/lib/chat-attachments/sealed-form";
 import { timestampMicros } from "../markers";
 import type { MergeSide, Provenance } from "../merge";
 import { openJson, sealJson, type Sealed } from "../idb/local-key";
@@ -45,7 +46,13 @@ export function sealableMessage(message: ChatMessage): ChatMessage {
   const quote = message.quote?.sealed
     ? { ...message.quote, body: "", sealed: undefined }
     : message.quote;
-  const copy: ChatMessage = { ...message, body: encrypted ? "" : message.body, quote };
+  // An encrypted file's row is stored as it arrived too: the real name, type
+  // and size this device opened are dropped, and its key was never on it.
+  const copy: ChatMessage = sealedFormAttachments({
+    ...message,
+    body: encrypted ? "" : message.body,
+    quote,
+  });
   delete copy.decryption_failed;
   return copy;
 }

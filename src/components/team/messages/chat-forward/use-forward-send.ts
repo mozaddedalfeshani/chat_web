@@ -57,6 +57,7 @@ export function useForwardSend({
         conversations,
         userIds,
         currentUserId,
+        attachments: message?.attachments,
       });
       const res = message
         ? await api.forwardChatMessage({ message_id: message.id, targets })

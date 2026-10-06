@@ -87,7 +87,9 @@ export function useAssetMenu({
         },
       });
     }
-    items.push({
+    // A `blob:` address is a decrypted file held by this tab: as a link it
+    // opens nothing anywhere else, so it is not offered as one.
+    if (!url.startsWith("blob:")) items.push({
       key: "copy-link",
       label: "Copy link",
       icon: <LinkIcon size={17} />,

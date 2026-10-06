@@ -14,6 +14,13 @@ export type MeSession = {
    * workspace and every personal-connection surface stays hidden.
    */
   independent_chat?: boolean;
+  /**
+   * Rollout switch for encrypted chat files (server 0168). A client READS an
+   * encrypted file regardless and encrypts its own uploads only while this is
+   * on — until then, somebody on an older app would get a file they cannot
+   * open. Absent on a server that predates it, which means off.
+   */
+  encrypted_attachments?: boolean;
 };
 
 export type MeProfile = {

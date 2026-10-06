@@ -6,7 +6,7 @@ import {
   saveAssetsToFolder,
   saveAssetToDownloads,
 } from "@/lib/files/asset-actions";
-import { resolveLocalAsset } from "@/lib/history/media/local-asset";
+import { resolveAttachmentUrl } from "@/lib/chat-attachments/resolve-attachment";
 
 /** Plain text of a message body, TipTap JSON or not. */
 export function messagePlainText(message: ChatMessage) {
@@ -25,8 +25,7 @@ export async function copyText(text: string) {
 
 export async function copyImage(userId: string, attachment: ChatMessageAttachment) {
   try {
-    const asset = await resolveLocalAsset(userId, attachment.file_url);
-    await copyImageToClipboard(asset.src ?? attachment.file_url);
+    await copyImageToClipboard(await resolveAttachmentUrl(userId, attachment));
     toast.success("Image copied");
   } catch {
     toast.error("Could not copy image");
@@ -44,7 +43,7 @@ export async function saveAttachments(userId: string, attachments: ChatMessageAt
   try {
     const resolved = await Promise.all(attachments.map(async (attachment) => ({
       attachment,
-      url: (await resolveLocalAsset(userId, attachment.file_url)).src ?? attachment.file_url,
+      url: await resolveAttachmentUrl(userId, attachment),
     })));
     if (attachments.length === 1) {
       const only = resolved[0];

@@ -10,6 +10,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { openAttachment } from "@/lib/chat-e2ee/attachment-seal";
+import { useChatStore } from "@/store/chat-store";
+import { SharedFileRow, SharedMediaTile } from "./shared-media-item";
 
 type MediaKind = "media" | "files";
 
@@ -22,6 +25,7 @@ export default function SharedMediaDialog({
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }) {
+  const currentUserId = useChatStore((s) => s.currentUserId);
   const [kind, setKind] = useState<MediaKind>("media");
   const [result, setResult] = useState<{
     key: string;
@@ -36,8 +40,17 @@ export default function SharedMediaDialog({
     let cancelled = false;
     api
       .listChatConversationMedia(conversationId, { kind })
-      .then((page) => {
-        if (!cancelled) setResult({ key: requestKey, items: page.items ?? [] });
+      // The listing is attachment rows alone, so an encrypted file's key is
+      // opened here; its sealer is whoever uploaded it.
+      .then((page) =>
+        Promise.all(
+          (page.items ?? []).map((item) =>
+            openAttachment(conversationId, currentUserId, item),
+          ),
+        ),
+      )
+      .then((items) => {
+        if (!cancelled) setResult({ key: requestKey, items });
       })
       .catch(() => {
         if (!cancelled) setResult({ key: requestKey, items: [] });
@@ -45,7 +58,7 @@ export default function SharedMediaDialog({
     return () => {
       cancelled = true;
     };
-  }, [conversationId, kind, open, requestKey]);
+  }, [conversationId, currentUserId, kind, open, requestKey]);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -80,39 +93,13 @@ export default function SharedMediaDialog({
         ) : kind === "media" ? (
           <div className="grid max-h-[60vh] grid-cols-3 gap-2 overflow-y-auto">
             {items.map((item) => (
-              <a
-                key={item.id}
-                href={item.file_url}
-                target="_blank"
-                rel="noreferrer"
-                className="aspect-square overflow-hidden rounded-lg bg-[var(--surface2)]"
-              >
-                {item.content_type.startsWith("video/") ? (
-                  <video src={item.file_url} className="h-full w-full object-cover" />
-                ) : (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={item.file_url}
-                    alt={item.file_name}
-                    className="h-full w-full object-cover"
-                  />
-                )}
-              </a>
+              <SharedMediaTile key={item.id} item={item} />
             ))}
           </div>
         ) : (
           <div className="max-h-[60vh] space-y-1 overflow-y-auto">
             {items.map((item) => (
-              <a
-                key={item.id}
-                href={item.file_url}
-                target="_blank"
-                rel="noreferrer"
-                className="flex items-center gap-2 rounded-lg px-3 py-2 text-sm hover:bg-[var(--surface2)]"
-              >
-                <FileText className="size-4 shrink-0" />
-                <span className="truncate">{item.file_name}</span>
-              </a>
+              <SharedFileRow key={item.id} item={item} />
             ))}
           </div>
         )}

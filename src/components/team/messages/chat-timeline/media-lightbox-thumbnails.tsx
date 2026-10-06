@@ -2,7 +2,7 @@
 
 import type { ChatMessageAttachment } from "@/lib/api";
 import { cn } from "@/lib/utils";
-import { useLocalAsset } from "./use-local-asset";
+import { useAttachmentAsset } from "./use-attachment-asset";
 
 function isVideo(attachment: ChatMessageAttachment) {
   return (attachment.content_type ?? "").toLowerCase().startsWith("video/");
@@ -19,7 +19,7 @@ function Thumbnail({
   selected: boolean;
   onSelect: () => void;
 }) {
-  const localUrl = useLocalAsset(attachment.file_url);
+  const localUrl = useAttachmentAsset(attachment).src;
   return (
     <button
       type="button"

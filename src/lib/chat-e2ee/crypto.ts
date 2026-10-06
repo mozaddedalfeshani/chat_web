@@ -15,6 +15,7 @@ import {
 } from "./primitives";
 import { ensureDMKey, loadDMKey, rotateDMKey, ChatKeyNotReady } from "./conversation-key";
 import { loadReadKey } from "./read-key";
+import { openMessageAttachments } from "./attachment-seal";
 
 export { rotateDMKey, ChatKeyNotReady };
 
@@ -139,10 +140,33 @@ export async function decryptChatMessage(message: ChatMessage, currentUserID: st
       entry.key,
       base64UrlToBytes(message.encrypted_body),
     );
-    return { ...message, body: decoder.decode(plaintext), decryption_failed: false };
+    // An encrypted file's key is sealed under the body's key, so a body that
+    // opened is the only case where its files can.
+    return openMessageAttachments(
+      { ...message, body: decoder.decode(plaintext), decryption_failed: false },
+      currentUserID,
+    );
   } catch {
     return { ...message, body: "Unable to decrypt this message", decryption_failed: true };
   }
+}
+
+/**
+ * True while `message` still holds something this device has not tried to
+ * open: its body (and the files sealed with it), or the quote it carries.
+ *
+ * Asked by the websocket path, which re-dispatches a message once it is
+ * opened. The body test is "not attempted yet", never "body is empty": a
+ * message that is nothing but encrypted files seals an EMPTY text, and
+ * reading that as "still sealed" would decrypt the same event forever.
+ */
+export function needsOpening(message: ChatMessage) {
+  return (
+    (message.encryption_version === 1 &&
+      !!message.encrypted_body &&
+      message.decryption_failed === undefined) ||
+    !!message.quote?.encrypted_body
+  );
 }
 
 export function decryptChatMessages(messages: ChatMessage[], currentUserID: string) {

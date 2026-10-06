@@ -29,6 +29,10 @@ export function chatToThreadMessage(message: ChatMessage): ThreadMessage {
       size_bytes: a.size_bytes,
       // Carried through so the thread renderer can show the lock badge.
       locked: a.locked,
+      // An encrypted file is drawn from its decrypted copy, never its URL.
+      enc_meta: a.enc_meta,
+      sealed_as: a.sealed_as,
+      seal_failed: a.seal_failed,
     })),
     reactions: message.reactions,
     via_ababilx: message.via_ababilx,

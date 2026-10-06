@@ -10,7 +10,9 @@ import {
   IMAGE_PREVIEW_ZOOM_SCALE,
   useImagePreviewZoom,
 } from "@/components/shared/use-image-preview-zoom";
-import { useLocalAsset } from "./use-local-asset";
+import { useAttachmentAsset } from "./use-attachment-asset";
+import AttachmentFetchButton from "./attachment-fetch-button";
+import UnavailableMedia from "./unavailable-media";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
 import { openExternal } from "@/lib/files/asset-actions";
 import MediaLightboxHeader from "./media-lightbox-header";
@@ -54,7 +56,8 @@ export default function MediaLightbox({
   sentAt?: string;
 }) {
   const current = items[index];
-  const localUrl = useLocalAsset(current?.file_url ?? "");
+  const asset = useAttachmentAsset(current);
+  const localUrl = asset.src;
   const video = current ? isVideo(current) : false;
   const { save, saving, toast } = useSaveAttachment(
     localUrl ?? "",
@@ -130,7 +133,12 @@ export default function MediaLightbox({
           onMouseLeave={handleViewportMouseLeave}
           className="relative flex flex-grow items-center justify-center overflow-hidden"
         >
-          {!localUrl ? (
+          {!localUrl && asset.unavailable ? (
+            <UnavailableMedia sealed={!!current.enc_meta} className="max-h-40 max-w-xs" />
+          ) : !localUrl && asset.fetch ? (
+            // An encrypted file too large to fetch unasked, or one that failed.
+            <AttachmentFetchButton sizeBytes={current.size_bytes} onFetch={asset.fetch} />
+          ) : !localUrl ? (
             <LoaderCircle
               className="h-6 w-6 animate-spin"
               style={{ color: "var(--sig-label-2)" }}

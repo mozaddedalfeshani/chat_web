@@ -5,6 +5,7 @@ import type { TeamMember } from "@/lib/api/types/team";
 import type { ChatAttachmentInput } from "@/lib/api/types/chat";
 import CommentThreadPanel from "@/components/team/board/comments/thread-panel";
 import { MAX_WALL_ATTACHMENT_BYTES } from "@/components/team/wall/wall-attachment-limits";
+import type { PresignedUpload } from "@/lib/chat-attachments/sealed-upload";
 import { chatToThreadMessage } from "../chat-message-utils";
 
 export default function ChatThreadPanel({
@@ -40,7 +41,7 @@ export default function ChatThreadPanel({
     contentType: string,
     fileName: string,
     sizeBytes?: number,
-  ) => Promise<{ upload_url: string; public_url: string }>;
+  ) => Promise<PresignedUpload>;
   onDiscard: (fileUrl: string) => Promise<void>;
   isFreeTier?: boolean;
 }) {

@@ -8,6 +8,13 @@ export type ThreadAttachment = {
   size_bytes: number;
   /** Server withheld the url: the workspace's files are locked pending upgrade. */
   locked?: boolean;
+  /**
+   * Chat only: a file its sender encrypted (server 0168). `file_url` is then
+   * ciphertext and must never be drawn directly — see `SealedAttachments`.
+   */
+  enc_meta?: string;
+  sealed_as?: Pick<ThreadAttachment, "file_name" | "content_type" | "size_bytes">;
+  seal_failed?: boolean;
 };
 
 export type ThreadMessage = {

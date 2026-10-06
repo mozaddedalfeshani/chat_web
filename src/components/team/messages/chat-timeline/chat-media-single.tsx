@@ -3,7 +3,8 @@
 import { useState } from "react";
 import { LoaderCircle, Play } from "lucide-react";
 import type { ChatMessageAttachment } from "@/lib/api";
-import { useLocalAssetState } from "./use-local-asset";
+import { useAttachmentAsset } from "./use-attachment-asset";
+import AttachmentFetchButton from "./attachment-fetch-button";
 import UnavailableMedia from "./unavailable-media";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
 import { chatMediaFrame, chatMediaPlaceholder } from "./chat-media-size";
@@ -14,7 +15,7 @@ function isVideo(attachment: ChatMessageAttachment) {
 
 /** A lone photo or video keeps its own ratio instead of joining a mosaic. */
 export default function SingleMedia({ attachment }: { attachment: ChatMessageAttachment }) {
-  const asset = useLocalAssetState(attachment.file_url);
+  const asset = useAttachmentAsset(attachment);
   const localUrl = asset.src;
   const [broken, setBroken] = useState(false);
   const menu = useAssetMenu({
@@ -23,11 +24,17 @@ export default function SingleMedia({ attachment }: { attachment: ChatMessageAtt
     kind: isVideo(attachment) ? "video" : "image",
   });
 
-  if (broken && asset.unavailable) return <UnavailableMedia className={chatMediaPlaceholder} />;
+  if (asset.unavailable && (broken || !localUrl)) {
+    return <UnavailableMedia className={chatMediaPlaceholder} sealed={!!attachment.enc_meta} />;
+  }
   if (!localUrl) {
     return (
       <span className={chatMediaPlaceholder}>
-        <LoaderCircle className="h-4 w-4 animate-spin text-white/70" />
+        {asset.fetch ? (
+          <AttachmentFetchButton sizeBytes={attachment.size_bytes} onFetch={asset.fetch} />
+        ) : (
+          <LoaderCircle className="h-4 w-4 animate-spin text-white/70" />
+        )}
       </span>
     );
   }

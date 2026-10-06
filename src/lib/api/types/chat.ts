@@ -132,6 +132,25 @@ export type ChatMessageAttachment = {
   created_at: string;
   /** True when the workspace's files are locked: file_url is withheld until upgrade. */
   locked?: boolean;
+  /**
+   * A file its sender encrypted before uploading (server migration 0168).
+   * `file_url` is then ciphertext, and `enc_meta` is the file's key with its
+   * real name, type and size, sealed under the conversation key at
+   * `enc_key_version`. `file_name` and `content_type` are only "file" /
+   * "voice-message" and a coarse kind. Absent = an ordinary plaintext file.
+   */
+  enc_meta?: string;
+  enc_nonce?: string;
+  enc_key_version?: number;
+  /**
+   * Client-only. Set once this device opened `enc_meta`: `file_name`,
+   * `content_type` and `size_bytes` then describe the real file, and this
+   * keeps what the server stores so the row can be written back as it arrived.
+   * The key itself is never put on the row (lib/chat-attachments/sealed-files).
+   */
+  sealed_as?: Pick<ChatMessageAttachment, "file_name" | "content_type" | "size_bytes">;
+  /** Client-only. `enc_meta` did not open here: no key for that version. */
+  seal_failed?: boolean;
 };
 
 export type ChatMessage = {
@@ -270,6 +289,9 @@ export type ChatAttachmentInput = {
   file_name: string;
   content_type: string;
   size_bytes: number;
+  /** Set together, for a file this device encrypted before uploading it. */
+  enc_meta?: string;
+  enc_nonce?: string;
 };
 
 export type ChatMessageCreatedEvent = {

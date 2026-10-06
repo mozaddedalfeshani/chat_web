@@ -9,6 +9,7 @@ import {
 } from "@/lib/messages/outbox";
 import { ensureMessagingDevice } from "@/lib/messages/device";
 import { useTypingRealtime } from "@/lib/chat-typing/use-typing-realtime";
+import { setEncryptedAttachmentsEnabled } from "@/lib/chat-attachments/sealed-upload";
 
 async function replayCurrentUserOutbox() {
   const userId = useChatStore.getState().currentUserId;
@@ -44,6 +45,7 @@ export default function ChatStoreSync() {
   useEffect(() => {
     void api.getMeSession().then((me) => {
       setCurrentUserId(me.id);
+      setEncryptedAttachmentsEnabled(me.encrypted_attachments);
       void ensureMessagingDevice(me.id).catch(() => {});
       void replayCurrentUserOutbox();
     });
