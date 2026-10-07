@@ -218,7 +218,18 @@ export type ChatMessage = {
       | "member_removed"
       | "member_left"
       | "role_changed"
-      | "permissions_changed";
+      | "permissions_changed"
+      | "task_status_changed"
+      | "task_priority_changed";
+    /** The task card a task change line is about. */
+    message_id?: string;
+    /** A task card: this message is also a task (migration 0169). */
+    task?: {
+      priority?: string;
+      status?: string;
+      updated_by?: string;
+      updated_at?: string;
+    } | null;
     actor_id?: string;
     actor_name?: string;
     target_id?: string;

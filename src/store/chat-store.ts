@@ -350,6 +350,8 @@ interface ChatState {
     mentionedUserIds: string[],
     parentId?: string | null,
     quotedMessageId?: string | null,
+    /** Sends the message as a task card (DM only). */
+    task?: { priority: string },
   ) => Promise<ChatMessage | null>;
   setSending: (sending: boolean) => void;
 
@@ -904,7 +906,7 @@ export const useChatStore = create<ChatState>()(
         }
       },
 
-      sendMessage: async (body, attachments, mentionedUserIds, parentId, quotedMessageId) => {
+      sendMessage: async (body, attachments, mentionedUserIds, parentId, quotedMessageId, task) => {
         const { activeConversationId, threadRootId, currentUserId, dms, channels } =
           get();
         if (!activeConversationId) return null;
@@ -943,6 +945,7 @@ export const useChatStore = create<ChatState>()(
                   )
                 : attachments,
             mentioned_user_ids: dm ? [] : mentionedUserIds,
+            ...(task ? { task } : {}),
           });
         const rawMessage =
           encrypted && (body.trim() || sealedFiles)

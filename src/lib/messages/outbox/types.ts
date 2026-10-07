@@ -11,6 +11,8 @@ export type ChatOutboxPayload = {
   quoted_message_id?: string | null;
   attachments?: ChatAttachmentInput[];
   mentioned_user_ids?: string[];
+  /** Marks the message as a task card. DMs only. */
+  task?: { priority: string };
 };
 
 /** The body half of a send: plaintext, or the ciphertext fields that replace it. */

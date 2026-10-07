@@ -12,6 +12,8 @@ import ChatMediaGrid, { isMediaAttachment } from "../chat-media-grid";
 import { authorColorVar } from "./author-color";
 import BubbleMeta from "./bubble-meta";
 import BubbleQuote from "./bubble-quote";
+import { taskOf } from "@/lib/chat-task/task-format";
+import { TaskCardControls, TaskCardHead } from "../../chat-task/task-card";
 
 /** Markdown inside a bubble: headings sized off the 14px body instead of the
  *  board's page-sized ones, and block margins tightened to bubble scale. */
@@ -44,7 +46,9 @@ export default function BubbleBody({
   const attachments = message.attachments ?? [];
   const media = attachments.filter(isMediaAttachment);
   const files = attachments.filter((a) => !isMediaAttachment(a));
-  const hasText = !isTiptapEmpty(message.body);
+  // A task card draws its own title and description in place of the text.
+  const task = taskOf(message);
+  const hasText = !task && !isTiptapEmpty(message.body);
   // Signal's rules, both of them. One preview per message — the first link
   // that is safe to unfurl, which is the one the author led with. And
   // attachments take precedence: a message carrying a photo shows the photo,
@@ -100,6 +104,8 @@ export default function BubbleBody({
         </div>
       ) : null}
 
+      {task ? <TaskCardHead message={message} task={task} /> : null}
+
       {media.length ? (
         <div className={cn("relative", !overlayOnMedia && (hasText || files.length) && "mb-1.5")}>
           <ChatMediaGrid
@@ -138,6 +144,8 @@ export default function BubbleBody({
           />
         </div>
       ) : null}
+
+      {task ? <TaskCardControls message={message} task={task} /> : null}
 
       {overlayOnMedia ? null : (
         <BubbleMeta message={message} outgoing={outgoing} inset={mediaBubble} />

@@ -9,6 +9,7 @@ import MessageComposer, {
 import MessageRequestBar from "./message-request-bar";
 import ComposerConnectionLock from "./composer-connection-lock";
 import ReplyPreviewBar from "./reply-preview-bar";
+import type { ChatSendExtra } from "@/lib/chat-task/task-format";
 
 export type TimelineSend = (
   body: string,
@@ -17,6 +18,7 @@ export type TimelineSend = (
   >[1],
   mentionedUserIds: string[],
   quotedMessageId: string | null,
+  extra?: ChatSendExtra,
 ) => void | boolean | Promise<void | boolean>;
 
 export type TimelineMessageRequest = {
@@ -115,16 +117,18 @@ export default function TimelineFooter({
       <MessageComposer
         ref={composerRef}
         mentionMembers={mentionMembers}
-        onSubmit={async (body, attachments, mentioned) => {
+        onSubmit={async (body, attachments, mentioned, extra) => {
           const sent = await onSend(
             body,
             attachments,
             mentioned,
-            replyTo?.message_id ?? null,
+            // A task card is its own message, never a reply to one.
+            extra?.task ? null : (replyTo?.message_id ?? null),
+            extra,
           );
           // The bar clears only on a send that actually went out — the draft
           // survives a failure, so its quote has to as well.
-          if (sent !== false) onClearReply();
+          if (sent !== false && !extra?.task) onClearReply();
           return sent;
         }}
         busy={sending}
@@ -142,6 +146,7 @@ export default function TimelineFooter({
         allowMentionAll={isGroup}
         secureSend={!isGroup}
         typingConversationId={conversationId}
+        allowTask={!isGroup}
       />
     </>
   );

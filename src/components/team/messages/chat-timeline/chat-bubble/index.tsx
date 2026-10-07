@@ -89,7 +89,8 @@ export default function ChatBubble({
   // stack of five messages shows one face rather than five.
   const showAvatar = !outgoing && isGroupConversation && !groupedBelow;
   const showAuthor = !outgoing && isGroupConversation && !groupedAbove;
-  const mediaBubble = isMediaBubble(message);
+  // A task card keeps the text bubble's inset even when it carries photos.
+  const mediaBubble = !message.meta?.task && isMediaBubble(message);
 
   async function saveEdit() {
     if (!onEditMessage || isTiptapEmpty(editDraft)) return;

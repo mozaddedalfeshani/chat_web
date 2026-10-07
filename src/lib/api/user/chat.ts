@@ -116,6 +116,8 @@ export function sendChatMessage(
     quoted_message_id?: string | null;
     attachments?: ChatAttachmentInput[];
     mentioned_user_ids?: string[];
+    /** Marks the message as a task card. DMs only. */
+    task?: { priority: string };
   },
 ) {
   return apiFetch<ChatMessage>(

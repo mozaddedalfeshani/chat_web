@@ -26,6 +26,10 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Reopen this lead before changing its payment records.",
   phone_needs_country_code:
     "Add the country code to search by phone, e.g. +8801712345678. Numbers are stored with their country code, so a local number matches nobody.",
+  task_dm_only: "Tasks can only be sent in a direct message.",
+  task_not_in_private_chat: "Tasks are not available while private chat is on.",
+  task_no_thread: "A task cannot be sent as a thread reply.",
+  task_not_found: "This task is no longer on the server, so it cannot be changed.",
   encrypted_attachment_needs_secure_chat:
     "Encrypted files can only be forwarded to secure chats.",
   encrypted_attachment_invalid:

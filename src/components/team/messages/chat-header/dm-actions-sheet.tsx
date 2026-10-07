@@ -20,6 +20,8 @@ import { chatInitials } from "../chat-utils";
 import WallpaperDialog from "../wallpaper/wallpaper-dialog";
 import { Flag, Images, Pin, PinOff } from "lucide-react";
 import SharedMediaDialog from "../chat-details/shared-media-dialog";
+import TaskListDialog from "../chat-task/task-list-dialog";
+import { Task01Icon } from "hugeicons-react";
 import ReportConversationDialog from "../chat-details/report-conversation-dialog";
 
 function ActionRow({
@@ -94,6 +96,7 @@ export default function DmActionsSheet({
 }) {
   const [wallpaperOpen, setWallpaperOpen] = useState(false);
   const [mediaOpen, setMediaOpen] = useState(false);
+  const [tasksOpen, setTasksOpen] = useState(false);
   const [reportOpen, setReportOpen] = useState(false);
 
   return (
@@ -175,6 +178,15 @@ export default function DmActionsSheet({
             onClick={onTogglePin}
           />
           <ActionRow
+            icon={<Task01Icon size={18} />}
+            label="Tasks"
+            description="Every task in this chat"
+            onClick={() => {
+              onOpenChange(false);
+              setTasksOpen(true);
+            }}
+          />
+          <ActionRow
             icon={<Images size={18} />}
             label="Shared media and files"
             onClick={() => {
@@ -201,6 +213,11 @@ export default function DmActionsSheet({
       conversationId={conversationId}
       open={wallpaperOpen}
       onOpenChange={setWallpaperOpen}
+    />
+    <TaskListDialog
+      conversationId={conversationId}
+      open={tasksOpen}
+      onOpenChange={setTasksOpen}
     />
     <SharedMediaDialog
       conversationId={conversationId}

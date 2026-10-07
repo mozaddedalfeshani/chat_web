@@ -6,6 +6,7 @@ import { chatToThreadMessage } from "../chat-message-utils";
 import { VoiceCallEventRow } from "./voice-call-event";
 import { GroupCallEventRow } from "./group-call-event";
 import GroupEventRow from "./group-event-row";
+import TaskEventRow, { isTaskEvent } from "../chat-task/task-event-row";
 import WebhookMessageRow from "./webhook-message-row";
 import ChatBubble from "./chat-bubble";
 import type { MessageDeleteScope } from "./chat-bubble/delete-message-dialog";
@@ -79,6 +80,8 @@ export function ChatTimelineItemRow({
             </div>
           ) : null}
         </>
+      ) : m.message_type === "system" && isTaskEvent(m) ? (
+        <TaskEventRow message={m} currentUserId={currentUserId} />
       ) : m.message_type === "system" ? (
         <GroupEventRow message={m} currentUserId={currentUserId} />
       ) : m.message_type === "voice_call" ? (

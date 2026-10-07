@@ -7,6 +7,7 @@ import { useShallow } from "zustand/react/shallow";
 import { toast } from "sonner";
 import { api } from "@/lib/api";
 import { friendlyError } from "@/lib/api/error-messages";
+import type { ChatSendExtra } from "@/lib/chat-task/task-format";
 import { cn } from "@/lib/utils";
 import { useTeamContext } from "@/components/team/shared/team-provider";
 import { useTeamPlan } from "@/components/team/shared/use-team-plan";
@@ -351,6 +352,7 @@ export default function MessagesClient() {
     attachments: Parameters<typeof sendMessage>[1],
     mentionedUserIds: string[],
     quotedMessageId?: string | null,
+    extra?: ChatSendExtra,
   ) {
     if (!activeConversationId) return false;
     setSending(true);
@@ -361,6 +363,7 @@ export default function MessagesClient() {
         mentionedUserIds,
         null,
         quotedMessageId,
+        extra?.task,
       );
       return true;
     } catch (e) {
@@ -536,8 +539,8 @@ export default function MessagesClient() {
                 onLoadMore={mainChat.loadMore}
                 currentUserId={currentUserId}
                 mentionMembers={mentionMembers}
-                onSend={(body, attachments, mentioned, quotedMessageId) =>
-                  handleSend(body, attachments, mentioned, quotedMessageId)
+                onSend={(body, attachments, mentioned, quotedMessageId, extra) =>
+                  handleSend(body, attachments, mentioned, quotedMessageId, extra)
                 }
                 onToggleReaction={handleToggleReaction}
                 onOpenThread={(id) => {

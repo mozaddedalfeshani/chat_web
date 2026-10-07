@@ -13,6 +13,8 @@ import type { TeamMember } from "@/lib/api/types/team";
 import VoiceRecordingBar from "../voice-recording-bar";
 import SnippetDialog from "../chat-snippet/snippet-dialog";
 import SnippetSuggestion from "../chat-snippet/snippet-suggestion";
+import TaskDialog from "../chat-task/task-dialog";
+import type { ChatSendExtra } from "@/lib/chat-task/task-format";
 import { VoiceMessageRecorder } from "../voice-recorder";
 import { useTypingSender } from "@/lib/chat-typing/use-typing-sender";
 import {
@@ -38,6 +40,7 @@ export default function MessageComposer({
   allowMentionAll = false,
   secureSend = false,
   typingConversationId,
+  allowTask = false,
   ref,
 }: {
   mentionMembers: TeamMember[];
@@ -45,6 +48,7 @@ export default function MessageComposer({
     body: string,
     attachments: ChatAttachmentInput[],
     mentionedUserIds: string[],
+    extra?: ChatSendExtra,
   ) => void | boolean | Promise<void | boolean>;
   busy?: boolean;
   onPresign: (
@@ -64,10 +68,13 @@ export default function MessageComposer({
   secureSend?: boolean;
   /** Report "typing…" to the other members of this conversation. */
   typingConversationId?: string | null;
+  /** Offer "New task" — a DM's main composer only. */
+  allowTask?: boolean;
   ref?: Ref<MessageComposerHandle>;
 }) {
   const [value, setValue] = useState(initialValue ?? "");
   const [snippetOpen, setSnippetOpen] = useState(false);
+  const [taskOpen, setTaskOpen] = useState(false);
   // The over-long draft handed to the snippet dialog; `run` remounts it.
   const [snippetSeed, setSnippetSeed] = useState({ text: "", run: 0 });
   const [recording, setRecording] = useState(false);
@@ -256,6 +263,7 @@ export default function MessageComposer({
         }}
         onVoiceStart={() => void startVoice()}
         onSnippetStart={() => setSnippetOpen(true)}
+        onTaskStart={allowTask ? () => setTaskOpen(true) : undefined}
         onSubmit={async (attachments) => {
           const raw = extractMentionUserIds(value);
           const mentioned = raw.some(isMentionAllId)
@@ -271,6 +279,13 @@ export default function MessageComposer({
           if (sent !== false) setValue("");
         }}
       />
+      {allowTask ? (
+        <TaskDialog
+          open={taskOpen}
+          onOpenChange={setTaskOpen}
+          transport={{ onPresign, onDiscard, onSubmit }}
+        />
+      ) : null}
       <SnippetDialog
         key={snippetSeed.run}
         open={snippetOpen}

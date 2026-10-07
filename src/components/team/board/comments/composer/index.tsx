@@ -20,6 +20,7 @@ import {
   PlusSignIcon,
   TextFontIcon,
   File01Icon,
+  TaskAdd01Icon,
   Cancel01Icon,
   Mic01Icon,
 } from "hugeicons-react";
@@ -141,6 +142,7 @@ export default function CommentComposer({
   enableVoice = false,
   onVoiceStart,
   onSnippetStart,
+  onTaskStart,
   secureSend = false,
   enableFileDrop = true,
   iconOnlySend = false,
@@ -184,6 +186,8 @@ export default function CommentComposer({
   onVoiceStart?: () => void;
   /** Chat only: opens the "Create snippet" dialog. */
   onSnippetStart?: () => void;
+  /** Opens the new-task dialog (DMs). */
+  onTaskStart?: () => void;
   /** Replace the normal send glyph when chat text is encrypted on-device. */
   secureSend?: boolean;
   /** When false, parent owns paste/drop (e.g. full chat pane). */
@@ -677,6 +681,16 @@ export default function CommentComposer({
                         disabled={busy || uploading}
                         onClick={onSnippetStart}>
                         <File01Icon size={16} />
+                      </ComposerToolbarButton>
+                    </Tooltip>
+                  ) : null}
+                  {onTaskStart ? (
+                    <Tooltip content="New task" side="top">
+                      <ComposerToolbarButton
+                        label="Task"
+                        disabled={busy || uploading}
+                        onClick={onTaskStart}>
+                        <TaskAdd01Icon size={16} />
                       </ComposerToolbarButton>
                     </Tooltip>
                   ) : null}

@@ -19,6 +19,7 @@ export * from "./kanban-rooms";
 export * from "./notification";
 export * from "./wall";
 export * from "./chat";
+export * from "./chat-tasks";
 export * from "./chat-e2ee";
 export * from "./chat-e2ee-versions";
 export * from "./chat-e2ee-repair";
