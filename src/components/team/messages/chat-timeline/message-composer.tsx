@@ -11,6 +11,8 @@ import { MAX_WALL_ATTACHMENT_BYTES } from "@/components/team/wall/wall-attachmen
 import type { ChatAttachmentInput } from "@/lib/api/types/chat";
 import type { TeamMember } from "@/lib/api/types/team";
 import VoiceRecordingBar from "../voice-recording-bar";
+import SnippetDialog from "../chat-snippet/snippet-dialog";
+import SnippetSuggestion from "../chat-snippet/snippet-suggestion";
 import { VoiceMessageRecorder } from "../voice-recorder";
 import { useTypingSender } from "@/lib/chat-typing/use-typing-sender";
 import {
@@ -65,6 +67,9 @@ export default function MessageComposer({
   ref?: Ref<MessageComposerHandle>;
 }) {
   const [value, setValue] = useState(initialValue ?? "");
+  const [snippetOpen, setSnippetOpen] = useState(false);
+  // The over-long draft handed to the snippet dialog; `run` remounts it.
+  const [snippetSeed, setSnippetSeed] = useState({ text: "", run: 0 });
   const [recording, setRecording] = useState(false);
   const [preparing, setPreparing] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -213,6 +218,13 @@ export default function MessageComposer({
 
   return (
     <div className="shrink-0 bg-[var(--sig-bg)] px-3 pb-3 pt-1">
+      <SnippetSuggestion
+        body={value}
+        onCreate={(text) => {
+          setSnippetSeed((seed) => ({ text, run: seed.run + 1 }));
+          setSnippetOpen(true);
+        }}
+      />
       <CommentComposer
         ref={ref}
         value={value}
@@ -243,6 +255,7 @@ export default function MessageComposer({
           borderColor: "transparent",
         }}
         onVoiceStart={() => void startVoice()}
+        onSnippetStart={() => setSnippetOpen(true)}
         onSubmit={async (attachments) => {
           const raw = extractMentionUserIds(value);
           const mentioned = raw.some(isMentionAllId)
@@ -256,6 +269,19 @@ export default function MessageComposer({
           typing.stop();
           const sent = await onSubmit(value, attachments, mentioned);
           if (sent !== false) setValue("");
+        }}
+      />
+      <SnippetDialog
+        key={snippetSeed.run}
+        open={snippetOpen}
+        onOpenChange={setSnippetOpen}
+        transport={{ onPresign, onDiscard, onSubmit }}
+        initialContent={snippetSeed.text}
+        onSent={() => {
+          // The draft went out as the snippet: nothing left to send as text.
+          if (!snippetSeed.text) return;
+          setValue("");
+          setSnippetSeed((seed) => ({ text: "", run: seed.run + 1 }));
         }}
       />
     </div>

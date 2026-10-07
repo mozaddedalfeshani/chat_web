@@ -10,7 +10,8 @@
 export const MAX_MESSAGE_WORDS = 6000;
 export const MAX_MESSAGE_BODY_BYTES = 250 * 1024;
 
-export const MESSAGE_TOO_LONG = "This message is too long. The limit is 6000 words.";
+export const MESSAGE_TOO_LONG =
+  "This message is too long. The limit is 6000 words. Use a snippet for long text.";
 
 type Node = { type?: string; text?: string; attrs?: { label?: string }; content?: Node[] };
 

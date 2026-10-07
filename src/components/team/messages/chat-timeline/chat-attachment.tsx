@@ -6,6 +6,8 @@ import { useAttachmentAsset } from "./use-attachment-asset";
 import AttachmentFetchButton from "./attachment-fetch-button";
 import { useAssetMenu } from "@/components/shared/use-asset-menu";
 import AssetActionButtons from "@/components/shared/asset-action-buttons";
+import { isSnippetFile } from "@/lib/chat-snippet/snippet-format";
+import SnippetCard from "../chat-snippet/snippet-card";
 
 export default function ChatAttachment({ attachment }: { attachment: ChatMessageAttachment }) {
   const asset = useAttachmentAsset(attachment);
@@ -58,6 +60,26 @@ export default function ChatAttachment({ attachment }: { attachment: ChatMessage
           preload="metadata"
           onContextMenu={menu.onContextMenu}
           className="h-10 max-w-full"
+        />
+        {menu.menu}
+      </>
+    );
+  }
+  if (isSnippetFile(attachment.file_name, attachment.size_bytes)) {
+    return (
+      <>
+        <SnippetCard
+          url={localUrl}
+          fileName={attachment.file_name}
+          sizeBytes={attachment.size_bytes}
+          onContextMenu={menu.onContextMenu}
+          actions={
+            <AssetActionButtons
+              url={localUrl}
+              fileName={attachment.file_name}
+              variant="inline"
+            />
+          }
         />
         {menu.menu}
       </>

@@ -140,6 +140,7 @@ export default function CommentComposer({
   allowMentionAll = false,
   enableVoice = false,
   onVoiceStart,
+  onSnippetStart,
   secureSend = false,
   enableFileDrop = true,
   iconOnlySend = false,
@@ -181,6 +182,8 @@ export default function CommentComposer({
   /** Chat: show mic to start a voice note. */
   enableVoice?: boolean;
   onVoiceStart?: () => void;
+  /** Chat only: opens the "Create snippet" dialog. */
+  onSnippetStart?: () => void;
   /** Replace the normal send glyph when chat text is encrypted on-device. */
   secureSend?: boolean;
   /** When false, parent owns paste/drop (e.g. full chat pane). */
@@ -664,6 +667,16 @@ export default function CommentComposer({
                         disabled={busy || uploading}
                         onClick={onVoiceStart}>
                         <Mic01Icon size={16} />
+                      </ComposerToolbarButton>
+                    </Tooltip>
+                  ) : null}
+                  {onSnippetStart ? (
+                    <Tooltip content="Create snippet" side="top">
+                      <ComposerToolbarButton
+                        label="Snippet"
+                        disabled={busy || uploading}
+                        onClick={onSnippetStart}>
+                        <File01Icon size={16} />
                       </ComposerToolbarButton>
                     </Tooltip>
                   ) : null}
