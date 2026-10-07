@@ -11,9 +11,19 @@ export function updateChatTask(messageId: string, patch: TaskPatch) {
   });
 }
 
-/** Every task card in the DM, newest first. Bodies are still sealed. */
-export function listChatTasks(conversationId: string) {
-  return apiFetch<{ tasks: ChatMessage[] }>(
-    `/api/chat/conversations/${conversationId}/tasks`,
+export type ChatTaskState = "open" | "closed";
+export type ChatTaskPage = { tasks: ChatMessage[]; next_cursor?: string | null };
+
+/** One page of the DM's task cards, newest first. Bodies are still sealed.
+ *  `cursor` is the page before's `next_cursor`, which is null on the last. */
+export function listChatTasks(
+  conversationId: string,
+  options: { state?: ChatTaskState; cursor?: string; limit?: number } = {},
+) {
+  const query = new URLSearchParams({ limit: String(options.limit ?? 50) });
+  if (options.state) query.set("state", options.state);
+  if (options.cursor) query.set("cursor", options.cursor);
+  return apiFetch<ChatTaskPage>(
+    `/api/chat/conversations/${conversationId}/tasks?${query}`,
   );
 }

@@ -9,6 +9,7 @@ import {
   snippetKindOf,
 } from "@/lib/chat-snippet/snippet-format";
 import SnippetMarkdown from "./snippet-markdown";
+import SnippetSource from "./snippet-source";
 import { useSnippetText } from "./use-snippet-text";
 
 /** The whole snippet. Markdown is drawn formatted, with a switch to its
@@ -85,9 +86,7 @@ export default function SnippetViewer({
           ) : canFormat && !source ? (
             <SnippetMarkdown source={file.text} />
           ) : (
-            <pre className="whitespace-pre-wrap break-words font-mono text-[13px] leading-5">
-              {file.text}
-            </pre>
+            <SnippetSource text={file.text} />
           )}
         </div>
       </DialogContent>

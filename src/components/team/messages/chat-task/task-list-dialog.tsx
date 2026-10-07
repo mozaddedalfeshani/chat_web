@@ -1,18 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Task01Icon } from "hugeicons-react";
 import type { ChatMessage } from "@/lib/api/types/chat";
-import { listChatTasks } from "@/lib/api/user/chat-tasks";
-import { decryptChatMessages } from "@/lib/chat-e2ee/crypto";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { isTaskClosed, taskOf, type TaskPatch } from "@/lib/chat-task/task-format";
 import { useChatStore } from "@/store/chat-store";
 import ChatAttachment from "../chat-timeline/chat-attachment";
 import { TaskCardControls, TaskCardHead } from "./task-card";
 import { changeTask, withTaskPatch } from "./task-update";
+import { useTaskPages, type TaskFilter as Filter } from "./use-task-pages";
 
-type Filter = "all" | "open" | "closed";
 const FILTERS: { key: Filter; label: string }[] = [
   { key: "all", label: "All" },
   { key: "open", label: "Open" },
@@ -31,37 +29,8 @@ export default function TaskListDialog({
 }) {
   const currentUserId = useChatStore((s) => s.currentUserId);
   const [filter, setFilter] = useState<Filter>("all");
-  const [result, setResult] = useState<{
-    key: string;
-    tasks: ChatMessage[];
-    failed: boolean;
-  }>({ key: "", tasks: [], failed: false });
-  const key = open ? conversationId : "";
-  const loading = open && result.key !== key;
-  const tasks = result.key === key ? result.tasks : [];
-
-  useEffect(() => {
-    if (!open) return;
-    let cancelled = false;
-    listChatTasks(conversationId)
-      .then((page) => decryptChatMessages(page.tasks ?? [], currentUserId))
-      .then((tasks) => {
-        if (!cancelled) setResult({ key: conversationId, tasks, failed: false });
-      })
-      .catch(() => {
-        if (!cancelled) setResult({ key: conversationId, tasks: [], failed: true });
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [open, conversationId, currentUserId]);
-
-  function replace(next: ChatMessage) {
-    setResult((current) => ({
-      ...current,
-      tasks: current.tasks.map((task) => (task.id === next.id ? next : task)),
-    }));
-  }
+  const pages = useTaskPages(conversationId, filter, currentUserId, open);
+  const { tasks, replace } = pages;
 
   async function change(message: ChatMessage, patch: TaskPatch) {
     replace(withTaskPatch(message, patch));
@@ -98,13 +67,13 @@ export default function TaskListDialog({
           ))}
         </div>
         <div className="min-h-[160px] flex-1 space-y-2 overflow-y-auto">
-          {loading ? (
+          {pages.loading ? (
             <Notice text="Loading…" />
-          ) : result.failed ? (
+          ) : pages.failed ? (
             <Notice text="Could not load tasks." />
-          ) : tasks.length === 0 ? (
+          ) : tasks.length === 0 && filter === "all" ? (
             <Notice text="No tasks yet. Send one from the task button in this chat." />
-          ) : shown.length === 0 ? (
+          ) : shown.length === 0 && !pages.hasMore ? (
             <Notice text="Nothing here." />
           ) : (
             shown.map((message) => (
@@ -136,6 +105,17 @@ export default function TaskListDialog({
               </div>
             ))
           )}
+          {pages.hasMore ? (
+            <button
+              type="button"
+              disabled={pages.more === "loading"}
+              onClick={() => void pages.showMore()}
+              className="mx-auto block h-8 rounded-full px-3.5 text-[13px] font-medium"
+              style={{ background: "var(--surface2)", color: "var(--text)" }}
+            >
+              {pages.more === "loading" ? "Loading…" : pages.more === "failed" ? "Try again" : "Show more"}
+            </button>
+          ) : null}
         </div>
       </DialogContent>
     </Dialog>
