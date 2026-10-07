@@ -20,6 +20,7 @@ export default function SnippetCard({
   fileName,
   sizeBytes,
   actions,
+  noSave,
   onContextMenu,
 }: {
   url: string;
@@ -27,6 +28,8 @@ export default function SnippetCard({
   sizeBytes: number;
   /** Save / download controls for this file, shown in the viewer. */
   actions?: ReactNode;
+  /** No Copy and no selection in the viewer; see `SnippetViewer`. */
+  noSave?: boolean;
   onContextMenu?: (event: MouseEvent) => void;
 }) {
   const [open, setOpen] = useState(false);
@@ -59,6 +62,7 @@ export default function SnippetCard({
           url={url}
           fileName={fileName}
           actions={actions}
+          noSave={noSave}
           onClose={() => setOpen(false)}
         />
       ) : null}

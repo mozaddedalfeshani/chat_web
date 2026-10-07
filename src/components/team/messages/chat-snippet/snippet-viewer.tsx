@@ -17,11 +17,15 @@ export default function SnippetViewer({
   url,
   fileName,
   actions,
+  noSave = false,
   onClose,
 }: {
   url: string;
   fileName: string;
   actions?: ReactNode;
+  /** The sender does not let this file be saved: read it here, with no Copy
+   *  and no text selection — copying the whole text out is saving it. */
+  noSave?: boolean;
   onClose: () => void;
 }) {
   const file = useSnippetText(url);
@@ -52,9 +56,11 @@ export default function SnippetViewer({
               {source ? "Show formatted" : "Show source"}
             </Button>
           ) : null}
-          <Button variant="ghost" size="sm" disabled={file.text === null} onClick={() => void copy()}>
-            Copy
-          </Button>
+          {noSave ? null : (
+            <Button variant="ghost" size="sm" disabled={file.text === null} onClick={() => void copy()}>
+              Copy
+            </Button>
+          )}
           {actions}
           {markdown && !canFormat && file.text !== null ? (
             <span className="text-xs" style={{ color: "var(--text-muted)" }}>
@@ -64,8 +70,9 @@ export default function SnippetViewer({
         </div>
 
         <div
-          className="min-h-0 flex-1 overflow-auto rounded-xl border p-4"
+          className={`min-h-0 flex-1 overflow-auto rounded-xl border p-4${noSave ? " select-none" : ""}`}
           style={{ borderColor: "var(--border)", color: "var(--text)" }}
+          onCopy={noSave ? (event) => event.preventDefault() : undefined}
         >
           {file.failed ? (
             <p className="text-sm" style={{ color: "var(--text-muted)" }}>

@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import type { ChatMessage } from "@/lib/api/types/chat";
 import { tiptapToPlainText } from "@/components/team/board/tiptap/utils";
 import { splitTaskText, taskEventSentence } from "@/lib/chat-task/task-format";
@@ -23,14 +24,18 @@ export default function TaskEventRow({
   currentUserId: string;
 }) {
   const meta = message.meta;
-  const title = useChatStore((s) => {
+  // The selector runs on every store change, so it only picks the body out;
+  // parsing it waits for the body to actually change.
+  const body = useChatStore((s) => {
     const card = s.feeds[feedKey(message.conversation_id, null)]?.messages.find(
       (candidate) => candidate.id === meta?.message_id,
     );
-    return card && !card.deleted_at
-      ? splitTaskText(tiptapToPlainText(card.body ?? "")).title
-      : "";
+    return card && !card.deleted_at ? (card.body ?? "") : "";
   });
+  const title = useMemo(
+    () => (body ? splitTaskText(tiptapToPlainText(body)).title : ""),
+    [body],
+  );
   const actor =
     meta?.actor_id === currentUserId ? "You" : meta?.actor_name?.trim() || "Someone";
   return (

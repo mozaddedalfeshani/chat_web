@@ -30,6 +30,8 @@ const ERROR_MESSAGES: Record<string, string> = {
   task_not_in_private_chat: "Tasks are not available while private chat is on.",
   task_no_thread: "A task cannot be sent as a thread reply.",
   task_not_found: "This task is no longer on the server, so it cannot be changed.",
+  message_rate_limited:
+    "You are sending a lot at once. Wait a moment, then try again.",
   encrypted_attachment_needs_secure_chat:
     "Encrypted files can only be forwarded to secure chats.",
   encrypted_attachment_invalid:

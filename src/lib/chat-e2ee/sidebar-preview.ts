@@ -36,14 +36,28 @@ async function decryptPreview(
     : { ...conversation, last_message_body: decrypted.body };
 }
 
+/**
+ * A sealed body over the server's inline limit (32 KiB) is not on the sidebar
+ * row at all (`last_message_long`): it cannot be cut to a preview's length,
+ * and it would otherwise ride whole on every sidebar fetch. The row says what
+ * it is instead. A message arriving live still previews from its own text.
+ */
+export const LONG_MESSAGE_PREVIEW = "Long message";
+
+function withLongPreview(conversation: ChatConversation): ChatConversation {
+  return conversation.last_message_long
+    ? { ...conversation, last_message_body: LONG_MESSAGE_PREVIEW }
+    : conversation;
+}
+
 export async function decryptSidebarPreviews(
   conversations: ChatConversation[],
   currentUserID: string,
 ) {
-  if (!currentUserID || !isMessageVaultUnlocked()) return conversations;
+  // Before the vault check: the label needs no key.
+  const rows = conversations.map(withLongPreview);
+  if (!currentUserID || !isMessageVaultUnlocked()) return rows;
   return Promise.all(
-    conversations.map((conversation) =>
-      decryptPreview(conversation, currentUserID),
-    ),
+    rows.map((conversation) => decryptPreview(conversation, currentUserID)),
   );
 }

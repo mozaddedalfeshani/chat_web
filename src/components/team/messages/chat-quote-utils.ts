@@ -10,6 +10,8 @@ export function quoteSummary(quote: ChatMessageQuote): string {
   if (quote.decryption_failed) return "Original message not available";
   const text = tiptapToPlainText(quote.body ?? "").replace(/\s+/g, " ").trim();
   if (text) return text;
+  // Too large to ride on every reply to it: the server sent no body.
+  if (quote.long) return "Long message";
   return attachmentPreviewLabel(quote.attachment_type) ?? "Attachment";
 }
 

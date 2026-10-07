@@ -22,6 +22,8 @@ export type ChatConversation = {
   last_message_encryption_nonce?: string;
   last_message_encryption_version?: number;
   last_message_encryption_key_version?: number;
+  /** The newest message's sealed body was left out for its size (server, 32 KiB). */
+  last_message_long?: boolean;
   last_message_attachment_type?: string;
   last_message_attachment_name?: string;
   last_message_attachments?: Array<{
@@ -258,6 +260,8 @@ export type ChatMessageQuote = {
   sealed?: boolean;
   /** Sealed under a key this account was never given, e.g. written before it joined. */
   decryption_failed?: boolean;
+  /** The original is over the server's inline limit: neither body was sent. */
+  long?: boolean;
 };
 
 // The end-to-end encryption types live next door; re-exported so every
