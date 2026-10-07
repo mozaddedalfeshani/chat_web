@@ -1,3 +1,4 @@
+import { assertMessageLength } from "@/lib/chat-message-limit/message-limit";
 import { syncChatDeletions, deletionSnapshot, messageSurvives, conversationSurvives, rememberDeletedMessage } from "@/lib/messages/deletions";
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
@@ -907,6 +908,9 @@ export const useChatStore = create<ChatState>()(
         const { activeConversationId, threadRootId, currentUserId, dms, channels } =
           get();
         if (!activeConversationId) return null;
+      // Before the outbox or a key is touched: the server's own refusal is a
+      // bare 400, and the draft must still be in the composer when it is shown.
+      assertMessageLength(body);
         const dm = dms.find(
           (conversation) => conversation.id === activeConversationId,
         );

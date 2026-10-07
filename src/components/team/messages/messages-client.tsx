@@ -1,5 +1,6 @@
 "use client";
 
+import { assertMessageLength } from "@/lib/chat-message-limit/message-limit";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useShallow } from "zustand/react/shallow";
@@ -410,6 +411,7 @@ export default function MessagesClient() {
     if (!activeConversationId || !currentUserId) {
       throw new Error("Still loading this chat — try again in a moment");
     }
+    assertMessageLength(body);
     const existing = [...mainChat.messages, ...threadChat.messages].find(
       (message) => message.id === messageId,
     );
