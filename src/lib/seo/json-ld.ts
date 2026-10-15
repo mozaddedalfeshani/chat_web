@@ -21,13 +21,16 @@ export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const SOFTWARE_ID = `${SITE_URL}/#software`;
 
 const FEATURE_LIST = [
-  "End-to-end encrypted personal messaging",
-  "Encrypted workspace group chat",
-  "Phone QR sign-in for the web",
-  "Note to Self",
-  "1:1 voice and video calls",
-  "Group calls",
+  "End-to-end encrypted DMs and groups",
+  "One-scan phone QR sign-in for the web",
+  "Safety numbers and key-change warnings",
   "Message requests and blocks",
+  "Privacy mode, private chat and Ghost Chat",
+  "View-once and timed photos",
+  "1:1 voice and video calls, free group calls",
+  "Group admin permissions",
+  "Send later and task cards",
+  "Note to Self",
 ];
 
 export function organizationSchema(): JsonLdSchema {

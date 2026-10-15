@@ -1,9 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
 import { LOGIN_COPY } from "./login-copy";
 
 export default function LoginNavbar() {
   return (
-    <header className="absolute top-0 left-0 z-10 px-8 pt-6">
+    <header className="absolute inset-x-0 top-0 z-10 flex items-center justify-between px-8 pt-6">
       <span className="flex items-center gap-2">
         <Image
           src="/logo.png"
@@ -16,6 +17,12 @@ export default function LoginNavbar() {
           {LOGIN_COPY.product}
         </span>
       </span>
+      <Link
+        href="/docs"
+        className="text-[14px] font-medium text-[#3b4a54] transition-colors hover:text-[#111b21]"
+      >
+        {LOGIN_COPY.navDocs}
+      </Link>
     </header>
   );
 }

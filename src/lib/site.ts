@@ -8,6 +8,9 @@ export const PRODUCT_NAME = "AbabilX Chat";
 export const ORG_NAME = "AbabilX";
 export const ORG_URL = "https://ababilx.com";
 export const ORG_EMAIL = "info@ababilx.com";
+export const GITHUB_REPO_URL = "https://github.com/AbabilX/chat_web";
+export const PLAY_STORE_URL =
+  "https://play.google.com/store/apps/details?id=com.ababilx.app";
 
 /** Brand-first title — owns "ababilx chat" / "chat ababilx" queries. */
 export const DEFAULT_TITLE =

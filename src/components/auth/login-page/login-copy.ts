@@ -22,6 +22,8 @@ export const LOGIN_COPY = {
   googleHint: "No phone nearby? Sign in on this browser.",
   errAuthFailed: "Sign-in did not complete. Try again.",
   errAuthUnavailable: "Sign-in is unavailable right now. Try again later.",
+  navDocs: "Docs",
+  getApp: "Get the Android app",
   e2ee: "Your personal messages are end-to-end encrypted",
   /** Crawlable product summary — real copy, not hidden keyword stuffing. */
   aboutTitle: "Secure messaging from AbabilX",

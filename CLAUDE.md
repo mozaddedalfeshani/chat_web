@@ -27,7 +27,8 @@ in both trees, so a clean eslint run is not the bar.
 ## Layout
 
 - `src/app/**/page.tsx` — Server Components only. They compose feature folders.
-- `src/components/auth/login-page/` — WhatsApp-Web-style login: phone QR, or Google (see below).
+- `src/components/auth/login-page/` — WhatsApp-Web-style login: phone QR, or Google (see below). The home page is sign-in only, with a Docs link; feature explanations do NOT go here.
+- `src/app/docs/` + `src/components/docs/` — public docs (shadcn-docs layout: header, grouped sidebar, Copy page, prev/next, On this page). Every page is data in `src/lib/docs/pages/*.ts`; sidebar order = `DOC_GROUPS` in `src/lib/docs/index.ts` = prev/next order. Follows the app theme (dark default). Mark phone-only features `androidOnly` and keep copy true to what ships. This is where the chat product is explained; `ababilx_main` (ababilx.com) is the company page and only links here.
 - `src/components/sidebar/app-mode-rail/` — left icon rail (Chats + theme + account). Chat-only: no Board/Wall.
 - `src/components/user-shell/` — signed-in chrome + call/chat providers
 - `src/components/team/messages/` — chat UI (desktop-style: rail | list | pane)
@@ -113,8 +114,8 @@ Set `NEXT_PUBLIC_API_URL` and `NEXT_PUBLIC_SITE_URL` in `.env.local`.
 
 ## Search Console / SEO gate
 
-This app is a signed-in chat client. Crawlers may index only `/` (the login page).
-`src/app/sitemap.ts` lists that one URL; `src/app/robots.ts` disallows
+This app is a signed-in chat client. Crawlers may index only `/` (the login page)
+and `/docs/*`. `src/app/sitemap.ts` lists those; `src/app/robots.ts` disallows
 `/user/`, `/auth/`, `/api/`, `/hooks/`, `/backend/`. Signed-in and callback
 layouts also send `noindex`.
 
