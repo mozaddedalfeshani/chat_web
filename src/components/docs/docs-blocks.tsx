@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Alert02Icon, ArrowUpRight01Icon, InformationCircleIcon } from "hugeicons-react";
 import type { DocBlock } from "@/lib/docs";
+import { DocFlow, DocTable } from "./docs-diagram";
 
 const TEXT = "text-[16px] leading-7 text-[var(--text)]/90";
 
@@ -95,6 +96,10 @@ export function DocBlockView({ block }: { block: DocBlock }) {
       return <Callout block={block} />;
     case "cards":
       return <Cards block={block} />;
+    case "flow":
+      return <DocFlow block={block} />;
+    case "table":
+      return <DocTable block={block} />;
   }
 }
 

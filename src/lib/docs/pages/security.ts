@@ -1,4 +1,5 @@
 import type { DocGroup } from "../types";
+import { HOW_ENCRYPTION_WORKS } from "./how-encryption-works";
 
 export const SECURITY: DocGroup = {
   title: "Security",
@@ -38,7 +39,23 @@ export const SECURITY: DocGroup = {
               type: "callout",
               tone: "warn",
               title: "Files",
-              text: "File encryption on the phone is rolling out now. Files sent from the web or desktop are not end-to-end encrypted yet.",
+              text: "File encryption is rolling out now. Where it is on, the phone and this web client encrypt files before upload. Files sent before that stay readable by our storage until they expire.",
+            },
+          ],
+        },
+        {
+          id: "deep-dive",
+          heading: "The full flow",
+          blocks: [
+            {
+              type: "cards",
+              items: [
+                {
+                  title: "How encryption works",
+                  text: "Every key, who holds it, and each step with flowcharts.",
+                  href: "/docs/how-encryption-works",
+                },
+              ],
             },
           ],
         },
@@ -54,6 +71,7 @@ export const SECURITY: DocGroup = {
         },
       ],
     },
+    HOW_ENCRYPTION_WORKS,
     {
       slug: "recovery-code",
       title: "Recovery code",

@@ -1,4 +1,35 @@
-import type { DocBlock, DocPage } from "./types";
+import type { DocBlock, DocPage, FlowNode, FlowStep } from "./types";
+
+const WHERE = {
+  you: "your device",
+  server: "our server",
+  them: "their device",
+  new: "new device",
+} as const;
+
+function nodeToMarkdown(node: FlowNode, n: number, indent: string) {
+  const where = node.where ? ` (${WHERE[node.where]})` : "";
+  return `${indent}${n}. **${node.title}**${where}${node.text ? `: ${node.text}` : ""}`;
+}
+
+function flowToMarkdown(steps: FlowStep[], indent = ""): string {
+  return steps
+    .map((step, i) => {
+      if (!("branches" in step)) return nodeToMarkdown(step, i + 1, indent);
+      return step.branches
+        .map((b) => {
+          const inner = b.steps.map((n, j) => nodeToMarkdown(n, j + 1, `${indent}   `));
+          return [`${indent}- _${b.label}_`, ...inner].join("\n");
+        })
+        .join("\n");
+    })
+    .join("\n");
+}
+
+function tableToMarkdown(head: string[], rows: string[][]) {
+  const line = (cells: string[]) => `| ${cells.join(" | ")} |`;
+  return [line(head), line(head.map(() => "---")), ...rows.map(line)].join("\n");
+}
 
 function blockToMarkdown(block: DocBlock): string {
   switch (block.type) {
@@ -12,6 +43,10 @@ function blockToMarkdown(block: DocBlock): string {
       return `> ${block.title ? `**${block.title}** ` : ""}${block.text}`;
     case "cards":
       return block.items.map((c) => `- **${c.title}**: ${c.text}`).join("\n");
+    case "flow":
+      return flowToMarkdown(block.steps) + (block.caption ? `\n\n_${block.caption}_` : "");
+    case "table":
+      return tableToMarkdown(block.head, block.rows);
   }
 }
 
