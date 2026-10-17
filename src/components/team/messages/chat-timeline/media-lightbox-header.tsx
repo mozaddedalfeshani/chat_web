@@ -28,6 +28,7 @@ export default function MediaLightboxHeader({
   onOpen,
   onClose,
   saving,
+  noSave = false,
 }: {
   senderName?: string;
   senderAvatarUrl?: string;
@@ -36,6 +37,8 @@ export default function MediaLightboxHeader({
   onOpen: () => void;
   onClose: () => void;
   saving: boolean;
+  /** A `no_save` file: Save and Open in browser are not offered. */
+  noSave?: boolean;
 }) {
   return (
     <div className="mb-4 flex h-[52px] min-h-[52px] items-center justify-between px-4">
@@ -68,27 +71,31 @@ export default function MediaLightboxHeader({
       </div>
 
       <div className="flex items-center gap-8">
-        <button
-          type="button"
-          aria-label="Save to Downloads"
-          title="Save to Downloads"
-          onClick={onSave}
-          disabled={saving}
-          style={{ color: "var(--sig-label)" }}
-          className="transition-opacity hover:opacity-70 disabled:opacity-40"
-        >
-          <Download className="h-6 w-6" />
-        </button>
-        <button
-          type="button"
-          aria-label="Open in browser"
-          title="Open in browser"
-          onClick={onOpen}
-          style={{ color: "var(--sig-label)" }}
-          className="transition-opacity hover:opacity-70"
-        >
-          <ExternalLink className="h-6 w-6" />
-        </button>
+        {noSave ? null : (
+          <>
+            <button
+              type="button"
+              aria-label="Save to Downloads"
+              title="Save to Downloads"
+              onClick={onSave}
+              disabled={saving}
+              style={{ color: "var(--sig-label)" }}
+              className="transition-opacity hover:opacity-70 disabled:opacity-40"
+            >
+              <Download className="h-6 w-6" />
+            </button>
+            <button
+              type="button"
+              aria-label="Open in browser"
+              title="Open in browser"
+              onClick={onOpen}
+              style={{ color: "var(--sig-label)" }}
+              className="transition-opacity hover:opacity-70"
+            >
+              <ExternalLink className="h-6 w-6" />
+            </button>
+          </>
+        )}
         <button
           type="button"
           aria-label="Close"

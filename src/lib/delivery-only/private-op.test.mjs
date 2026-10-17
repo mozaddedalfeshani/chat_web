@@ -74,6 +74,11 @@ test("a private-last row keeps the live preview, else says where it is", () => {
   assert.equal(keepPrivatePreviews([row], [stale])[0].last_message_body, PRIVATE_LAST_MESSAGE_PREVIEW);
   const plain = { ...row, last_message_private: false, last_message_body: "x" };
   assert.equal(keepPrivatePreviews([plain], [live])[0].last_message_body, "x");
+  // A linked browser (0174) holds the message, so the label does not send
+  // the user to the phone — and a stored label is never kept as a preview.
+  assert.equal(keepPrivatePreviews([row], [], true)[0].last_message_body, "New message");
+  const labelled = { ...row, last_message_body: "New message" };
+  assert.equal(keepPrivatePreviews([row], [labelled])[0].last_message_body, PRIVATE_LAST_MESSAGE_PREVIEW);
 });
 
 test("held, purged and private chats are told apart", async () => {

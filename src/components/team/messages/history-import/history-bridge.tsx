@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
-import { historyEnabled } from "@/lib/history/flag";
+import { useHistoryEnabled } from "@/lib/history/flag";
 import { useChatStore } from "@/store/chat-store";
 import { useServerHistorySync } from "./use-server-history-sync";
 import { restoreImport } from "./import-controller";
@@ -15,10 +15,11 @@ import ImportPrompt from "./import-prompt";
 export default function HistoryBridge({ language }: { language?: string | null }) {
   useServerHistorySync();
   const userId = useChatStore((s) => s.currentUserId);
+  const enabled = useHistoryEnabled();
   useEffect(() => {
-    if (userId && historyEnabled()) void restoreImport(userId);
-  }, [userId]);
-  if (!historyEnabled()) return null;
+    if (userId && enabled) void restoreImport(userId);
+  }, [userId, enabled]);
+  if (!enabled) return null;
   return (
     <>
       <ImportPrompt language={language} />

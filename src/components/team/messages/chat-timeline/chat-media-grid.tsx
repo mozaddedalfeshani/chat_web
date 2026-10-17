@@ -52,6 +52,7 @@ function MediaTile({
   const menu = useAssetMenu({
     url: localUrl,
     fileName: attachment.file_name,
+    noSave: attachment.no_save,
     kind: video ? "video" : "image",
   });
 

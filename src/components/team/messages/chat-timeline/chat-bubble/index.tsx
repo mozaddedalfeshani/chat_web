@@ -122,9 +122,10 @@ export default function ChatBubble({
   function buildMenuItems(selected: string): BubbleMenuItem[] {
     const items: BubbleMenuItem[] = [];
     const attachments = message.attachments ?? [];
-    // An encrypted file whose key never opened here has nothing to save.
+    // An encrypted file whose key never opened here has nothing to save,
+    // and a `no_save` one (private chat, group privacy) may not be kept.
     const savable = attachments.filter(
-      (a) => !a.locked && a.file_url && (!a.enc_meta || a.sealed_as),
+      (a) => !a.locked && !a.no_save && a.file_url && (!a.enc_meta || a.sealed_as),
     );
     const images = savable.filter((a) =>
       (a.content_type ?? "").toLowerCase().startsWith("image/"),

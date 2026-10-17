@@ -166,6 +166,12 @@ export type ChatMessageAttachment = {
   sealed_as?: Pick<ChatMessageAttachment, "file_name" | "content_type" | "size_bytes">;
   /** Client-only. `enc_meta` did not open here: no key for that version. */
   seal_failed?: boolean;
+  /**
+   * The sender (privacy mode) or the chat (private chat 0160, group privacy
+   * 0154) does not allow keeping this file: no Save, Copy, Copy link or Open
+   * in browser, and no browser menu over it. The server sets it at read time.
+   */
+  no_save?: boolean;
 };
 
 export type ChatMessage = {

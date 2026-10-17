@@ -24,7 +24,7 @@ import {
 } from "@/lib/chat-e2ee/crypto";
 import { decryptSidebarPreviews } from "@/lib/chat-e2ee/sidebar-preview";
 import { keepPrivatePreviews } from "@/lib/delivery-only/private-preview";
-import { isPrivateChatId } from "@/lib/delivery-only/delivery-only-store";
+import { isPrivateChatId, useDeliveryOnlyStore } from "@/lib/delivery-only/delivery-only-store";
 import { fillConversationKeyGaps } from "@/lib/chat-e2ee/key-gaps";
 import {
   rememberLocalMessages,
@@ -445,9 +445,10 @@ export const useChatStore = create<ChatState>()(
           ]);
           // The newest message already left the server (delivery-only): keep
           // the preview a live event put on screen, or say where it is.
-          const dms = sortDms(keepPrivatePreviews(previewDms, get().dms));
+          const linked = useDeliveryOnlyStore.getState().linked;
+          const dms = sortDms(keepPrivatePreviews(previewDms, get().dms, linked));
           const channels = sortChannels(
-            keepPrivatePreviews(previewChannels, get().channels),
+            keepPrivatePreviews(previewChannels, get().channels, linked),
           );
           // A conversation opened or created while this request was in flight
           // (startChatDM -> upsertDM -> select) is not in the response yet.

@@ -16,6 +16,7 @@ export default function ChatAttachment({ attachment }: { attachment: ChatMessage
   const menu = useAssetMenu({
     url: localUrl,
     fileName: attachment.file_name,
+    noSave: attachment.no_save,
     kind: type.startsWith("audio/") ? "audio" : "file",
   });
 
@@ -74,11 +75,13 @@ export default function ChatAttachment({ attachment }: { attachment: ChatMessage
           sizeBytes={attachment.size_bytes}
           onContextMenu={menu.onContextMenu}
           actions={
-            <AssetActionButtons
-              url={localUrl}
-              fileName={attachment.file_name}
-              variant="inline"
-            />
+            attachment.no_save ? undefined : (
+              <AssetActionButtons
+                url={localUrl}
+                fileName={attachment.file_name}
+                variant="inline"
+              />
+            )
           }
         />
         {menu.menu}
@@ -95,12 +98,14 @@ export default function ChatAttachment({ attachment }: { attachment: ChatMessage
         <span className="truncate">{attachment.file_name}</span>
         {/* Save and Open in browser, rather than the row being one dead
             `<a download>` — WKWebView never honoured that anchor. */}
-        <AssetActionButtons
-          url={localUrl}
-          fileName={attachment.file_name}
-          variant="inline"
-          className="ms-1 shrink-0"
-        />
+        {attachment.no_save ? null : (
+          <AssetActionButtons
+            url={localUrl}
+            fileName={attachment.file_name}
+            variant="inline"
+            className="ms-1 shrink-0"
+          />
+        )}
       </div>
       {menu.menu}
     </>

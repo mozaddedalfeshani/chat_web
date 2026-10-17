@@ -2,7 +2,6 @@ import { getMeSession } from "@/lib/api/user/me";
 import type { ChatE2EEIdentityEnvelope } from "@/lib/api/types/chat-e2ee";
 import { createLinkOffer, type LinkOffer } from "@/lib/chat-e2ee/device-link";
 import { adoptLinkedIdentity } from "@/lib/chat-e2ee/vault-link";
-import { historyEnabled } from "@/lib/history/flag";
 import { startImport, type DestinationKeys } from "@/lib/history/transfer/importer-start";
 import { newDestinationKeys } from "@/lib/history/transfer/v2-crypto";
 
@@ -25,7 +24,11 @@ export type OneScanOffer = {
 export async function createOneScanOffer(): Promise<OneScanOffer> {
   const [link, history] = await Promise.all([
     createLinkOffer(),
-    historyEnabled() ? newDestinationKeys() : Promise.resolve(null),
+    // Always: the login page cannot ask /api/me yet, and every server since
+    // 0173 is delivery-only, so this browser needs the phone's history (the
+    // last 90 days, server `history_days`). A key the phone never uses costs
+    // nothing; a failed start falls back to the ordinary import prompt.
+    newDestinationKeys().catch(() => null),
   ]);
   return { link, history };
 }

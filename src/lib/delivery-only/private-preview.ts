@@ -8,6 +8,11 @@ import type { ChatConversation } from "@/lib/api/types/chat";
  * arrived live, in which case the row already on screen carries it.
  */
 export const PRIVATE_LAST_MESSAGE_PREVIEW = "New message · on your phone";
+/** The same row in a linked browser (0174), which holds the message itself. */
+export const LINKED_LAST_MESSAGE_PREVIEW = "New message";
+
+const isLabel = (body?: string | null) =>
+  body === PRIVATE_LAST_MESSAGE_PREVIEW || body === LINKED_LAST_MESSAGE_PREVIEW;
 
 type Preview = Pick<
   ChatConversation,
@@ -43,6 +48,7 @@ function hasPreview(row: ChatConversation): boolean {
 export function keepPrivatePreviews(
   next: ChatConversation[],
   previous: ChatConversation[],
+  linked = false,
 ): ChatConversation[] {
   const before = new Map(previous.map((row) => [row.id, row]));
   return next.map((row) => {
@@ -50,13 +56,13 @@ export function keepPrivatePreviews(
     const old = before.get(row.id);
     const oldAt = Date.parse(old?.last_message_at ?? "");
     const newAt = Date.parse(row.last_message_at ?? "");
-    if (old && hasPreview(old) && old.last_message_body !== PRIVATE_LAST_MESSAGE_PREVIEW
+    if (old && hasPreview(old) && !isLabel(old.last_message_body)
       && Number.isFinite(oldAt) && (!Number.isFinite(newAt) || oldAt >= newAt)) {
       return { ...row, ...previewOf(old) };
     }
     return {
       ...row,
-      last_message_body: PRIVATE_LAST_MESSAGE_PREVIEW,
+      last_message_body: linked ? LINKED_LAST_MESSAGE_PREVIEW : PRIVATE_LAST_MESSAGE_PREVIEW,
       last_message_user_id: undefined,
       last_message_attachment_type: undefined,
       last_message_attachment_name: undefined,

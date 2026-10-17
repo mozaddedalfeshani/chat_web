@@ -7,7 +7,7 @@ import {
   resolveLocalAsset,
   type LocalAsset,
 } from "@/lib/history/media/local-asset";
-import { historyEnabled } from "@/lib/history/flag";
+import { useHistoryEnabled } from "@/lib/history/flag";
 
 /**
  * The address an attachment is drawn from: this browser's imported copy when
@@ -33,7 +33,7 @@ export function useLocalAssetState(url: string | null | undefined): LocalAsset {
     return () => window.removeEventListener("ababilx:history-files", refresh);
   }, []);
 
-  const enabled = historyEnabled();
+  const enabled = useHistoryEnabled();
 
   useEffect(() => {
     if (!enabled) return;

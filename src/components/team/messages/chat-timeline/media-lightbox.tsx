@@ -66,6 +66,7 @@ export default function MediaLightbox({
   const menu = useAssetMenu({
     url: localUrl,
     fileName: current?.file_name,
+    noSave: current?.no_save,
     kind: video ? "video" : "image",
   });
 
@@ -124,6 +125,7 @@ export default function MediaLightbox({
             onOpen={() => localUrl && void openExternal(localUrl)}
             onClose={onClose}
             saving={saving || !localUrl}
+            noSave={!!current?.no_save}
           />
         </div>
 

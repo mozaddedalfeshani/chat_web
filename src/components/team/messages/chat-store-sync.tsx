@@ -12,6 +12,7 @@ import { useTypingRealtime } from "@/lib/chat-typing/use-typing-realtime";
 import { setEncryptedAttachmentsEnabled } from "@/lib/chat-attachments/sealed-upload";
 import { useDeliveryOnlyStore } from "@/lib/delivery-only/delivery-only-store";
 import { useDeliveryOnlyRealtime } from "@/lib/delivery-only/use-delivery-only-realtime";
+import { useLinkedDevice } from "@/lib/linked-device/use-linked-device";
 
 async function replayCurrentUserOutbox() {
   const userId = useChatStore.getState().currentUserId;
@@ -37,6 +38,7 @@ export default function ChatStoreSync() {
   const chatReady = !!currentUserId;
   useTypingRealtime(chatReady);
   useDeliveryOnlyRealtime(currentUserId);
+  useLinkedDevice(currentUserId);
 
   useEffect(() => {
     void requestPersistentChatStorage();

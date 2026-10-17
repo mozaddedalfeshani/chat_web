@@ -130,9 +130,12 @@ After deploy, submit `https://chat.ababilx.com/sitemap.xml` in Search
 Console. Optional HTML-tag verify: `NEXT_PUBLIC_GOOGLE_SITE_VERIFICATION`.
 Canonical production origin: `https://chat.ababilx.com`.
 
-## Durable history and phone import (behind `NEXT_PUBLIC_HISTORY_IMPORT=1`)
+## Durable history and phone import (on with `delivery_only`)
 
-Off by default; off means the chat behaves exactly as before. Contract:
+On whenever `/api/me` says `delivery_only` (every server since 0173), or
+with `NEXT_PUBLIC_HISTORY_IMPORT=1`; `historyEnabled()` for code paths,
+`useHistoryEnabled()` for render (it re-renders when `/api/me` lands). The
+one-scan QR always carries the history key `h`. Contract:
 `ababilx-server/docs/history-transfer-v2-protocol.md` (fixtures copied into
 `src/lib/history/fixtures/`, pinned by the `*.test.mjs` beside the code — run
 `bun test src`).
@@ -217,3 +220,44 @@ carries the same files.
   realtime event; authorship rule in `private-op.ts` matches the phone's.
 - Group call ring list (0172): Meet on a group with no running call opens
   `components/user/group-call/ring/start-call-ring-dialog.tsx` first.
+
+## Linked device (2026-10-18, server 0174)
+
+This browser is a WhatsApp-style linked device: the server holds each
+message until it is in this browser's durable store too (user's choices,
+`../../ababilx-server/docs/linked-devices-plan.md`). `src/lib/linked-device/`:
+
+```
+link.ts        POST /api/messaging/devices {keeps_archive:true}
+               -> linked (archive_at) | limit (409, devices) | off
+custody.ts     GET /api/chat/private/pending -> store (sealed) -> files
+               -> POST /api/chat/private/custody; messages before ops
+media.ts       every file on arrival, into the history file store; an
+               encrypted file decrypted first (the reader treats a stored
+               copy as the file, as for an import)
+ops.ts         edit / reaction / delete on the stored row (privateOpEffect)
+use-linked-device.ts  link once delivery_only; pull on link, vault unlock,
+               reconnect, visible, online, live message events, every 5 min
+```
+
+- **Never custody for what is not on disk**: a failed store write or
+  download, a timed photo (URL withheld) and an encrypted file whose key has
+  not opened yet (locked vault looks the same) all stay pending.
+- **Linked = an ordinary chat**: `useDeliveryOnlyStore.linked` turns off the
+  interim guards (`usePhoneOnlyChat`, `keepsUnreadOnOpen`,
+  `isPrivateChatId`), so private chats load, read-ack and claim focus here.
+- Limit: `components/team/messages/linked-device/linked-limit-banner.tsx`
+  (labels from the 409, Try again; signing a device out is on the phone).
+- **`no_save` is honoured** (server sets it on private-chat and
+  group-privacy files): no Save / Copy / Copy link / Open in browser in the
+  bubble menu, the asset right-click menu, the file row and the lightbox, and
+  the browser's own menu is suppressed over those files. Drag-out is not
+  blocked, and nothing stops a screenshot.
+- Custody runs one pull at a time; sign-out bumps a generation so a pull
+  from the previous account stops, and a pull queued meanwhile starts after
+  it. A store write that fails stops the drain (nothing below acts on texts
+  not on disk). An op whose target is not stored is settled only when the
+  pending page was not full (every pending message seen); otherwise it waits.
+- History older than the link comes only from the phone's one-scan import
+  (90 days, server `history_days`). Opening a chat marks it read even if its
+  newest message was purged before this browser linked. Not browser-tested.

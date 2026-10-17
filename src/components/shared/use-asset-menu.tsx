@@ -21,6 +21,11 @@ export type AssetMenuTarget = {
   extra?: FloatingMenuItem[];
   /** Off where a parent already owns the right-click (a message bubble). */
   disabled?: boolean;
+  /**
+   * The file may not be kept (`no_save`): no asset rows, and the browser's
+   * own menu ("Save image as…") is suppressed too.
+   */
+  noSave?: boolean;
 };
 
 async function run(action: () => Promise<unknown>, done: string, failed: string) {
@@ -54,11 +59,12 @@ export function useAssetMenu({
   kind = "image",
   extra,
   disabled,
+  noSave,
 }: AssetMenuTarget) {
   const [at, setAt] = useState<{ x: number; y: number } | null>(null);
 
   const items: FloatingMenuItem[] = [...(extra ?? [])];
-  if (url) {
+  if (url && !noSave) {
     const name = fileName || fileNameFromUrl(url);
     const noun = kind === "image" ? "Image" : kind === "file" ? "File" : "Media";
     items.push({
@@ -108,6 +114,11 @@ export function useAssetMenu({
   }
 
   const onContextMenu = (event: MouseEvent) => {
+    if (noSave && !disabled) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (items.length === 0) return;
+    }
     if (disabled || items.length === 0) return;
     event.preventDefault();
     // The bubble listens for this too, and the asset under the cursor is the

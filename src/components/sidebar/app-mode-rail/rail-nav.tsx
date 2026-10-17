@@ -5,7 +5,7 @@ import { Menu01Icon, Message01Icon } from "hugeicons-react";
 import type { AppUser } from "@/lib/api";
 import { logOutAndForgetHistory } from "@/lib/history/sign-out";
 import { historyCopy } from "@/lib/history/copy";
-import { historyEnabled } from "@/lib/history/flag";
+import { useHistoryEnabled } from "@/lib/history/flag";
 import { useHistoryImportStore } from "@/store/history-import-store";
 import { toast } from "sonner";
 import { t } from "@/lib/i18n";
@@ -25,6 +25,7 @@ import RailButton from "./rail-button";
 export default function RailNav({ user }: { user: AppUser | null }) {
   const chatUnread = useChatStore(selectTotalUnread);
   const toggleRail = useUIStore((s) => s.toggleRail);
+  const historyOn = useHistoryEnabled();
   const language = user?.app_language ?? "en";
 
   useEffect(() => {
@@ -97,7 +98,7 @@ export default function RailNav({ user }: { user: AppUser | null }) {
               <p className="truncate px-2 py-2 text-[13px] text-[var(--sig-label)]">
                 {user.name || user.email}
               </p>
-              {historyEnabled() ? (
+              {historyOn ? (
                 <button
                   type="button"
                   onClick={() => useHistoryImportStore.getState().setOpen(true)}

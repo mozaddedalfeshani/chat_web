@@ -26,6 +26,7 @@ export * from "./chat-e2ee-repair";
 export * from "./chat-webhooks";
 export * from "./chat-connections";
 export * from "./messaging";
+export * from "./linked-device";
 export * from "./voice-call";
 export * from "./typing-indicators";
 export * from "./group-call";

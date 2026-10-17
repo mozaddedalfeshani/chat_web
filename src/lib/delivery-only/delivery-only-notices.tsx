@@ -1,6 +1,7 @@
 "use client";
 
 import { IncognitoIcon, SmartPhone01Icon } from "hugeicons-react";
+import { useDeliveryOnlyStore } from "./delivery-only-store";
 
 /**
  * What a private DM (0160 quiet mode) shows in place of its timeline and
@@ -32,6 +33,9 @@ export function PrivateChatNotice({ peerName }: { peerName?: string }) {
  * "No messages yet" over a conversation with months of history on the phone.
  */
 export function HeldHistoryNotice({ empty = false }: { empty?: boolean }) {
+  // A linked browser (0174) keeps its own copy from the link on, plus the
+  // last 90 days the phone sent; only what is older is phone-only.
+  const linked = useDeliveryOnlyStore((s) => s.linked);
   if (empty) {
     return (
       <div className="flex flex-col items-center px-6 py-12 text-center">
@@ -42,8 +46,9 @@ export function HeldHistoryNotice({ empty = false }: { empty?: boolean }) {
           This chat&apos;s messages are on your phone
         </p>
         <p className="mt-1 max-w-sm text-[13px] leading-5 text-[var(--sig-label-2)]">
-          Our servers delete each message once your phones have it, and this
-          browser keeps no copy. New messages still show up here as they arrive.
+          {linked
+            ? "Messages from before this browser was linked stay on your phone. New messages are kept here too."
+            : "Our servers delete each message once your phones have it, and this browser keeps no copy. New messages still show up here as they arrive."}
         </p>
         <OpenTheAppPill />
       </div>

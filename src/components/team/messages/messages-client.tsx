@@ -41,6 +41,7 @@ import {
   setEncryptedAttachmentsEnabled,
   shouldSealUpload,
 } from "@/lib/chat-attachments/sealed-upload";
+import { LinkedLimitBanner } from "./linked-device/linked-limit-banner";
 import MessageStorageNoticeDialog, {
   hasSeenMessageStorageNotice,
 } from "./message-storage-notice-dialog";
@@ -51,7 +52,7 @@ import {
   keepsUnreadOnOpen,
   useDeliveryOnlyStore,
   usePurgedHistory,
-  usePrivateChat,
+  usePhoneOnlyChat,
 } from "@/lib/delivery-only/delivery-only-store";
 import {
   HeldHistoryNotice,
@@ -158,9 +159,10 @@ export default function MessagesClient() {
     vaultState === "unlocked" &&
     !storageNoticeDismissed &&
     !hasSeenMessageStorageNotice(currentUserId);
-  // Delivery-only (lib/delivery-only): a private DM is read on the phone, and
-  // a held chat's history ends where the server let it go.
-  const privateChat = usePrivateChat(activeConv);
+  // Delivery-only (lib/delivery-only): a private DM is read on the phone
+  // unless this browser is linked, and a held chat's history ends where the
+  // server let it go.
+  const privateChat = usePhoneOnlyChat(activeConv);
   const purgedHistory = usePurgedHistory(activeConv);
   // Suppress bell rows / phone pushes for the conversation on screen.
   // Not for a private chat: nothing is readable here, and the claim would
@@ -227,7 +229,8 @@ export default function MessagesClient() {
     const conv =
       dms.find((d) => d.id === activeConversationId) ??
       channels.find((c) => c.id === activeConversationId);
-    if (keepsUnreadOnOpen(conv, useDeliveryOnlyStore.getState().deliveryOnly)) return;
+    const delivery = useDeliveryOnlyStore.getState();
+    if (keepsUnreadOnOpen(conv, delivery.deliveryOnly, delivery.linked)) return;
     void api.markChatConversationRead(activeConversationId).catch(() => {});
     clearUnread(activeConversationId);
   }, [
@@ -360,8 +363,8 @@ export default function MessagesClient() {
         state.dms.find((d) => d.id === id) ??
         state.channels.find((c) => c.id === id);
       const delivery = useDeliveryOnlyStore.getState();
-      if (!isPrivateChat(conv, delivery.overrides)) {
-        if (!keepsUnreadOnOpen(conv, delivery.deliveryOnly)) {
+      if (delivery.linked || !isPrivateChat(conv, delivery.overrides)) {
+        if (!keepsUnreadOnOpen(conv, delivery.deliveryOnly, delivery.linked)) {
           void api.markChatConversationRead(id).catch(() => {});
           clearUnread(id);
         }
@@ -722,6 +725,7 @@ export default function MessagesClient() {
         language={appLanguage}
         currentUserId={currentUserId ?? undefined}
       />
+      <LinkedLimitBanner />
       {currentUserId ? (
         <MessageStorageNoticeDialog
           open={showStorageNotice}
