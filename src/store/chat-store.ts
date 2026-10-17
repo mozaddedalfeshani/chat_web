@@ -78,6 +78,9 @@ function scheduleNotificationClear(conversationId: string) {
   notificationClearTimer = setTimeout(() => {
     notificationClearTimer = null;
     void api.markChatConversationRead(conversationId).catch(() => {});
+    // The badge too: a held chat opened with its newest message phone-only
+    // kept its unread on open (keepsUnreadOnOpen), and this is what clears it.
+    useChatStore.getState().clearUnread(conversationId);
   }, NOTIFICATION_CLEAR_DELAY_MS);
 }
 
@@ -505,6 +508,8 @@ export const useChatStore = create<ChatState>()(
           last_message_attachment_type: firstAtt?.content_type,
           last_message_attachment_name: firstAtt?.file_name,
           last_message_attachments: atts,
+          // It arrived live, so this device holds the newest message.
+          last_message_private: false,
           bumpUnread,
         };
         // The conversation is either a DM or a channel; patch both (the list that

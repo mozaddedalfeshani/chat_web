@@ -48,6 +48,7 @@ import { useGroupMembers } from "./chat-header/use-group-members";
 import { chatMentionMembers } from "./chat-mention-members";
 import {
   isPrivateChat,
+  keepsUnreadOnOpen,
   useDeliveryOnlyStore,
   usePurgedHistory,
   usePrivateChat,
@@ -222,6 +223,11 @@ export default function MessagesClient() {
     // for messages nobody has seen.
     if (privateChat) return;
     void loadFeed(activeConversationId, null, { force: true });
+    const { dms, channels } = useChatStore.getState();
+    const conv =
+      dms.find((d) => d.id === activeConversationId) ??
+      channels.find((c) => c.id === activeConversationId);
+    if (keepsUnreadOnOpen(conv, useDeliveryOnlyStore.getState().deliveryOnly)) return;
     void api.markChatConversationRead(activeConversationId).catch(() => {});
     clearUnread(activeConversationId);
   }, [
@@ -353,9 +359,12 @@ export default function MessagesClient() {
       const conv =
         state.dms.find((d) => d.id === id) ??
         state.channels.find((c) => c.id === id);
-      if (!isPrivateChat(conv, useDeliveryOnlyStore.getState().overrides)) {
-        void api.markChatConversationRead(id).catch(() => {});
-        clearUnread(id);
+      const delivery = useDeliveryOnlyStore.getState();
+      if (!isPrivateChat(conv, delivery.overrides)) {
+        if (!keepsUnreadOnOpen(conv, delivery.deliveryOnly)) {
+          void api.markChatConversationRead(id).catch(() => {});
+          clearUnread(id);
+        }
         void loadFeed(id, null);
       }
       if (messageId) {

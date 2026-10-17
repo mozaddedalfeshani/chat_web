@@ -62,6 +62,20 @@ export function hasPurgedHistory(
   return isHeldConversation(conv, deliveryOnly) && !!conv?.last_private_at;
 }
 
+/**
+ * Opening a held chat whose newest message already left the server
+ * (`last_message_private`) does not mark it read: that message — and maybe
+ * more before it — is only on the phones, and marking read here would clear
+ * the phone's badge for messages nobody has seen. A live message arriving
+ * while the chat is open clears it as usual (scheduleNotificationClear).
+ */
+export function keepsUnreadOnOpen(
+  conv: Pick<ChatConversation, "type" | "last_message_private"> | null | undefined,
+  deliveryOnly: boolean,
+): boolean {
+  return isHeldConversation(conv, deliveryOnly) && !!conv?.last_message_private;
+}
+
 /** A DM with private chat on. Never a group, never Note to Self. */
 export function isPrivateChat(
   conv: ConvShape | null | undefined,

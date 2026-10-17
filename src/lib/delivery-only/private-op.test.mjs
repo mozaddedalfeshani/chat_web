@@ -92,3 +92,12 @@ test("held, purged and private chats are told apart", async () => {
   assert.equal(isPrivateChat({ ...dm, private_chat: true, is_self: true }, {}), false);
   assert.equal(isPrivateChat({ id: "g", type: "group", private_chat: true }, {}), false);
 });
+
+test("a held chat whose newest message is phone-only keeps its unread on open", async () => {
+  const { keepsUnreadOnOpen } = await import("./delivery-only-store.ts");
+  const dm = { type: "dm", last_message_private: true };
+  assert.equal(keepsUnreadOnOpen(dm, true), true);
+  assert.equal(keepsUnreadOnOpen({ ...dm, last_message_private: false }, true), false);
+  assert.equal(keepsUnreadOnOpen(dm, false), false);
+  assert.equal(keepsUnreadOnOpen({ type: "webhook", last_message_private: true }, true), false);
+});

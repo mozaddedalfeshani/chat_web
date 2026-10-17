@@ -208,7 +208,9 @@ carries the same files.
   `HeldHistoryNotice` where loaded history ends, and in place of "No messages
   yet". A quiet private-chat DM draws `PrivateChatNotice` and is neither
   loaded nor marked read (that would clear the phone's badge).
-- `last_message_private` → `keepPrivatePreviews` (store `fetchSidebar`).
+- `last_message_private` → `keepPrivatePreviews` (store `fetchSidebar`), and
+  `keepsUnreadOnOpen`: opening such a chat does not mark it read (the newest
+  message is on the phone only); a live message while open clears it.
 - `meta.private_quote_id` → `usePrivateQuote` (bubble body), same
   conversation's main feed only.
 - `chat.private_op` → `applyPrivateOp`, re-dispatched as the ordinary
