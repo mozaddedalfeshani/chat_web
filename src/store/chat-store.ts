@@ -23,6 +23,8 @@ import {
   needsOpening,
 } from "@/lib/chat-e2ee/crypto";
 import { decryptSidebarPreviews } from "@/lib/chat-e2ee/sidebar-preview";
+import { keepPrivatePreviews } from "@/lib/delivery-only/private-preview";
+import { isPrivateChatId } from "@/lib/delivery-only/delivery-only-store";
 import { fillConversationKeyGaps } from "@/lib/chat-e2ee/key-gaps";
 import {
   rememberLocalMessages,
@@ -438,8 +440,12 @@ export const useChatStore = create<ChatState>()(
             decryptSidebarPreviews(data.dms ?? [], get().currentUserId),
             decryptSidebarPreviews(data.channels ?? [], get().currentUserId),
           ]);
-          const dms = sortDms(previewDms);
-          const channels = sortChannels(previewChannels);
+          // The newest message already left the server (delivery-only): keep
+          // the preview a live event put on screen, or say where it is.
+          const dms = sortDms(keepPrivatePreviews(previewDms, get().dms));
+          const channels = sortChannels(
+            keepPrivatePreviews(previewChannels, get().channels),
+          );
           // A conversation opened or created while this request was in flight
           // (startChatDM -> upsertDM -> select) is not in the response yet.
           // Dropping it here blanked the screen mid-click, so keep the local row
@@ -700,7 +706,8 @@ export const useChatStore = create<ChatState>()(
           void acknowledgeMessages("delivered", served).catch(() => {});
           if (
             get().activeConversationId === conversationId &&
-            document.visibilityState === "visible"
+            document.visibilityState === "visible" &&
+            !isPrivateChatId(conversationId, get().dms)
           ) {
             void acknowledgeMessages("read", served).catch(() => {});
           }
@@ -1064,7 +1071,10 @@ export const useChatStore = create<ChatState>()(
         if (ev.type === "chat.message.created") {
           const msg = ev.message;
           if (!messageSurvives(msg, deletionSnapshot(currentUserId))) return;
-          const isActive = ev.conversation_id === activeConversationId;
+          // A private chat's notice is not the chat: nothing here is read.
+          const isActive =
+            ev.conversation_id === activeConversationId &&
+            !isPrivateChatId(ev.conversation_id, get().dms);
           void acknowledgeMessages("delivered", [msg.id]).catch(() => {});
           if (isActive && document.visibilityState === "visible") {
             void acknowledgeMessages("read", [msg.id]).catch(() => {});

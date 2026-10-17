@@ -84,14 +84,14 @@ export default function GroupCallProvider({
     if (reason) toast.error(reason);
   }, [clearRoom, leaveOnce, resetScreenShare]);
 
-  const join = useCallback(async (conversationId: string) => {
+  const join = useCallback(async (conversationId: string, ring?: string[]) => {
     if (joinPendingRef.current || sessionRef.current || callRef.current) return;
     joinPendingRef.current = true;
     const joinEpoch = ++joinEpochRef.current;
     dismissInvite();
     setView({ ...idleGroupRoomView, phase: "joining" });
     try {
-      const session = await api.joinGroupCall(conversationId);
+      const session = await api.joinGroupCall(conversationId, ring);
       if (joinEpoch !== joinEpochRef.current) {
         // Left during the join request; do not let its late response build media.
         await leaveOnce(session.call.id);

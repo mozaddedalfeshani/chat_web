@@ -52,6 +52,16 @@ export function ChatTimelineItemRow({
   const m = message;
   const threadOpen = activeThreadRootId === m.id;
   const showThreadSummary = !!onOpenThread && (m.thread_count > 0 || threadOpen);
+  const threadSummary = showThreadSummary ? (
+    <div className="px-3">
+      <ThreadReplySummary
+        root={chatToThreadMessage(m)}
+        replies={(threadRepliesByRoot[m.id] ?? []).map(chatToThreadMessage)}
+        replyCount={m.thread_count}
+        onClick={() => onOpenThread!(m.id)}
+      />
+    </div>
+  ) : null;
 
   return (
     <li
@@ -88,6 +98,16 @@ export function ChatTimelineItemRow({
         <VoiceCallEventRow message={m} currentUserId={currentUserId} />
       ) : m.message_type === "group_call" ? (
         <GroupCallEventRow message={m} />
+      ) : m.content_purged ? (
+        // The server let the content go (delivery-only, or 120-day retention)
+        // and kept an empty row: a thread root still holding replies, or a
+        // pinned message. Not a deletion — the phones have it.
+        <>
+          <div className="px-3 py-1.5 text-[13px] italic text-[var(--sig-label-2)]">
+            Message kept on your phone
+          </div>
+          {threadSummary}
+        </>
       ) : m.deleted_at ? (
         <div className="px-3 py-1.5 text-[13px] italic text-[var(--sig-label-2)]">
           This message was deleted
@@ -110,21 +130,16 @@ export function ChatTimelineItemRow({
                 ? (scope) => onDeleteMessage(m.id, scope)
                 : undefined
             }
-            onForwardMessage={onForwardMessage ? () => onForwardMessage(m) : undefined}
+            onForwardMessage={
+              // Private chat's quiet rules: never forwarded (the server refuses
+              // it too, 403 private_chat_no_forward).
+              onForwardMessage && !m.private_chat ? () => onForwardMessage(m) : undefined
+            }
             onOpenProfile={onOpenProfile}
             onReply={onReply ? () => onReply(m) : undefined}
             onJumpToMessage={onJumpToMessage}
           />
-          {showThreadSummary ? (
-            <div className="px-3">
-              <ThreadReplySummary
-                root={chatToThreadMessage(m)}
-                replies={(threadRepliesByRoot[m.id] ?? []).map(chatToThreadMessage)}
-                replyCount={m.thread_count}
-                onClick={() => onOpenThread!(m.id)}
-              />
-            </div>
-          ) : null}
+          {threadSummary}
         </>
       )}
     </li>

@@ -49,7 +49,8 @@ export type GroupCallContextValue = {
   /** Group call ringing on this tab right now, if any. */
   invite: GroupCall | null;
   refresh: (conversationId: string) => Promise<void>;
-  join: (conversationId: string) => Promise<void>;
+  /** `ring`: who a NEW call rings; undefined = everyone (server 0172). */
+  join: (conversationId: string, ring?: string[]) => Promise<void>;
   leave: () => Promise<void>;
   toggleMute: () => Promise<void>;
   toggleScreenShare: () => Promise<void>;

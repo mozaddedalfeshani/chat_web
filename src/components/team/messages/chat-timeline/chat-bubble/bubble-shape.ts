@@ -54,7 +54,8 @@ function isImageOrVideo(message: ChatMessage) {
 /** Picture/video bubble — caption or not. Time sits on the media. A quote
  *  needs the inset, so a quoted photo keeps the text-bubble path. */
 export function isMediaBubble(message: ChatMessage) {
-  if (message.quote) return false;
+  // A quote of a message the server let go still draws a quote card.
+  if (message.quote || message.meta?.private_quote_id) return false;
   return isImageOrVideo(message);
 }
 

@@ -10,10 +10,16 @@ export function getActiveGroupCall(conversationId: string) {
   );
 }
 
-export function joinGroupCall(conversationId: string) {
+/**
+ * `ring` is who a NEW call rings (server 0172): undefined = every member (the
+ * old body), `[]` = nobody. Ignored when the call is already running.
+ */
+export function joinGroupCall(conversationId: string, ring?: string[]) {
   return apiFetch<GroupCallSession>(
     `/api/chat/conversations/${conversationId}/group-call/join`,
-    { method: "POST" },
+    ring === undefined
+      ? { method: "POST" }
+      : { method: "POST", headers: jsonHeaders, body: JSON.stringify({ ring }) },
   );
 }
 

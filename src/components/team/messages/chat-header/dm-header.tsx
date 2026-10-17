@@ -14,6 +14,8 @@ import DmActionsSheet from "./dm-actions-sheet";
 import DmProfileDialog from "./dm-profile-dialog";
 import DmCallActions from "./dm-call-actions";
 import { useTypingLabel } from "@/lib/chat-typing/use-typing-label";
+import { usePrivateChat } from "@/lib/delivery-only/delivery-only-store";
+import { PrivateChatLabel } from "@/lib/delivery-only/delivery-only-notices";
 
 /**
  * The header capsule for a one-to-one thread.
@@ -45,6 +47,8 @@ export default function DmHeader({
   const accountDeleted = isAccountDeleted(conv);
   const hidePeerActions = selfNote || accountDeleted;
   const typingText = useTypingLabel(hidePeerActions ? null : conv.id, false);
+  // Private chat shares nothing about either side: no typing, no presence.
+  const privateChat = usePrivateChat(conv);
   const label = chatConvLabel(conv);
   const peerMember =
     (conv.peer_user_id
@@ -89,7 +93,9 @@ export default function DmHeader({
             <span className="truncate">{label}</span>
             <MuteBadge conv={conv} />
           </span>
-          {hidePeerActions ? null : typingText ? (
+          {hidePeerActions ? null : privateChat ? (
+            <PrivateChatLabel />
+          ) : typingText ? (
             <span className="whitespace-nowrap text-[11px] font-medium text-[var(--indigo)]">
               {typingText}
             </span>

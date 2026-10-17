@@ -196,3 +196,22 @@ table or code block looks exactly like one typed with the toolbar.
   `javascript:` and friends.
 - `Ababil-X-frontend` carries the same files (it has no chat-bubble dir; its
   timeline is `CommentMessage`).
+
+## Delivery-only chat — interim (2026-10-18)
+
+Server 0173 deletes a personal message once every member's phones have it,
+and this app keeps no copy. `src/lib/delivery-only/` is the stopgap until a
+local store exists (contract: `../../DELIVERY_ONLY.md`, phase 5). Desktop
+carries the same files.
+
+- `/api/me` `delivery_only` → held chats (every DM / group, not a feed) draw
+  `HeldHistoryNotice` where loaded history ends, and in place of "No messages
+  yet". A quiet private-chat DM draws `PrivateChatNotice` and is neither
+  loaded nor marked read (that would clear the phone's badge).
+- `last_message_private` → `keepPrivatePreviews` (store `fetchSidebar`).
+- `meta.private_quote_id` → `usePrivateQuote` (bubble body), same
+  conversation's main feed only.
+- `chat.private_op` → `applyPrivateOp`, re-dispatched as the ordinary
+  realtime event; authorship rule in `private-op.ts` matches the phone's.
+- Group call ring list (0172): Meet on a group with no running call opens
+  `components/user/group-call/ring/start-call-ring-dialog.tsx` first.

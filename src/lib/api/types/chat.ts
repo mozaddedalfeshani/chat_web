@@ -104,6 +104,19 @@ export type ChatConversation = {
    */
   plaintext_until_keyed?: boolean;
   /**
+   * Private chat on this DM (server 0160): quiet rules for both people, and
+   * its messages are on their phones only. The web shows a pointer to the
+   * app instead of a timeline (lib/delivery-only).
+   */
+  private_chat?: boolean;
+  private_chat_by?: string;
+  /**
+   * Delivery-only (server 0173): the newest message is already gone from the
+   * server, so the last-message fields are blank and only the time is real.
+   */
+  last_private_at?: string | null;
+  last_message_private?: boolean;
+  /**
    * Client-only. A conversation this browser holds history for but the server
    * no longer lists (left, or imported from the phone). Readable, never
    * writable: sending stays the server's decision.
@@ -187,6 +200,13 @@ export type ChatMessage = {
   revision?: number;
   /** The server let the content go at 120 days. Not a deletion. */
   content_purged?: boolean;
+  /** Sent while private chat was on (0160): never forwarded or saved. */
+  private_chat?: boolean;
+  /**
+   * Delivery-only (0173): the server keeps this message only until every
+   * member's phones have it. A browser keeps no copy, so a reload loses it.
+   */
+  held?: boolean;
   user_name?: string;
   user_avatar_url?: string;
   attachments?: ChatMessageAttachment[];
@@ -237,6 +257,12 @@ export type ChatMessage = {
     target_id?: string;
     target_name?: string;
     value?: string;
+    /**
+     * The quoted message's id when the server may no longer hold it (0160 /
+     * 0173). There is no `quote` join for it once purged; the client resolves
+     * it from what it has loaded, same conversation only.
+     */
+    private_quote_id?: string;
   } | null;
   forwarded_from_name?: string;
   forwarded_from_source?: string;
@@ -262,6 +288,11 @@ export type ChatMessageQuote = {
   decryption_failed?: boolean;
   /** The original is over the server's inline limit: neither body was sent. */
   long?: boolean;
+  /**
+   * Client-only. The original left the server (delivery-only) and this
+   * browser never loaded it: only the phones hold it.
+   */
+  unavailable_here?: boolean;
 };
 
 // The end-to-end encryption types live next door; re-exported so every
@@ -347,6 +378,39 @@ export type ChatConversationDeletedEvent = {
 export type ChatReceiptUpdate = {
   message_id: string;
   delivery: NonNullable<ChatMessage["delivery"]>;
+};
+
+/** Either member of a DM switched private chat (server 0160). */
+export type ChatPrivateChatEvent = {
+  type: "chat.private_chat";
+  conversation_id: string;
+  private_chat?: { enabled: boolean; by?: string };
+};
+
+/**
+ * An edit, reaction or delete a phone made to a held message (0160 / 0173).
+ * When the target is still on the server it also rides the ordinary event;
+ * once purged, this is all there is.
+ */
+export type ChatPrivateOp = {
+  id: string;
+  conversation_id: string;
+  sender_id: string;
+  client_op_id?: string;
+  kind: "edit" | "reaction" | "delete";
+  target_message_id: string;
+  emoji?: string;
+  reacted?: boolean;
+  encrypted_body?: string;
+  encryption_nonce?: string;
+  encryption_key_version?: number;
+  created_at: string;
+};
+
+export type ChatPrivateOpEvent = {
+  type: "chat.private_op";
+  conversation_id: string;
+  private_op?: ChatPrivateOp;
 };
 
 export type ChatReceiptsUpdatedEvent = {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Headphones, LoaderCircle, Users } from "lucide-react";
 import type { ChatConversation } from "@/lib/api";
 import { Button } from "@/components/ui/button";
@@ -9,6 +9,8 @@ import { useGroupCall } from "@/components/user/group-call/group-call-context";
 import { callQuotaExhaustedMessage } from "@/components/user/group-call/group-call-state";
 import { useTeamContextOptional } from "@/components/team/shared/team-provider";
 import { subscribeAppWs } from "@/lib/notifications/ws-bus";
+import { useChatStore } from "@/store/chat-store";
+import StartCallRingDialog from "@/components/user/group-call/ring/start-call-ring-dialog";
 
 export default function GroupCallAction({
   conversation,
@@ -20,6 +22,10 @@ export default function GroupCallAction({
 }) {
   const groupCall = useGroupCall();
   const refresh = groupCall.refresh;
+  const currentUserId = useChatStore((s) => s.currentUserId);
+  // Starting a NEW call asks who to ring first (server 0172); joining a
+  // running one rings nobody, so it joins straight away.
+  const [ringOpen, setRingOpen] = useState(false);
   const active = groupCall.activeCalls[conversation.id];
   const joiningThis =
     groupCall.view.phase === "joining" &&
@@ -60,40 +66,56 @@ export default function GroupCallAction({
   if (conversation.type === "webhook") return null;
 
   return (
-    <Button
-      type="button"
-      size="sm"
-      variant={
-        active || inThisCall ? "default" : capsule ? "ghost" : "secondary"
-      }
-      className={cn(
-        "h-7 shrink-0 gap-1.5 px-2.5 text-xs",
-        capsule ? "rounded-r-full" : "ml-auto rounded-full",
-      )}
-      disabled={busyElsewhere || joiningThis || outOfMinutes}
-      onClick={() => void groupCall.join(conversation.id)}
-      title={blockedReason}
-      aria-label={active ? "Join meet" : "Start a meet"}
-    >
-      {joiningThis ? (
-        <LoaderCircle className="h-4 w-4 animate-spin" />
-      ) : (
-        <Headphones className="h-4 w-4" />
-      )}
-      <span className="hidden sm:inline">
-        {inThisCall
-          ? "In call"
-          : active
-            ? "Join"
-            : outOfMinutes
-              ? "No minutes"
-              : "Meet"}
-      </span>
-      {active ? (
-        <span className="flex items-center gap-0.5 text-xs opacity-80">
-          <Users className="h-3 w-3" /> {active.participant_count}
+    <>
+      <Button
+        type="button"
+        size="sm"
+        variant={
+          active || inThisCall ? "default" : capsule ? "ghost" : "secondary"
+        }
+        className={cn(
+          "h-7 shrink-0 gap-1.5 px-2.5 text-xs",
+          capsule ? "rounded-r-full" : "ml-auto rounded-full",
+        )}
+        disabled={busyElsewhere || joiningThis || outOfMinutes}
+        onClick={() => {
+          if (!active && !inThisCall && currentUserId) setRingOpen(true);
+          else void groupCall.join(conversation.id);
+        }}
+        title={blockedReason}
+        aria-label={active ? "Join meet" : "Start a meet"}
+      >
+        {joiningThis ? (
+          <LoaderCircle className="h-4 w-4 animate-spin" />
+        ) : (
+          <Headphones className="h-4 w-4" />
+        )}
+        <span className="hidden sm:inline">
+          {inThisCall
+            ? "In call"
+            : active
+              ? "Join"
+              : outOfMinutes
+                ? "No minutes"
+                : "Meet"}
         </span>
+        {active ? (
+          <span className="flex items-center gap-0.5 text-xs opacity-80">
+            <Users className="h-3 w-3" /> {active.participant_count}
+          </span>
+        ) : null}
+      </Button>
+      {ringOpen && currentUserId ? (
+        <StartCallRingDialog
+          conversationId={conversation.id}
+          currentUserId={currentUserId}
+          onClose={() => setRingOpen(false)}
+          onStart={(ring) => {
+            setRingOpen(false);
+            void groupCall.join(conversation.id, ring);
+          }}
+        />
       ) : null}
-    </Button>
+    </>
   );
 }

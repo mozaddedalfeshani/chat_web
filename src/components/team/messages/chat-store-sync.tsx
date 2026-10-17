@@ -10,6 +10,8 @@ import {
 import { ensureMessagingDevice } from "@/lib/messages/device";
 import { useTypingRealtime } from "@/lib/chat-typing/use-typing-realtime";
 import { setEncryptedAttachmentsEnabled } from "@/lib/chat-attachments/sealed-upload";
+import { useDeliveryOnlyStore } from "@/lib/delivery-only/delivery-only-store";
+import { useDeliveryOnlyRealtime } from "@/lib/delivery-only/use-delivery-only-realtime";
 
 async function replayCurrentUserOutbox() {
   const userId = useChatStore.getState().currentUserId;
@@ -34,6 +36,7 @@ export default function ChatStoreSync() {
   // Chat needs no workspace since migration 0145 — only a signed-in account.
   const chatReady = !!currentUserId;
   useTypingRealtime(chatReady);
+  useDeliveryOnlyRealtime(currentUserId);
 
   useEffect(() => {
     void requestPersistentChatStorage();
@@ -46,6 +49,7 @@ export default function ChatStoreSync() {
     void api.getMeSession().then((me) => {
       setCurrentUserId(me.id);
       setEncryptedAttachmentsEnabled(me.encrypted_attachments);
+      useDeliveryOnlyStore.getState().setDeliveryOnly(me.delivery_only === true);
       void ensureMessagingDevice(me.id).catch(() => {});
       void replayCurrentUserOutbox();
     });

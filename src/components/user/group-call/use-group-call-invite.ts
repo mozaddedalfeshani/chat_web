@@ -69,6 +69,8 @@ export function useGroupCallInvite({ currentUserId }: UseGroupCallInviteOptions)
       // Until `/api/me` resolves there is no way to tell the user's own call
       // from somebody else's, and ringing at yourself is the worse mistake.
       if (!currentUserId || call.started_by === currentUserId) return;
+      // Left out of the starter's ring list: the call still shows as "Join".
+      if (call.ring === false) return;
       if (answeredRef.current.has(call.id)) return;
       if (ringTimeLeft(call) <= 0) return;
       setInvite(call);

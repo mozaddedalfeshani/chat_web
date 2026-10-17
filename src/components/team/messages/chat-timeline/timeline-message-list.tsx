@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { Loading03Icon } from "hugeicons-react";
 import ChatDateDivider from "../chat-date-divider";
 import { CallEventsCollapse } from "./call-events-collapse";
@@ -15,11 +16,13 @@ export function TimelineMessageList({
   items,
   loading,
   emptyLabel,
+  emptyNode,
   rowProps,
 }: {
   items: TimelineItem[];
   loading: boolean;
   emptyLabel: string;
+  emptyNode?: ReactNode;
   rowProps: RowProps;
 }) {
   if (loading) {
@@ -31,6 +34,7 @@ export function TimelineMessageList({
   }
 
   if (items.length === 0) {
+    if (emptyNode) return <>{emptyNode}</>;
     return (
       <p className="py-12 text-center text-sm text-[var(--sig-label-2)]">
         {emptyLabel}

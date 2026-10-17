@@ -14,6 +14,7 @@ import BubbleMeta from "./bubble-meta";
 import BubbleQuote from "./bubble-quote";
 import { taskOf } from "@/lib/chat-task/task-format";
 import { TaskCardControls, TaskCardHead } from "../../chat-task/task-card";
+import { usePrivateQuote } from "@/lib/delivery-only/use-private-quote";
 
 /** Markdown inside a bubble: headings sized off the 14px body instead of the
  *  board's page-sized ones, and block margins tightened to bubble scale. */
@@ -43,6 +44,9 @@ export default function BubbleBody({
   mediaBubble?: boolean;
   onJumpToMessage?: (messageId: string) => void;
 }) {
+  // The server's quote join, or — once the original left the server — the
+  // copy this browser loaded (delivery-only, lib/delivery-only).
+  const quote = usePrivateQuote(message);
   const attachments = message.attachments ?? [];
   const media = attachments.filter(isMediaAttachment);
   const files = attachments.filter((a) => !isMediaAttachment(a));
@@ -61,7 +65,7 @@ export default function BubbleBody({
   // is already sitting above it to bleed into.
   const contentAbove =
     showAuthor ||
-    Boolean(message.quote) ||
+    Boolean(quote) ||
     Boolean(message.forwarded_from_name) ||
     Boolean(message.via_ababilx);
 
@@ -98,9 +102,9 @@ export default function BubbleBody({
         </div>
       ) : null}
 
-      {message.quote ? (
+      {quote ? (
         <div className={cn(mediaBubble && "px-1 pt-1")}>
-          <BubbleQuote quote={message.quote} onJump={onJumpToMessage} />
+          <BubbleQuote quote={quote} onJump={onJumpToMessage} />
         </div>
       ) : null}
 

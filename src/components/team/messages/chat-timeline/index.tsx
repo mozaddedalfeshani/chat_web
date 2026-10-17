@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Loading03Icon } from "hugeicons-react";
 import { toast } from "sonner";
 import type { ChatMessage } from "@/lib/api";
@@ -57,6 +57,8 @@ export default function ChatTimeline({
   readOnlyLabel,
   isGroup = false,
   onOpenProfile,
+  historyNotice,
+  emptyNode,
 }: {
   conversationId?: string | null;
   messages: ChatMessage[];
@@ -95,6 +97,10 @@ export default function ChatTimeline({
   readOnlyLabel?: string;
   isGroup?: boolean;
   onOpenProfile?: (userId: string) => void;
+  /** Drawn where the loaded history ends (delivery-only: older is on the phone). */
+  historyNotice?: ReactNode;
+  /** Drawn in place of `emptyLabel` when nothing is loaded. */
+  emptyNode?: ReactNode;
 }) {
   const webhookOnly =
     useChatStore(selectActiveConversation)?.type === "webhook";
@@ -170,10 +176,12 @@ export default function ChatTimeline({
               </Button>
             </div>
           ) : null}
+          {!hasMore && messages.length > 0 ? historyNotice : null}
           <TimelineMessageList
             items={timelineItems}
             loading={loading && messages.length === 0}
             emptyLabel={emptyLabel}
+            emptyNode={emptyNode}
             rowProps={{
               currentUserId,
               isGroupConversation: isGroup,

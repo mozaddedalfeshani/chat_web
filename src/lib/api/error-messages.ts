@@ -28,6 +28,10 @@ const ERROR_MESSAGES: Record<string, string> = {
     "Add the country code to search by phone, e.g. +8801712345678. Numbers are stored with their country code, so a local number matches nobody.",
   task_dm_only: "Tasks can only be sent in a direct message.",
   task_not_in_private_chat: "Tasks are not available while private chat is on.",
+  private_chat_no_forward: "Messages from a private chat can't be forwarded.",
+  private_chat_no_threads: "Threads are not available while private chat is on.",
+  "message not found":
+    "That message is no longer on our servers. If it was delivered, it is still on your phone in the AbabilX app.",
   task_no_thread: "A task cannot be sent as a thread reply.",
   task_not_found: "This task is no longer on the server, so it cannot be changed.",
   message_rate_limited:

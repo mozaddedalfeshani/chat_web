@@ -17,7 +17,7 @@ export default function BubbleQuote({
   quote: ChatMessageQuote;
   onJump?: (messageId: string) => void;
 }) {
-  const jumpable = !quote.deleted && !!onJump;
+  const jumpable = !quote.deleted && !quote.unavailable_here && !!onJump;
   return (
     <button
       type="button"

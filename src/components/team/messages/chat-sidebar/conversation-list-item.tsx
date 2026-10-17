@@ -6,6 +6,7 @@ import { chatConvLabel, chatInitials, isAccountDeleted, isNoteToSelf } from "../
 import GroupAvatarStack from "./group-avatar-stack";
 import { Bookmark01Icon, Link01Icon, UserIcon } from "hugeicons-react";
 import { useTypingLabel } from "@/lib/chat-typing/use-typing-label";
+import { usePrivateChat } from "@/lib/delivery-only/delivery-only-store";
 
 /** One row in the unified list — a group (stacked avatars) or a DM (peer avatar). */
 export default function ConversationListItem({
@@ -25,16 +26,25 @@ export default function ConversationListItem({
   searchMessageId?: string | null;
   onOpenProfile?: (userId: string) => void;
 }) {
-  const typingText = useTypingLabel(searchSnippet ? null : conv.id, conv.type !== "dm");
+  // A private chat's preview would be a message the server already let go
+  // (or one it never showed this browser): say what the chat is instead.
+  const privateChat = usePrivateChat(conv) && !searchSnippet;
+  const typingText = useTypingLabel(
+    searchSnippet || privateChat ? null : conv.id,
+    conv.type !== "dm",
+  );
   const shared = {
     typingText,
     title: chatConvLabel(conv),
     lastMessageAt: conv.last_message_at,
-    lastMessageBody: searchSnippet ?? conv.last_message_body,
-    lastMessageUserId: searchSnippet ? undefined : conv.last_message_user_id,
-    lastMessageAttachmentType: conv.last_message_attachment_type,
-    lastMessageAttachmentName: conv.last_message_attachment_name,
-    lastMessageAttachments: conv.last_message_attachments,
+    lastMessageBody: privateChat
+      ? "Private chat"
+      : (searchSnippet ?? conv.last_message_body),
+    lastMessageUserId:
+      searchSnippet || privateChat ? undefined : conv.last_message_user_id,
+    lastMessageAttachmentType: privateChat ? undefined : conv.last_message_attachment_type,
+    lastMessageAttachmentName: privateChat ? undefined : conv.last_message_attachment_name,
+    lastMessageAttachments: privateChat ? undefined : conv.last_message_attachments,
     currentUserId,
     unreadCount: conv.unread_count,
     active,

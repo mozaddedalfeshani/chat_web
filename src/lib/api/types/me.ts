@@ -21,6 +21,11 @@ export type MeSession = {
    * predates 0168, which means off: that server would drop the file's key.
    */
   encrypted_attachments?: boolean;
+  /**
+   * Delivery-only chat (server 0173, always on): personal messages leave the
+   * server once every member's phones have them. Absent on an older server.
+   */
+  delivery_only?: boolean;
 };
 
 export type MeProfile = {

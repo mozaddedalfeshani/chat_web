@@ -46,6 +46,16 @@ import MessageStorageNoticeDialog, {
 } from "./message-storage-notice-dialog";
 import { useGroupMembers } from "./chat-header/use-group-members";
 import { chatMentionMembers } from "./chat-mention-members";
+import {
+  isPrivateChat,
+  useDeliveryOnlyStore,
+  usePurgedHistory,
+  usePrivateChat,
+} from "@/lib/delivery-only/delivery-only-store";
+import {
+  HeldHistoryNotice,
+  PrivateChatNotice,
+} from "@/lib/delivery-only/delivery-only-notices";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -147,10 +157,20 @@ export default function MessagesClient() {
     vaultState === "unlocked" &&
     !storageNoticeDismissed &&
     !hasSeenMessageStorageNotice(currentUserId);
+  // Delivery-only (lib/delivery-only): a private DM is read on the phone, and
+  // a held chat's history ends where the server let it go.
+  const privateChat = usePrivateChat(activeConv);
+  const purgedHistory = usePurgedHistory(activeConv);
   // Suppress bell rows / phone pushes for the conversation on screen.
-  useChatFocus(vaultState === "unlocked" ? activeConversationId : null);
-  const mainChat = useChatFeed(activeConversationId, null);
-  const threadChat = useChatFeed(activeConversationId, threadRootId);
+  // Not for a private chat: nothing is readable here, and the claim would
+  // stop the server pushing that chat's messages to the phone.
+  useChatFocus(
+    vaultState === "unlocked" && !privateChat ? activeConversationId : null,
+  );
+  // A private chat is never loaded here (its feed would send read receipts).
+  const feedConversationId = privateChat ? null : activeConversationId;
+  const mainChat = useChatFeed(feedConversationId, null);
+  const threadChat = useChatFeed(feedConversationId, threadRootId);
 
   const threadRoot = threadRootId
     ? (mainChat.messages.find((m) => m.id === threadRootId) ?? null)
@@ -167,6 +187,7 @@ export default function MessagesClient() {
       .then((me) => {
         useChatStore.getState().setCurrentUserId(me.id);
         setEncryptedAttachmentsEnabled(me.encrypted_attachments);
+        useDeliveryOnlyStore.getState().setDeliveryOnly(me.delivery_only === true);
         setAppLanguage(me.app_language ?? null);
         setSessionReady(true);
       })
@@ -196,6 +217,10 @@ export default function MessagesClient() {
     if (teamLoading) return;
     if (vaultState !== "unlocked") return;
     if (!activeConversationId || !currentUserId) return;
+    // A private chat is read on the phone: loading it here would draw a few
+    // seconds of messages, and marking it read would clear the phone's badge
+    // for messages nobody has seen.
+    if (privateChat) return;
     void loadFeed(activeConversationId, null, { force: true });
     void api.markChatConversationRead(activeConversationId).catch(() => {});
     clearUnread(activeConversationId);
@@ -204,6 +229,7 @@ export default function MessagesClient() {
     vaultState,
     activeConversationId,
     currentUserId,
+    privateChat,
     loadFeed,
     clearUnread,
   ]);
@@ -323,9 +349,15 @@ export default function MessagesClient() {
       resetThreadState();
       setProfileUserId(null);
       setMobileNavOpen(false);
-      void api.markChatConversationRead(id).catch(() => {});
-      clearUnread(id);
-      void loadFeed(id, null);
+      const state = useChatStore.getState();
+      const conv =
+        state.dms.find((d) => d.id === id) ??
+        state.channels.find((c) => c.id === id);
+      if (!isPrivateChat(conv, useDeliveryOnlyStore.getState().overrides)) {
+        void api.markChatConversationRead(id).catch(() => {});
+        clearUnread(id);
+        void loadFeed(id, null);
+      }
       if (messageId) {
         loadOlderAttemptsRef.current = 0;
         setPendingMessageId(messageId);
@@ -527,7 +559,9 @@ export default function MessagesClient() {
             className="flex min-w-0 flex-1 flex-col"
             style={{ background: "var(--sig-bg)" }}
           >
-            {activeConv ? (
+            {activeConv && privateChat ? (
+              <PrivateChatNotice peerName={activeConv.peer_user_name} />
+            ) : activeConv ? (
               <WallpaperSurface conversationId={activeConv.id}>
               <ChatTimeline
                 key={activeConv.id}
@@ -594,6 +628,8 @@ export default function MessagesClient() {
                 highlightMessageId={highlightId}
                 composerInitialValue={draftParam ?? undefined}
                 onOpenProfile={openProfile}
+                historyNotice={purgedHistory ? <HeldHistoryNotice /> : undefined}
+                emptyNode={purgedHistory ? <HeldHistoryNotice empty /> : undefined}
               />
               </WallpaperSurface>
             ) : (

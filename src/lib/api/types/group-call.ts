@@ -18,6 +18,12 @@ export type GroupCall = {
   provider_started_at?: string;
   ended_at?: string;
   end_reason?: string;
+  /**
+   * Whether this call rings the account reading it (server 0172): the starter
+   * may ring only the people they picked. `false` = show it, stay quiet.
+   * Absent = ring, as every call did before.
+   */
+  ring?: boolean;
   created_at: string;
   updated_at: string;
 };
