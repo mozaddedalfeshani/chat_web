@@ -7,7 +7,7 @@ import { useChatStore } from "@/store/chat-store";
 
 /**
  * Shown when the server refused to link this browser (409
- * `linked_device_limit`, server 0174): the account already has its four
+ * `linked_device_limit`, server 0174): the account already has its five
  * linked devices. Until one is signed out this browser keeps nothing, so
  * chats here show only what the server still holds — the user must know why.
  * Signing a device out happens on the phone, as WhatsApp does it.
@@ -39,7 +39,7 @@ export function LinkedLimitBanner() {
             This browser can&apos;t keep your chats
           </p>
           <p className="mt-1 text-[13px] leading-5 text-[var(--sig-label-2)]">
-            You already have {limit || 4} linked devices. On your phone, open
+            You already have {limit || 5} linked devices. On your phone, open
             Settings → Linked devices, sign one out, then try again.
           </p>
           {devices.length > 0 ? (

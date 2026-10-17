@@ -11,7 +11,7 @@ import { ensureMessagingDevice } from "@/lib/messages/device";
  * this browser's durable store, as it does for the phones.
  *
  *   linked  the server said so (`archive_at`); custody runs
- *   limit   four devices are already linked (409, with their labels)
+ *   limit   five devices are already linked (409, with their labels)
  *   off     cannot keep a copy (no IndexedDB, a private window), or a server
  *           without 0174 — this browser stays an ordinary tab
  */
@@ -60,7 +60,7 @@ export async function linkThisDevice(userId: string): Promise<LinkStatus> {
   } catch (error) {
     if (error instanceof ApiError && error.message === "linked_device_limit") {
       const data = (error.data.data ?? {}) as { limit?: number; devices?: LinkedDeviceInfo[] };
-      return settle("limit", { limit: data.limit ?? 4, devices: data.devices ?? [] });
+      return settle("limit", { limit: data.limit ?? 5, devices: data.devices ?? [] });
     }
     if (error instanceof ApiError && error.message === "session_binding_required") {
       return settle("off");

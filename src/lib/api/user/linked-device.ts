@@ -5,7 +5,7 @@ import type { MessagingDevice } from "../types/messaging";
 /**
  * Linked devices (server 0174): a browser that keeps its own copy registers
  * again with `keeps_archive` and from then on the server holds every message
- * until this browser has it too. Past four linked devices the server answers
+ * until this browser has it too. Past five linked devices the server answers
  * 409 `linked_device_limit` with the list (`data.devices`).
  */
 export function linkMessagingDevice(body: {
