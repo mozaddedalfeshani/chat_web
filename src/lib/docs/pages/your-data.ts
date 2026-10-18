@@ -1,5 +1,6 @@
 import { GITHUB_REPO_URL } from "@/lib/site";
 import type { DocGroup } from "../types";
+import { DATA_STORAGE } from "./account";
 
 export const YOUR_DATA: DocGroup = {
   title: "Your data",
@@ -68,6 +69,7 @@ export const YOUR_DATA: DocGroup = {
         },
       ],
     },
+    DATA_STORAGE,
     {
       slug: "open-source",
       title: "Open source",

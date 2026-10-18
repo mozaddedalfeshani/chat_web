@@ -1,4 +1,5 @@
 import type { DocGroup } from "../types";
+import { CUSTOMIZE, FIND_PEOPLE } from "./account";
 
 export const GETTING_STARTED: DocGroup = {
   title: "Getting started",
@@ -42,6 +43,21 @@ export const GETTING_STARTED: DocGroup = {
                   text: "What is sealed on your device, and what our servers can see.",
                   href: "/docs/encryption",
                 },
+                {
+                  title: "Find people",
+                  text: "Username, QR code, email or phone, and who can find you.",
+                  href: "/docs/find-people",
+                },
+                {
+                  title: "Your chat list",
+                  text: "Pin, mute, lock and delete chats.",
+                  href: "/docs/chats",
+                },
+                {
+                  title: "Flocks (webhooks)",
+                  text: "Post into a chat from any app, script or website.",
+                  href: "/docs/flocks",
+                },
               ],
             },
           ],
@@ -53,11 +69,14 @@ export const GETTING_STARTED: DocGroup = {
             {
               type: "list",
               items: [
-                "Direct messages and groups, end-to-end encrypted.",
-                "Voice and video calls, and free group calls.",
-                "Privacy mode, private chat, Ghost Chat and view-once photos on Android.",
-                "Task cards, send later and Note to Self.",
-                "A web client at chat.ababilx.com, open source on GitHub.",
+                "Direct messages and groups, end-to-end encrypted, files included.",
+                "Our server keeps a message only until your phones have it; your phone is the archive.",
+                "Voice and video calls, and free, unmetered group calls with screen sharing.",
+                "Privacy mode, private chat, Ghost Chat, view-once photos and chat lock on Android.",
+                "Task cards, send later, snippets, Khaam cards and Note to Self.",
+                "Flocks: read-only chats your apps post into through a webhook.",
+                "Local Share between your devices on the same Wi-Fi.",
+                "A web client at chat.ababilx.com, open source on GitHub, and a desktop app.",
               ],
             },
           ],
@@ -156,7 +175,7 @@ export const GETTING_STARTED: DocGroup = {
           blocks: [
             {
               type: "p",
-              text: "The web client covers chats, groups and calls. Features marked “Android app” in these docs are on the phone only for now.",
+              text: "The web client at chat.ababilx.com and the desktop app for macOS and Windows cover chats, groups, calls, task cards and flocks; both sign in by a scan from your phone. Features marked “Android app only” in these docs are on the phone only for now.",
             },
           ],
         },
@@ -172,5 +191,7 @@ export const GETTING_STARTED: DocGroup = {
         },
       ],
     },
+    FIND_PEOPLE,
+    CUSTOMIZE,
   ],
 };

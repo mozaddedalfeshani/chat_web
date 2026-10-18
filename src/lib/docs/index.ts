@@ -1,6 +1,6 @@
 import { DEVELOPERS } from "./pages/developers";
 import { GETTING_STARTED } from "./pages/getting-started";
-import { MESSAGING } from "./pages/messaging";
+import { MESSAGING } from "./pages/messaging/index";
 import { PRIVACY } from "./pages/privacy";
 import { SECURITY } from "./pages/security";
 import { YOUR_DATA } from "./pages/your-data";
