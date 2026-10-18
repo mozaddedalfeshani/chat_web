@@ -6,7 +6,7 @@ import { storeDeletionMarkers } from "../repo/deletions";
 import { applyDeletionMarkers } from "../repo/messages-write";
 import { readMeta, writeMeta } from "../repo/cursors";
 import type { Hello } from "./client";
-import { connectToPhone, disconnectPhone, onPhoneHello, type StoredLink } from "./connect";
+import { connectToPhone, disconnectPhone, liveClient, onPhoneHello, type StoredLink } from "./connect";
 import { activeSession, setCurrentLink } from "./link-state";
 import { LIVE_PAGE_EVENT } from "./older";
 import { phonePage } from "./pages";
@@ -42,7 +42,26 @@ export async function restoreLink(userId: string) {
   setCurrentLink(userId, link);
   const chats = (await readMeta<string[]>(userId, CHATS).catch(() => undefined)) ?? [];
   useLiveHistoryStore.getState().set({ status: "waiting", deviceName: link.deviceName, phoneChats: asSet(chats) });
-  if (!(await readMeta<boolean>(userId, BOOTED))) void connectToPhone(link).catch(() => {});
+  void dialUntilBooted(userId, link);
+}
+
+const DIAL_FOR_MS = 3 * 60_000;
+const REDIAL_MS = 4000;
+
+/**
+ * Keeps reaching for the phone until the first fill is done. One dial gives
+ * up after 15 s — right after a sign-in the socket may still be opening, or
+ * the phone's app still waking — and nothing else would ever try again.
+ */
+export async function dialUntilBooted(userId: string, link: StoredLink) {
+  const until = Date.now() + DIAL_FOR_MS;
+  while (Date.now() < until && activeSession()?.link.id === link.id) {
+    if (await readMeta<boolean>(userId, BOOTED).catch(() => false)) return;
+    if (!liveClient()) {
+      await connectToPhone(link).catch((error) => console.info("[history-live] dial missed", String(error)));
+    }
+    await new Promise((resolve) => setTimeout(resolve, REDIAL_MS));
+  }
 }
 
 export function forgetLink() {

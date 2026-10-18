@@ -3,8 +3,7 @@ import { useHistoryImportStore, viewOf } from "@/store/history-import-store";
 import { saveJob, type ImportJob } from "../transfer/jobs";
 import { decodeEnvelope, openEnvelope } from "../transfer/v2-crypto";
 import { liveApi } from "./api";
-import { connectToPhone } from "./connect";
-import { saveLink } from "./session";
+import { dialUntilBooted, saveLink } from "./session";
 
 /**
  * After a one-scan sign-in the phone answers the transfer one of two ways:
@@ -37,7 +36,10 @@ async function decide(userId: string, job: ImportJob): Promise<Transport> {
   while (Date.now() < job.expiresAt) {
     try {
       const info = await liveApi.link(job.id);
-      if (!info.transfer_envelope) return "relay";
+      if (!info.transfer_envelope) {
+        console.warn("[history-live] link has no envelope, using the relay");
+        return "relay";
+      }
       const key = await openEnvelope(job.id, decodeEnvelope(info.transfer_envelope), job.privateKey);
       // The phone names itself in its hello; the transfer's device name is
       // this browser's own, so it is not used as the phone's label.
@@ -48,14 +50,17 @@ async function decide(userId: string, job: ImportJob): Promise<Transport> {
       await saveJob(userId, done);
       useHistoryImportStore.getState().setView(viewOf(done));
       console.info(`[history-live] linked ${link.id}`);
-      void connectToPhone(link).catch(() => {});
+      void dialUntilBooted(userId, link);
       return "live";
     } catch (error) {
       const waiting = error instanceof ApiError && error.message === "history_live_not_ready";
       // Offline, a 5xx, a refusal to open the envelope mid-boot: ask again.
       const transient =
         !(error instanceof ApiError) || error.status === 0 || error.status >= 500 || error.status === 429;
-      if (!waiting && !transient) return "relay";
+      if (!waiting && !transient) {
+        console.warn("[history-live] no live link, using the relay", error);
+        return "relay";
+      }
     }
     await new Promise((resolve) => setTimeout(resolve, POLL_MS));
   }

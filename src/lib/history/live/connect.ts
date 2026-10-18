@@ -74,6 +74,7 @@ async function dial(link: StoredLink): Promise<LiveClient> {
           }
         });
         if (current) current.client = client;
+        console.info("[history-live] channel open");
         useLiveHistoryStore.getState().set({ status: "connected" });
         finish(client);
       },
@@ -88,6 +89,7 @@ async function dial(link: StoredLink): Promise<LiveClient> {
       },
     });
     current = { link, peer, client: null, unsubscribe };
+    console.info(`[history-live] waking phone, link ${link.id}`);
     peer.wake();
     // Once the phone has offered, waking again would make it start over.
     const waker = setInterval(() => {

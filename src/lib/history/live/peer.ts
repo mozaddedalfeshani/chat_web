@@ -69,6 +69,7 @@ export class LivePeer {
   }
 
   private async answer(signal: WireSignal) {
+    console.info("[history-live] offer from phone");
     const offer = await openSignal<RTCSessionDescriptionInit>(this.key, this.linkId, "source", signal);
     this.pc?.close();
     const pc = new RTCPeerConnection({ iceServers: this.iceServers });
