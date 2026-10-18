@@ -57,8 +57,8 @@ export const BASICS: DocSection[] = [
           ],
           [
             "Recovery code",
-            "256 random bits, shown to you once.",
-            "With you: paper or a password manager. Never sent anywhere.",
+            "256 random bits made on your device. Older accounts were shown it once; the phone now keeps it to itself.",
+            "On your device, or written down by you. Never sent anywhere.",
             "Nothing",
           ],
           [
@@ -127,7 +127,7 @@ export const BASICS: DocSection[] = [
           },
           {
             where: "you",
-            title: "Show the code once, keep the key locally",
+            title: "Keep the key locally",
             text: "This browser keeps the identity in IndexedDB, locked by a device key the page cannot export.",
           },
         ],

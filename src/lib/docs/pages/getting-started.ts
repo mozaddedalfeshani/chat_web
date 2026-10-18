@@ -144,8 +144,8 @@ export const GETTING_STARTED: DocGroup = {
               type: "steps",
               items: [
                 "Install AbabilX from Google Play.",
-                "Sign in with Google or email.",
-                "Write down the recovery code it shows you. It is shown once.",
+                "Sign in with Google. If you already added a password to your account, email and password works too.",
+                "Allow notifications, and leave Local backup on so your chats survive a reinstall.",
               ],
             },
           ],

@@ -1,4 +1,5 @@
 import type { DocPage } from "../../types";
+import { REQUEST_EXAMPLES } from "./webhook-examples";
 import { URL_SHAPE, URL_VAR, WEBHOOK_KEYWORDS, WEBHOOK_UPDATED } from "./shared";
 
 export const WEBHOOK_API: DocPage = {
@@ -74,6 +75,11 @@ export const WEBHOOK_API: DocPage = {
         },
         { type: "callout", title: "Slack-style bodies do not work as they are.", text: "A body with only a text field ({\"text\":\"…\"}) has no message, so it answers 400 content or file is required. Rename text to message." },
       ],
+    },
+    {
+      id: "request-examples",
+      heading: "Request examples",
+      blocks: REQUEST_EXAMPLES,
     },
     {
       id: "content-type",

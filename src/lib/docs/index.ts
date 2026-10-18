@@ -4,6 +4,7 @@ import { MESSAGING } from "./pages/messaging";
 import { PRIVACY } from "./pages/privacy";
 import { SECURITY } from "./pages/security";
 import { YOUR_DATA } from "./pages/your-data";
+import { withSeo } from "./page-seo";
 import type { DocGroup, DocPage } from "./types";
 
 export type { DocBlock, DocGroup, DocPage, DocSection } from "./types";
@@ -16,7 +17,7 @@ export const DOC_GROUPS: DocGroup[] = [
   MESSAGING,
   YOUR_DATA,
   DEVELOPERS,
-];
+].map((g) => ({ ...g, pages: g.pages.map(withSeo) }));
 
 export const DOC_PAGES: DocPage[] = DOC_GROUPS.flatMap((g) => g.pages);
 

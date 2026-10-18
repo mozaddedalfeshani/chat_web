@@ -3,6 +3,7 @@ import Link from "next/link";
 import { GithubIcon } from "hugeicons-react";
 import { GITHUB_REPO_URL, PLAY_STORE_URL } from "@/lib/site";
 import DocsMobileNav from "./docs-mobile-nav";
+import DocsSearch from "./docs-search";
 import ThemeToggle from "./theme-toggle";
 
 const NAV = [
@@ -35,6 +36,7 @@ export default function DocsHeader() {
           ))}
         </nav>
         <div className="ml-auto flex items-center gap-1">
+          <DocsSearch />
           <a
             href={GITHUB_REPO_URL}
             {...external}

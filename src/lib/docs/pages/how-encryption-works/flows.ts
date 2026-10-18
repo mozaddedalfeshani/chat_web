@@ -125,7 +125,7 @@ export const FLOWS: DocSection[] = [
                 ],
               },
               {
-                label: "Recovery code",
+                label: "Recovery code (older accounts, web)",
                 steps: [
                   {
                     where: "new",

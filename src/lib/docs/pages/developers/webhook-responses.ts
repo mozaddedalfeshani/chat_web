@@ -1,4 +1,5 @@
 import type { DocPage } from "../../types";
+import { RESPONSE_EXAMPLES } from "./webhook-examples";
 import { WEBHOOK_KEYWORDS, WEBHOOK_UPDATED } from "./shared";
 
 export const WEBHOOK_RESPONSES: DocPage = {
@@ -60,6 +61,14 @@ export const WEBHOOK_RESPONSES: DocPage = {
           type: "callout",
           text: "Checks run in this order: URL shape → IP rate limit → URL lookup → secret → flock rate limit → body. So a wrong URL can still answer 429 if it is hammered, and a bad body is only reported for a valid URL.",
         },
+      ],
+    },
+    {
+      id: "examples",
+      heading: "Example of every response",
+      blocks: [
+        { type: "p", text: "Exact bodies as the server sends them. Match on the status first, then on error." },
+        ...RESPONSE_EXAMPLES,
       ],
     },
     {

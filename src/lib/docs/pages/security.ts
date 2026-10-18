@@ -39,7 +39,7 @@ export const SECURITY: DocGroup = {
               type: "callout",
               tone: "warn",
               title: "Files",
-              text: "File encryption is rolling out now. Where it is on, the phone and this web client encrypt files before upload. Files sent before that stay readable by our storage until they expire.",
+              text: "In DMs and groups, the phone and this web client encrypt every file before upload; our storage holds only ciphertext. Files sent before that change stay readable by our storage until they are deleted. Flocks (webhook feeds) are not end-to-end encrypted.",
             },
           ],
         },
@@ -75,44 +75,52 @@ export const SECURITY: DocGroup = {
     {
       slug: "recovery-code",
       title: "Recovery code",
-      description: "The one thing that brings your history back on a new phone.",
+      description: "How your message key and history reach a new phone or browser, and where the old recovery code fits in.",
       sections: [
         {
-          id: "what-it-is",
-          heading: "What it is",
+          id: "what-changed",
+          heading: "What changed",
           blocks: [
             {
               type: "p",
-              text: "Your key is stored wrapped by a 256-bit code made on your phone. The code is shown to you once and never sent anywhere. We cannot read it, reset it or email it to you.",
+              text: "The Android app no longer shows a recovery code. Your phone is the archive of your chats, and Local backup is how that archive comes back after a reinstall or on a new phone.",
+            },
+            {
+              type: "callout",
+              text: "Already wrote one down? It still works on the web: when the browser asks for your messages, choose the recovery code instead of scanning.",
             },
           ],
         },
         {
-          id: "using-it",
-          heading: "Using it",
+          id: "new-browser",
+          heading: "A new browser or computer",
           blocks: [
             {
               type: "steps",
               items: [
-                "Sign in on the new device.",
-                "When it asks for your messages, scan from a phone that has them, or paste your recovery code.",
-                "Your key comes back and so does your whole history.",
+                "Open chat.ababilx.com.",
+                "Scan the QR code with the AbabilX app on your phone and approve.",
+                "Your key arrives sealed to that browser, and your recent chats follow.",
               ],
             },
           ],
         },
         {
-          id: "lost-it",
-          heading: "If you lose it",
+          id: "new-phone",
+          heading: "A new or reset phone",
           blocks: [
             {
-              type: "p",
-              text: "While any of your devices still has your key, you can make a new code in Settings. The old one stops working.",
+              type: "steps",
+              items: [
+                "Install AbabilX and sign in.",
+                "Choose Continue with local backup. After a reinstall, Android asks you to pick the backup folder once (Documents/AbabilX).",
+                "Your chats, photos, call log and settings come back. Or choose Continue without restoring to start fresh.",
+              ],
             },
             {
               type: "callout",
               tone: "warn",
-              text: "Lose the code and every device, and old messages cannot be opened by anyone. You can start fresh with a new key; new messages work again.",
+              text: "Starting fresh makes a new key. Messages that were only on the old phone, and not in a backup, cannot be opened by anyone, us included.",
             },
           ],
         },

@@ -7,7 +7,7 @@ export const YOUR_DATA: DocGroup = {
     {
       slug: "history",
       title: "Message history",
-      description: "Our server keeps 120 days. Your phone keeps everything.",
+      description: "Our server keeps a message only until your devices have it. Your phone keeps everything.",
       sections: [
         {
           id: "two-clocks",
@@ -15,7 +15,11 @@ export const YOUR_DATA: DocGroup = {
           blocks: [
             {
               type: "p",
-              text: "Our servers delete messages after 120 days. Your phone keeps its own copy for good, so your history lives with you, not with us.",
+              text: "In DMs, groups and Note to Self, our server keeps each message only until every member's phones have saved it, then deletes it and its files. A message nobody's phone picks up is deleted after 30 days anyway. Your phone keeps its own copy for good, so your history lives with you, not with us.",
+            },
+            {
+              type: "p",
+              text: "On the web, you see what the server still holds plus what your phone sends this browser. Older messages say they are kept on your phone.",
             },
           ],
         },
@@ -58,7 +62,7 @@ export const YOUR_DATA: DocGroup = {
             {
               type: "callout",
               tone: "warn",
-              text: "The backup’s key is held by our server and the file by your phone. Together they open it, so this backup is not end-to-end encrypted. Private chats and view-once photos are never included.",
+              text: "The backup’s key is held by our server and the file by your phone. Together they open it, so this backup is not end-to-end encrypted. View-once and timed photos, files the sender did not allow saving, and locked chats' files are never included.",
             },
           ],
         },

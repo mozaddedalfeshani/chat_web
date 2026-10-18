@@ -53,7 +53,7 @@ export const PRIVACY: DocGroup = {
     {
       slug: "private-chat",
       title: "Private chat",
-      description: "Our server keeps each message only until both phones have it.",
+      description: "A per-DM switch that hides typing, ticks and online status both ways and stops saving and forwarding.",
       androidOnly: true,
       sections: [
         {
@@ -76,12 +76,14 @@ export const PRIVACY: DocGroup = {
           blocks: [
             {
               type: "p",
-              text: "Each message is deleted from our server once every phone of both people has saved it, or after seven days at most. Your phones keep the conversation.",
+              text: "Every chat is already deleted from our server once your phones have the messages (see Message history). Private chat adds privacy on top, for both people:",
             },
             {
               type: "list",
               items: [
-                "No call history is kept.",
+                "No call history is kept, and calls do not show “Ringing”.",
+                "Notifications say “New private message” without the text.",
+                "No threads; reply with a quote instead.",
                 "Photos and files cannot be saved or forwarded.",
                 "Typing, ticks and online status are hidden both ways.",
               ],
