@@ -56,7 +56,7 @@ export default function ConversationListItem({
       <ConversationRow
         {...shared}
         avatarNode={
-          conv.type === "webhook" ? (
+          conv.type === "webhook" && !conv.avatar_url?.trim() ? (
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--indigo)_15%,transparent)] text-[var(--indigo)]">
               <Link01Icon size={22} />
             </div>

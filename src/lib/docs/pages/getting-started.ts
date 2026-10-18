@@ -29,7 +29,7 @@ export const GETTING_STARTED: DocGroup = {
               items: [
                 {
                   title: "Sign in",
-                  text: "Scan once with your phone, or use Google or email on the web.",
+                  text: "Scan once with your phone. The web has no other way in.",
                   href: "/docs/sign-in",
                 },
                 {
@@ -77,11 +77,11 @@ export const GETTING_STARTED: DocGroup = {
     {
       slug: "sign-in",
       title: "Sign in",
-      description: "Three ways into AbabilX Chat on the web.",
+      description: "One way into AbabilX Chat on the web: a scan from your phone.",
       intro: [
         {
           type: "p",
-          text: "Every way ends the same: this browser is signed in to your account. Only the phone scan also brings your message key with it.",
+          text: "One scan signs this browser in and brings your message key and your recent chats with it.",
         },
       ],
       sections: [
@@ -95,7 +95,7 @@ export const GETTING_STARTED: DocGroup = {
                 "Open chat.ababilx.com. A QR code appears.",
                 "On your phone, open AbabilX and scan it.",
                 "Check that the six-digit code on the phone matches the browser, then approve.",
-                "Leave “Also send older messages” on to bring your history across.",
+                "Your chats follow on their own: the newest messages first, older ones as you scroll.",
               ],
             },
             {
@@ -105,17 +105,17 @@ export const GETTING_STARTED: DocGroup = {
           ],
         },
         {
-          id: "google-or-email",
-          heading: "Google or email",
+          id: "phone-only",
+          heading: "Why only a scan",
           blocks: [
             {
               type: "p",
-              text: "No phone nearby? Continue with Google, or sign in with your email and password. Email sign-up sends a six-digit code to prove the inbox is yours.",
+              text: "The web signs in with your phone and nothing else. A scan is the one sign-in that also brings your message key and your chats; Google or a password would open the account and leave every chat unreadable.",
             },
             {
               type: "callout",
               tone: "warn",
-              text: "Google and email sign you in, but they cannot carry your message key. To read encrypted chats, scan with your phone or enter your recovery code.",
+              text: "No phone nearby means no web sign-in. Sign in on the AbabilX app first, then scan.",
             },
           ],
         },

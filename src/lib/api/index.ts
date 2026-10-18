@@ -19,7 +19,6 @@ export {
 } from "./core";
 export { GITHUB_NOT_CONNECTED, GITHUB_APP_INSTALL_URL } from "./constants";
 export {
-  loginWithGoogle,
   loginWithGitHub,
   connectGitHub,
   connectSlack,

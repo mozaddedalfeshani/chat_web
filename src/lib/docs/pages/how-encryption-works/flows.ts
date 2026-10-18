@@ -90,7 +90,7 @@ export const FLOWS: DocSection[] = [
           {
             where: "new",
             title: "Sign in",
-            text: "Google, email or phone scan. The account is open, but this device holds no key yet.",
+            text: "A phone scan on the web; the desktop app also takes Google. The account is open, but this device holds no key yet.",
           },
           {
             branches: [

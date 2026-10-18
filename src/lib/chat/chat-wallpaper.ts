@@ -72,36 +72,23 @@ function write(key: string, value: ChatWallpaper | null) {
 }
 
 /**
- * Fresh installs get the theme-aware mobile pair. Upgrades keep plain (or
- * whatever they already chose). Call once from the signed-in shell before chat
- * prefs hydrate and look like a returning install.
+ * The chat pane is plain by default (user's call, 2026-10-18): nothing is
+ * written for a fresh browser any more. A browser that was given the doodle
+ * pair automatically (`SHIPPED_KEY` set) and still has exactly that loses it,
+ * once; a wallpaper picked later in the picker stays.
  */
-export function shipDefaultIfFreshInstall() {
+export function retireShippedDefault() {
   if (typeof window === "undefined") return;
   try {
-    if (window.localStorage.getItem(SHIPPED_KEY)) return;
-    const keys = Object.keys(window.localStorage);
-    const returning = keys.some(
-      (k) =>
-        k.startsWith("ababilx_") ||
-        k.startsWith("chat-deletions:") ||
-        k === "messaging_onboarding_v1_seen",
-    );
-    if (!returning) {
-      window.localStorage.setItem(
-        GLOBAL_KEY,
-        JSON.stringify({
-          kind: "preset",
-          preset: CHAT_WALLPAPER_MOBILE_ID,
-          photo: "",
-          dim: false,
-        } satisfies ChatWallpaper),
-      );
+    if (!window.localStorage.getItem(SHIPPED_KEY)) return;
+    const current = decode(read(GLOBAL_KEY));
+    if (current.kind === "preset" && current.preset === CHAT_WALLPAPER_MOBILE_ID && !current.dim) {
+      window.localStorage.removeItem(GLOBAL_KEY);
     }
-    window.localStorage.setItem(SHIPPED_KEY, "1");
+    window.localStorage.removeItem(SHIPPED_KEY);
     emit();
   } catch {
-    // Private mode / quota — leave plain.
+    // Private mode / quota — nothing to retire.
   }
 }
 

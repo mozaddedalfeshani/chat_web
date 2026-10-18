@@ -1,4 +1,3 @@
-import { applyAppKey, isEmailAuthPath } from "./email-auth-forward";
 import { goApiOrigin } from "./go-origin";
 import {
   clearSessionCookies,
@@ -92,7 +91,6 @@ async function exchangeGoCode(code: string): Promise<boolean> {
 function outboundHeaders(
   req: Request,
   access: string | null,
-  path: string,
 ): Headers {
   const headers = new Headers();
   req.headers.forEach((value, key) => {
@@ -103,7 +101,8 @@ function outboundHeaders(
   headers.set("Accept", "application/json");
   if (access) headers.set("Authorization", `Bearer ${access}`);
   else headers.delete("Authorization");
-  applyAppKey(headers, path);
+  // Never let a caller choose an app key; no route here needs one.
+  headers.delete("x-app-key");
   return headers;
 }
 
@@ -131,14 +130,13 @@ export async function forwardToGo(
   const send = (token: string | null) =>
     goFetch(pathWithQuery, {
       method,
-      headers: outboundHeaders(req, token, path),
+      headers: outboundHeaders(req, token),
       body: body && body.byteLength > 0 ? body : undefined,
     });
 
   let res = await send(access);
-  // A wrong email password is a 401 about the form, not the session.
   const retryable = path !== "auth/refresh" && path !== "auth/logout";
-  if (res.status === 401 && retryable && !isEmailAuthPath(path)) {
+  if (res.status === 401 && retryable) {
     if (await refreshGoSession()) {
       res = await send(await readAccessToken());
     }
@@ -171,16 +169,6 @@ export async function forwardToGo(
   }
 
   if (path === "auth/exchange" && json?.success) {
-    await applyGoSession(res, json);
-    return Response.json({ success: true });
-  }
-
-  // Email sign-in ends like a QR approval: tokens become httpOnly cookies.
-  if (
-    isEmailAuthPath(path) &&
-    json?.success &&
-    (json.access_token || json.token)
-  ) {
     await applyGoSession(res, json);
     return Response.json({ success: true });
   }

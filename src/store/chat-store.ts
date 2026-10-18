@@ -24,6 +24,7 @@ import {
 } from "@/lib/chat-e2ee/crypto";
 import { decryptSidebarPreviews } from "@/lib/chat-e2ee/sidebar-preview";
 import { keepPrivatePreviews } from "@/lib/delivery-only/private-preview";
+import { withStoredPreviews } from "@/lib/history/sidebar-local-preview";
 import { isPrivateChatId, useDeliveryOnlyStore } from "@/lib/delivery-only/delivery-only-store";
 import { fillConversationKeyGaps } from "@/lib/chat-e2ee/key-gaps";
 import {
@@ -446,10 +447,15 @@ export const useChatStore = create<ChatState>()(
           // The newest message already left the server (delivery-only): keep
           // the preview a live event put on screen, or say where it is.
           const linked = useDeliveryOnlyStore.getState().linked;
-          const dms = sortDms(keepPrivatePreviews(previewDms, get().dms, linked));
-          const channels = sortChannels(
-            keepPrivatePreviews(previewChannels, get().channels, linked),
-          );
+          // Purged rows read from this browser's own copy (phone history,
+          // custody) before falling back to the label.
+          const userId = get().currentUserId;
+          const [localDms, localChannels] = await Promise.all([
+            withStoredPreviews(userId, keepPrivatePreviews(previewDms, get().dms, linked)),
+            withStoredPreviews(userId, keepPrivatePreviews(previewChannels, get().channels, linked)),
+          ]);
+          const dms = sortDms(localDms);
+          const channels = sortChannels(localChannels);
           // A conversation opened or created while this request was in flight
           // (startChatDM -> upsertDM -> select) is not in the response yet.
           // Dropping it here blanked the screen mid-click, so keep the local row
