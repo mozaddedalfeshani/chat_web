@@ -19,6 +19,8 @@ export type MergeableMessage = {
   deleted_at?: string | null;
   revision?: number;
   content_purged?: boolean;
+  /** The phone sent this sealed message already opened (live history). */
+  opened_on_phone?: boolean;
 };
 
 export type MergeSide<M extends MergeableMessage = MergeableMessage> = {
@@ -64,6 +66,12 @@ export function decideMerge(
   if (isRetentionPlaceholder(current) && isUsable(next)) return "replace";
   const a = knownRevision(current);
   const b = knownRevision(next);
+  // The server's copy is sealed under a key this account may no longer hold
+  // (start fresh); only a newer revision — an edit — displaces the text the
+  // phone opened for this browser.
+  if (current.opened_on_phone && !next.opened_on_phone && incoming.provenance === "server" && !(a > 0 && b > a)) {
+    return "keep";
+  }
   if (a > 0 && b > 0) {
     // Row 7.
     if (a !== b) return b > a ? "replace" : "keep";

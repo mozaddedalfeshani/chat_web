@@ -192,6 +192,8 @@ export type ChatMessage = {
   encryption_key_version?: number;
   /** Client-only display state; never persisted by the API. */
   decryption_failed?: boolean;
+  /** Live history: the phone sent this sealed message already opened. */
+  opened_on_phone?: boolean;
   parent_id?: string | null;
   /** Signal-style quoted reply — stays in the main feed. */
   quote?: ChatMessageQuote;
