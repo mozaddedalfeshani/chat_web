@@ -17,7 +17,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...DOC_PAGES.map((page) => ({
       url: absoluteUrl(docHref(page.slug)),
-      lastModified: now,
+      lastModified: page.updated ? new Date(page.updated) : now,
       changeFrequency: "monthly" as const,
       priority: 0.7,
     })),

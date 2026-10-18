@@ -5,6 +5,7 @@ const WHERE = {
   server: "our server",
   them: "their device",
   new: "new device",
+  app: "your app",
 } as const;
 
 function nodeToMarkdown(node: FlowNode, n: number, indent: string) {

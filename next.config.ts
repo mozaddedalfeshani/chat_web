@@ -9,12 +9,21 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    return [
-      {
-        source: "/hooks/chat/:webhookId/:token",
-        destination: `${api}/hooks/chat/:webhookId/:token`,
-      },
-    ];
+    return {
+      // Markdown copies of the docs for AI tools: /docs.md, /docs/<slug>.md.
+      // Before files, or /docs/[slug] would take "<slug>.md" as a slug and 404.
+      beforeFiles: [
+        { source: "/docs.md", destination: "/docs-md/introduction" },
+        { source: "/docs/:slug([a-z0-9-]+)\\.md", destination: "/docs-md/:slug" },
+      ],
+      afterFiles: [
+        {
+          source: "/hooks/chat/:webhookId/:token",
+          destination: `${api}/hooks/chat/:webhookId/:token`,
+        },
+      ],
+      fallback: [],
+    };
   },
   async redirects() {
     return [

@@ -27,8 +27,17 @@ export function docHref(slug: string): string {
   return slug === INDEX_SLUG ? "/docs" : `/docs/${slug}`;
 }
 
+/** The page as plain Markdown, for AI tools and `curl`. */
+export function docMarkdownHref(slug: string): string {
+  return slug === INDEX_SLUG ? "/docs.md" : `/docs/${slug}.md`;
+}
+
 export function getDoc(slug: string): DocPage | undefined {
   return DOC_PAGES.find((p) => p.slug === slug);
+}
+
+export function docGroupOf(slug: string): DocGroup | undefined {
+  return DOC_GROUPS.find((g) => g.pages.some((p) => p.slug === slug));
 }
 
 export function docNeighbours(slug: string) {

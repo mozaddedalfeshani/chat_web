@@ -10,6 +10,7 @@ const WHERE: Record<FlowWhere, { label: string; chip: string; bar: string }> = {
   server: { label: "Our server", chip: "bg-amber-500/15 text-amber-500", bar: "bg-amber-500" },
   them: { label: "Their device", chip: "bg-sky-500/15 text-sky-500", bar: "bg-sky-500" },
   new: { label: "New device", chip: "bg-emerald-500/15 text-emerald-500", bar: "bg-emerald-500" },
+  app: { label: "Your app", chip: "bg-violet-500/15 text-violet-500", bar: "bg-violet-500" },
 };
 
 function Arrow() {
