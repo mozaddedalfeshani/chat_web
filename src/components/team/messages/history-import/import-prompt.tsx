@@ -7,6 +7,7 @@ import { historyCopy } from "@/lib/history/copy";
 import { useChatStore } from "@/store/chat-store";
 import { useHistoryImportStore } from "@/store/history-import-store";
 import { useHistorySyncStore } from "@/store/history-sync-store";
+import { useLiveHistoryStore } from "@/lib/history/live/status-store";
 
 const dismissKey = (userId: string) => `ababilx_history_import_prompt_dismissed:${userId}`;
 
@@ -33,8 +34,11 @@ export default function ImportPrompt({ language }: { language?: string | null })
   const [dismissed, setDismissed] = useState(() => (userId ? readDismissed(userId) : false));
   const t = (key: Parameters<typeof historyCopy>[1]) => historyCopy(language, key);
 
+  // A live-linked phone (server 0175) sends history on demand; the import
+  // prompt is for browsers without one.
+  const liveLinked = useLiveHistoryStore((s) => s.status !== "none");
   const running = view && (view.status === "receiving" || view.status === "waiting" || view.status === "paused");
-  if (!userId || (!running && (dismissed || !settled || view?.status === "finished"))) return null;
+  if (!userId || liveLinked || (!running && (dismissed || !settled || view?.status === "finished"))) return null;
 
   return (
     <div className="fixed bottom-4 left-4 z-50 w-[min(22rem,calc(100vw-2rem))] rounded-2xl border border-[var(--sig-border)] bg-[var(--sig-surface-2,var(--sig-bg))] p-4 shadow-lg">

@@ -4,6 +4,7 @@ import { createLinkOffer, type LinkOffer } from "@/lib/chat-e2ee/device-link";
 import { adoptLinkedIdentity } from "@/lib/chat-e2ee/vault-link";
 import { startImport, type DestinationKeys } from "@/lib/history/transfer/importer-start";
 import { newDestinationKeys } from "@/lib/history/transfer/v2-crypto";
+import { decideTransport } from "@/lib/history/live/adopt";
 
 /**
  * One scan does what three QR codes used to: sign in, hand over the message
@@ -35,7 +36,9 @@ export async function createOneScanOffer(): Promise<OneScanOffer> {
 
 /** The sign-in payload with both keys appended. */
 export function oneScanPayload(signInPayload: string, offer: OneScanOffer) {
-  const history = offer.history ? `&h=${offer.history.param}&hv=2` : "";
+  // hl=1: this browser takes a live link (phone answers over WebRTC, newest
+  // messages first). Older phones ignore it and use the v2 relay (hv=2).
+  const history = offer.history ? `&h=${offer.history.param}&hv=2&hl=1` : "";
   return `${signInPayload}&k=${offer.link.publicKeyParam}${history}`;
 }
 
@@ -58,7 +61,10 @@ export async function finishOneScan(
   if (!offer.history) return;
   try {
     const me = await getMeSession();
-    await startImport(me.id, { keys: offer.history, loginToken });
+    const job = await startImport(me.id, { keys: offer.history, loginToken });
+    // Starts listening for the phone's answer here, on the login page — the
+    // chat screen picks up the same decision instead of starting its own.
+    void decideTransport(me.id, job);
   } catch (error) {
     console.warn("[one-scan] history transfer not started", error);
   }

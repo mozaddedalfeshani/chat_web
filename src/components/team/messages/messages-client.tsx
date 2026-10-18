@@ -54,10 +54,9 @@ import {
   usePurgedHistory,
   usePhoneOnlyChat,
 } from "@/lib/delivery-only/delivery-only-store";
-import {
-  HeldHistoryNotice,
-  PrivateChatNotice,
-} from "@/lib/delivery-only/delivery-only-notices";
+import { PrivateChatNotice } from "@/lib/delivery-only/delivery-only-notices";
+import { useLiveHistoryStore } from "@/lib/history/live/status-store";
+import PhoneHistoryNotice from "./history-import/phone-history-notice";
 
 const UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
@@ -164,6 +163,7 @@ export default function MessagesClient() {
   // server let it go.
   const privateChat = usePhoneOnlyChat(activeConv);
   const purgedHistory = usePurgedHistory(activeConv);
+  const liveLinked = useLiveHistoryStore((s) => s.status !== "none");
   // Suppress bell rows / phone pushes for the conversation on screen.
   // Not for a private chat: nothing is readable here, and the claim would
   // stop the server pushing that chat's messages to the phone.
@@ -640,8 +640,16 @@ export default function MessagesClient() {
                 highlightMessageId={highlightId}
                 composerInitialValue={draftParam ?? undefined}
                 onOpenProfile={openProfile}
-                historyNotice={purgedHistory ? <HeldHistoryNotice /> : undefined}
-                emptyNode={purgedHistory ? <HeldHistoryNotice empty /> : undefined}
+                historyNotice={
+                  purgedHistory || liveLinked ? (
+                    <PhoneHistoryNotice conversationId={activeConversationId!} purged={purgedHistory} />
+                  ) : undefined
+                }
+                emptyNode={
+                  purgedHistory ? (
+                    <PhoneHistoryNotice conversationId={activeConversationId!} purged empty />
+                  ) : undefined
+                }
               />
               </WallpaperSurface>
             ) : (

@@ -9,6 +9,7 @@ import {
   type SealedAsset,
 } from "@/lib/chat-attachments/sealed-assets";
 import { useLocalAssetState } from "./use-local-asset";
+import { usePhoneAsset } from "./use-phone-asset";
 
 /**
  * Larger than this, an encrypted video or document waits for a click: the
@@ -33,7 +34,7 @@ export type AttachmentAsset = {
 
 type Row = Pick<
   ChatMessageAttachment,
-  "file_url" | "content_type" | "size_bytes" | "enc_meta" | "sealed_as" | "seal_failed"
+  "file_url" | "content_type" | "size_bytes" | "enc_meta" | "sealed_as" | "seal_failed" | "from_phone"
 >;
 
 const NOTHING: SealedAsset = { src: null, status: "idle" };
@@ -57,6 +58,7 @@ export function useAttachmentAsset(attachment: Row | null | undefined): Attachme
   const url = attachment?.file_url ?? "";
   const encrypted = !!attachment?.enc_meta;
   const local = useLocalAssetState(url);
+  const phone = usePhoneAsset(url, attachment?.from_phone === true, local);
   // History imported from the phone holds the file itself, already
   // decrypted there, and for anything older than the server keeps it is the
   // only copy left. Its address is this browser's, never the CDN's.
@@ -76,6 +78,7 @@ export function useAttachmentAsset(attachment: Row | null | undefined): Attachme
     if (opened && automatic && asset.status === "idle") start(url);
   }, [opened, automatic, asset.status, url]);
 
+  if (phone) return phone;
   if (!encrypted || imported) return local;
   if (!opened) return { src: null, unavailable: attachment?.seal_failed === true };
   if (asset.src) return { src: asset.src, unavailable: false };

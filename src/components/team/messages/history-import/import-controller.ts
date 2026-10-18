@@ -6,6 +6,7 @@ import { forgetLocalAssets } from "@/lib/history/media/local-asset";
 import { cancelImport, startImport, TransferActiveElsewhere } from "@/lib/history/transfer/importer-start";
 import { runImport } from "@/lib/history/transfer/importer-run";
 import { latestOpenJob, readJob, type ImportJob } from "@/lib/history/transfer/jobs";
+import { decideTransport } from "@/lib/history/live/adopt";
 
 /**
  * One import per account per browser. The Web Locks API decides which tab
@@ -99,7 +100,13 @@ export async function restoreImport(userId: string) {
   // "waiting" too: a one-scan sign-in opens the job on the login page, and
   // this is the first screen that can poll it for the phone's approval.
   const waiting = job.status === "waiting" && job.expiresAt > Date.now();
-  if (waiting || job.status === "receiving" || (job.status === "paused" && job.pauseReason === "offline")) {
+  if (waiting) {
+    // A new phone answers with a live link and nothing is ever relayed; an
+    // older one uploads to the relay, which the ordinary import then reads.
+    if ((await decideTransport(userId, job)) === "relay") void resumeImport(userId, job.id);
+    return;
+  }
+  if (job.status === "receiving" || (job.status === "paused" && job.pauseReason === "offline")) {
     void resumeImport(userId, job.id);
   }
 }

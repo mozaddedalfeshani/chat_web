@@ -1,5 +1,6 @@
 import { logout } from "@/lib/api/core";
 import { deleteAccountHistory } from "./repo/wipe";
+import { disconnectPhone } from "./live/connect";
 
 /**
  * The user pressed "Log out". This is the one path that deletes the account's
@@ -11,6 +12,8 @@ import { deleteAccountHistory } from "./repo/wipe";
  * phone the user may no longer have.
  */
 export async function logOutAndForgetHistory(userId: string | undefined) {
+  // The server drops the live link with the session; this tab stops dialing.
+  disconnectPhone();
   if (userId) {
     await deleteAccountHistory(userId);
   }

@@ -261,3 +261,22 @@ use-linked-device.ts  link once delivery_only; pull on link, vault unlock,
 - History older than the link comes only from the phone's one-scan import
   (90 days, server `history_days`). Opening a chat marks it read even if its
   newest message was purged before this browser linked. Not browser-tested.
+
+## Live history from the phone (2026-10-18, server 0175)
+
+One-scan QR carries `hl=1`. A new phone answers with a live link instead of
+the v2 relay (`lib/history/live/adopt.ts` decides; 409 `history_live_not_offered`
+falls back to the relay import). Contract:
+`../../ababilx-server/docs/history-live-protocol.md`.
+
+- WhatsApp's shape (user's call): newest 20 per chat on first connect
+  (`session.ts` boot, 4 at a time, open chat first), older pages only on
+  scroll (`store/chat-feed-phone.ts` asks the phone once the store and the
+  server both ran out), files only on tap (`from_phone` attachment ->
+  `use-phone-asset.ts` -> `files.ts`, into the history file store).
+- `connect.ts` dials lazily: `history.wake` every 3.5 s, 9 s budget, then
+  "Couldn't reach your phone" + Try again (`phone-history-notice.tsx`).
+- Keys for a page are opened in one `POST /api/chat/e2ee-keys/batch`
+  (`keys.ts`) into the same `readKeys` cache `loadReadKey` reads.
+- `wire.ts` + signal AAD pinned by hex shared with the phone
+  (`wire.test.mjs`). Not browser-tested.

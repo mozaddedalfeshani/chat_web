@@ -167,6 +167,12 @@ export type ChatMessageAttachment = {
   /** Client-only. `enc_meta` did not open here: no key for that version. */
   seal_failed?: boolean;
   /**
+   * Client-only. The row came from the phone over a live history link
+   * (`lib/history/live`): its server copy is gone, so the file is fetched
+   * from the phone on request, never from `file_url`.
+   */
+  from_phone?: boolean;
+  /**
    * The sender (privacy mode) or the chat (private chat 0160, group privacy
    * 0154) does not allow keeping this file: no Save, Copy, Copy link or Open
    * in browser, and no browser menu over it. The server sets it at read time.

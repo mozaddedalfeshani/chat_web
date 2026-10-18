@@ -5,6 +5,7 @@ import { useHistoryEnabled } from "@/lib/history/flag";
 import { useChatStore } from "@/store/chat-store";
 import { useServerHistorySync } from "./use-server-history-sync";
 import { restoreImport } from "./import-controller";
+import { restoreLink } from "@/lib/history/live/session";
 import ImportDialog from "./import-dialog";
 import ImportPrompt from "./import-prompt";
 
@@ -17,7 +18,9 @@ export default function HistoryBridge({ language }: { language?: string | null }
   const userId = useChatStore((s) => s.currentUserId);
   const enabled = useHistoryEnabled();
   useEffect(() => {
-    if (userId && enabled) void restoreImport(userId);
+    if (!userId || !enabled) return;
+    void restoreLink(userId);
+    void restoreImport(userId);
   }, [userId, enabled]);
   if (!enabled) return null;
   return (

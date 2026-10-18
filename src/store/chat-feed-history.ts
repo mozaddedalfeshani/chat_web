@@ -5,6 +5,7 @@ import { readLocalFeed, type FeedPosition } from "@/lib/history/repo/messages-re
 import { sortMicros } from "@/lib/history/repo/message-rows";
 import { deletionSnapshot } from "@/lib/messages/deletions";
 import { historyEnabled } from "@/lib/history/flag";
+import { withPhoneLatest, withPhoneOlder } from "./chat-feed-phone";
 
 /**
  * The feed reads THROUGH the durable history, it is never replaced by a server
@@ -86,11 +87,11 @@ export async function composeLatest(
       limit: PAGE,
       floor: page.has_more ? server.history.serverFloor : null,
     });
-    return {
+    return withPhoneLatest(userId, conversationId, {
       raw: local.messages,
       hasMore: page.has_more || local.messages.length >= PAGE,
       history: { ...server.history, localEdge: local.edge },
-    };
+    });
   } catch {
     return server;
   }
@@ -103,7 +104,7 @@ export async function composeLocalLatest(
   conversationId: string,
 ): Promise<ComposedPage> {
   const local = await readLocalFeed(userId, { conversationId, limit: PAGE });
-  return {
+  return withPhoneLatest(userId, conversationId, {
     raw: local.messages,
     hasMore: local.messages.length >= PAGE,
     history: {
@@ -112,7 +113,7 @@ export async function composeLocalLatest(
       serverCursor: "",
       serverHasMore: false,
     },
-  };
+  });
 }
 
 export async function composeLocalOlder(
@@ -120,16 +121,19 @@ export async function composeLocalOlder(
   conversationId: string,
   state: FeedHistoryState,
 ): Promise<ComposedPage> {
-  const local = await readLocalFeed(userId, {
-    conversationId,
-    limit: PAGE,
-    before: state.localEdge,
-  });
-  return {
-    raw: local.messages,
-    hasMore: local.messages.length >= PAGE,
-    history: { ...state, localEdge: local.edge ?? state.localEdge },
+  const read = async (): Promise<ComposedPage> => {
+    const local = await readLocalFeed(userId, {
+      conversationId,
+      limit: PAGE,
+      before: state.localEdge,
+    });
+    return {
+      raw: local.messages,
+      hasMore: local.messages.length >= PAGE,
+      history: { ...state, localEdge: local.edge ?? state.localEdge },
+    };
   };
+  return withPhoneOlder(userId, conversationId, await read(), read);
 }
 
 /** The next older page, filling from the server when the store runs out. */
@@ -164,11 +168,18 @@ export async function composeOlder(
     lastEdge = local.edge ?? history.localEdge;
     if (local.messages.length >= PAGE || !history.serverHasMore) {
       const edge = local.edge ?? history.localEdge;
-      return {
+      const page = {
         raw: local.messages,
         hasMore: history.serverHasMore || local.messages.length >= PAGE,
         history: { ...history, localEdge: edge },
       };
+      // Store and server both ran out: the phone is the last place to look.
+      const settled = history;
+      return withPhoneOlder(userId, conversationId, page, async () => {
+        const again = await readLocalFeed(userId, { conversationId, limit: PAGE, before: settled.localEdge });
+        return { raw: again.messages, hasMore: again.messages.length >= PAGE,
+          history: { ...settled, localEdge: again.edge ?? settled.localEdge } };
+      });
     }
     const page = await fetchServer(history.serverCursor);
     await persistRawMessages(userId, page.messages);
