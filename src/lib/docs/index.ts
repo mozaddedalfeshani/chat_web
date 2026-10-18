@@ -1,3 +1,4 @@
+import { DEVELOPERS } from "./pages/developers";
 import { GETTING_STARTED } from "./pages/getting-started";
 import { MESSAGING } from "./pages/messaging";
 import { PRIVACY } from "./pages/privacy";
@@ -14,6 +15,7 @@ export const DOC_GROUPS: DocGroup[] = [
   PRIVACY,
   MESSAGING,
   YOUR_DATA,
+  DEVELOPERS,
 ];
 
 export const DOC_PAGES: DocPage[] = DOC_GROUPS.flatMap((g) => g.pages);

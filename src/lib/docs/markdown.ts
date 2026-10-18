@@ -47,6 +47,8 @@ function blockToMarkdown(block: DocBlock): string {
       return flowToMarkdown(block.steps) + (block.caption ? `\n\n_${block.caption}_` : "");
     case "table":
       return tableToMarkdown(block.head, block.rows);
+    case "code":
+      return "```" + (block.lang ?? "") + "\n" + block.code + "\n```";
   }
 }
 

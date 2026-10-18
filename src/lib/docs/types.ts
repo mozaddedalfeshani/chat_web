@@ -6,7 +6,8 @@ export type DocBlock =
   | { type: "callout"; tone?: "info" | "warn"; title?: string; text: string }
   | { type: "cards"; items: { title: string; text: string; href?: string }[] }
   | { type: "flow"; caption?: string; steps: FlowStep[] }
-  | { type: "table"; head: string[]; rows: string[][] };
+  | { type: "table"; head: string[]; rows: string[][] }
+  | { type: "code"; lang?: string; title?: string; code: string };
 
 /** Where a flowchart step happens. Drawn as a coloured chip on the box. */
 export type FlowWhere = "you" | "server" | "them" | "new";
