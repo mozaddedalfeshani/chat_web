@@ -13,7 +13,7 @@ import { useLiveHistoryStore } from "./status-store";
  */
 export type StoredLink = { id: string; key: CryptoKey; deviceName: string; windowDays: number };
 
-const CONNECT_MS = 9000;
+const CONNECT_MS = 15000;
 const WAKE_EVERY_MS = 3500;
 
 let current: { link: StoredLink; peer: LivePeer; client: LiveClient | null; unsubscribe: () => void } | null = null;
@@ -89,7 +89,10 @@ async function dial(link: StoredLink): Promise<LiveClient> {
     });
     current = { link, peer, client: null, unsubscribe };
     peer.wake();
-    const waker = setInterval(() => peer.wake(), WAKE_EVERY_MS);
+    // Once the phone has offered, waking again would make it start over.
+    const waker = setInterval(() => {
+      if (!peer.offered) peer.wake();
+    }, WAKE_EVERY_MS);
     const deadline = setTimeout(() => finish(null), CONNECT_MS);
   });
 }

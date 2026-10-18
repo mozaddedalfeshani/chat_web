@@ -17,6 +17,10 @@ export type PeerEvents = {
 export class LivePeer {
   private pc: RTCPeerConnection | null = null;
   private pending: RTCIceCandidateInit[] = [];
+  // Signals are handled one at a time, in arrival order: decrypting an offer
+  // takes longer than a candidate, and a candidate that finished first was
+  // queued and then wiped when the offer reset the queue.
+  private chain: Promise<void> = Promise.resolve();
 
   constructor(
     private readonly linkId: string,
@@ -24,6 +28,11 @@ export class LivePeer {
     private readonly iceServers: VoiceIceServer[],
     private readonly events: PeerEvents,
   ) {}
+
+  /** An offer has arrived and is being (or was) answered. */
+  get offered() {
+    return this.pc !== null;
+  }
 
   wake() {
     sendOnAppWs({ type: "history.wake", link_id: this.linkId });
@@ -41,7 +50,12 @@ export class LivePeer {
   }
 
   /** A `history.signal` from the phone. Anything that fails to open is dropped. */
-  async signal(signal: WireSignal) {
+  signal(signal: WireSignal): Promise<void> {
+    this.chain = this.chain.then(() => this.handle(signal));
+    return this.chain;
+  }
+
+  private async handle(signal: WireSignal) {
     try {
       if (signal.kind === "offer") return await this.answer(signal);
       if (signal.kind === "ice") return await this.candidate(signal);
