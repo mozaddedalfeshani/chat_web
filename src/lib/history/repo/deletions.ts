@@ -38,5 +38,6 @@ export async function readDeletionMarkers(userId: string): Promise<ChatDeletion[
     through_at: row.through_at,
     deleted_at: row.deleted_at,
     entire_conversation: row.entire_conversation,
+    ...(row.explicit_through_at === undefined ? {} : { explicit_through_at: row.explicit_through_at }),
   }));
 }

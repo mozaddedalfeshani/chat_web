@@ -12,6 +12,18 @@ export interface ChatDeletion {
   through_at: string;
   deleted_at: string;
   entire_conversation: boolean;
+  /**
+   * The cutoff of deliberate deletes alone (server 0164). `through_at` also
+   * moves on "start fresh", which deletes nothing the phone still holds —
+   * the phone restores past it, so must this browser. `null` = no deliberate
+   * delete; a missing key = an old server, and `through_at` stays the rule.
+   */
+  explicit_through_at?: string | null;
+}
+
+/** Where a conversation-level marker cuts, or null when it cuts nothing. */
+export function conversationCutoff(item: ChatDeletion): string | null {
+  return item.explicit_through_at === undefined ? item.through_at : item.explicit_through_at;
 }
 
 type MarkedMessage = { id: string; conversation_id: string; created_at: string };
@@ -36,8 +48,10 @@ export function markerMatches(message: MarkedMessage, markers: ChatDeletion[]): 
       continue;
     }
     if (item.entire_conversation) return true;
+    const cutoff = conversationCutoff(item);
+    if (!cutoff) continue;
     created ??= timestampMicros(message.created_at);
-    if (created <= timestampMicros(item.through_at)) return true;
+    if (created <= timestampMicros(cutoff)) return true;
   }
   return false;
 }

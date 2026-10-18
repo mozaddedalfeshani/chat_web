@@ -3,6 +3,7 @@ import type { ChatMessage } from "@/lib/api/types/chat";
 import { readChatOutbox, removeChatOutboxEntry } from "./outbox/db";
 
 import {
+  conversationCutoff,
   markerMatches,
   mergeMarkers,
   timestampMicros,
@@ -33,9 +34,13 @@ export function messageSurvives(message: ChatMessage, markers: ChatDeletion[]): 
 }
 
 export function conversationSurvives(conversation: {id: string; last_message_at?: string | null}, markers: ChatDeletion[]): boolean {
-  return !markers.some((item) => !item.message_id && item.conversation_id === conversation.id &&
-    (item.entire_conversation || !conversation.last_message_at ||
-      timestampMicros(conversation.last_message_at) <= timestampMicros(item.through_at)));
+  return !markers.some((item) => {
+    if (item.message_id || item.conversation_id !== conversation.id) return false;
+    if (item.entire_conversation) return true;
+    const cutoff = conversationCutoff(item);
+    if (!cutoff) return false;
+    return !conversation.last_message_at || timestampMicros(conversation.last_message_at) <= timestampMicros(cutoff);
+  });
 }
 
 export async function syncChatDeletions(userId: string): Promise<ChatDeletion[]> {
