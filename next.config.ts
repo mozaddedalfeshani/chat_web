@@ -1,10 +1,7 @@
 import type { NextConfig } from "next";
 
-const api = (
-  process.env.API_URL ||
-  process.env.NEXT_PUBLIC_API_URL ||
-  ""
-).replace(/\/$/, "");
+// Hardcoded, no env: see src/lib/api-origin.ts.
+const api = "https://api.ababilx.com";
 
 const nextConfig: NextConfig = {
   reactCompiler: true,
@@ -12,15 +9,10 @@ const nextConfig: NextConfig = {
     unoptimized: true,
   },
   async rewrites() {
-    if (!api) return [];
     return [
       {
         source: "/hooks/chat/:webhookId/:token",
         destination: `${api}/hooks/chat/:webhookId/:token`,
-      },
-      {
-        source: "/backend/api/notifications/stream",
-        destination: `${api}/api/notifications/stream`,
       },
     ];
   },

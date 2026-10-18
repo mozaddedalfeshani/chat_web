@@ -3,13 +3,13 @@ import {
   getWsAccessToken,
   subscribeStoredToken,
 } from "@/lib/api/core";
+import { API_WS_ORIGIN } from "@/lib/api-origin";
 
 const WS_AUTH_SUBPROTOCOL = "ababilx-ws";
 
 export function getNotificationsWsUrl(): string {
   if (typeof window === "undefined") return "";
-  const proto = window.location.protocol === "https:" ? "wss:" : "ws:";
-  return `${proto}//${window.location.host}/backend/api/notifications/stream`;
+  return `${API_WS_ORIGIN}/api/notifications/stream`;
 }
 
 type Handlers = {

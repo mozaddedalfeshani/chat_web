@@ -1,12 +1,6 @@
-/**
- * Origin of the Go API. Server-only — the browser talks to `/backend` on this
- * app and never learns this host.
- */
+import { API_ORIGIN } from "@/lib/api-origin";
+
+/** Origin of the Go API, for the server-side proxy (`/backend`). */
 export function goApiOrigin(): string {
-  const raw =
-    process.env.API_URL?.trim() || process.env.NEXT_PUBLIC_API_URL?.trim() || "";
-  if (!raw) {
-    throw new Error("API_URL is not set");
-  }
-  return raw.replace(/\/$/, "");
+  return API_ORIGIN;
 }
