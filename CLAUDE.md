@@ -268,3 +268,6 @@ falls back to the relay import). Contract:
   server's time (`lib/history/sidebar-local-preview.ts`, the phone's
   `withLocalPreviews`); its time then sorts the row. Feeds with a picture draw
   it (they used to always show the link glyph).
+
+## Desktop copy (2026-10-19)
+`ababilxdesktopcode` carries the same `lib/history/live` + `store/chat-feed-phone.ts` + sidebar previews. A live-history change here must be ported there by hand (patch the diff; the trees share layout).
