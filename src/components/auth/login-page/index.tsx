@@ -13,20 +13,20 @@ export default function LoginPage() {
       <LoginTheme>
         <div
           data-theme="light"
-          className="relative flex min-h-screen flex-col overflow-x-hidden"
+          className="relative flex h-dvh flex-col overflow-hidden"
           style={{ background: "#efeae2", colorScheme: "light" }}
         >
           <LoginNavbar />
           {/* Sign-in only. How each feature works lives in /docs. */}
-          <main id="main-content" className="flex flex-1 flex-col justify-center">
+          <main id="main-content" className="flex min-h-0 flex-1 flex-col justify-center pt-16">
             <LoginHeroSection />
           </main>
-          <footer className="flex flex-col items-center gap-4 px-4 pb-10 text-center">
+          <footer className="flex shrink-0 flex-col items-center gap-2 px-4 py-3 text-center">
             <p className="flex items-center gap-1.5 text-[13px] text-[#667781]">
               <LockIcon size={14} aria-hidden />
               {LOGIN_COPY.e2ee}
             </p>
-            <section aria-labelledby="about-heading" className="max-w-xl px-2">
+            <section aria-labelledby="about-heading" className="hidden max-w-xl px-2 [@media(min-height:860px)]:block">
               <h2
                 id="about-heading"
                 className="text-[14px] font-semibold text-[#111b21]"

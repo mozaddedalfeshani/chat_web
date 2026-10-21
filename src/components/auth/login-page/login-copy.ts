@@ -5,9 +5,13 @@ export const LOGIN_COPY = {
   /** Primary H1 — brand gate for "AbabilX Chat" / "chat AbabilX". */
   title: "AbabilX Chat",
   lead: "Scan the code with your phone to sign in",
-  step1: "Scan the QR code with your phone's camera",
-  step2: "Open AbabilX on the phone",
-  step3: "Confirm — one scan brings your messages too",
+  /** Where the scanner lives in the Android app: the chat-list header. */
+  qrFind: "Find the scanner on your phone",
+  qrSteps: [
+    "Open AbabilX on a phone that is already signed in",
+    "At the top of Chats, tap the scanner",
+    "Point it at this code",
+  ],
   qrTitle: "Scan with your phone",
   qrHint: "Open AbabilX on a signed-in phone and scan this code.",
   qrExpired: "This code expired. Generate a new one.",
