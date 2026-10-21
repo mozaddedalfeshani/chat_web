@@ -70,7 +70,7 @@ export default function MessageInfoDialog({
         </DialogHeader>
 
         <div className="divide-y" style={{ borderColor: "var(--border)" }}>
-          <Row label="From" value={outgoing ? "You" : message.user_name ?? "Unknown"} />
+          <Row label="From" value={outgoing ? "You" : message.user_name || "AbabilX user"} />
           <Row label="Sent" value={stamp(message.created_at) ?? "—"} />
           {message.edited_at ? (
             <Row label="Edited" value={stamp(message.edited_at) ?? "—"} />

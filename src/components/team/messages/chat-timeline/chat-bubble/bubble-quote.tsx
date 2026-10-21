@@ -41,7 +41,7 @@ export default function BubbleQuote({
           className="block truncate text-[12px] font-semibold leading-tight"
           style={{ color: authorColorVar(quote.user_id ?? "") }}
         >
-          {quote.user_name ?? "Unknown"}
+          {quote.user_name || "AbabilX user"}
         </span>
         <span
           className={cn(

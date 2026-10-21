@@ -32,7 +32,7 @@ export default function ReplyPreviewBar({
         />
         <span className="min-w-0 flex-1">
           <span className="block truncate text-[12px] font-semibold text-[var(--sig-accent)]">
-            {toSelf ? "Replying to yourself" : `Replying to ${quote.user_name ?? "Unknown"}`}
+            {toSelf ? "Replying to yourself" : `Replying to ${quote.user_name || "AbabilX user"}`}
           </span>
           <span className="block truncate text-[12px] text-[var(--sig-label-2)]">
             {quoteSummary(quote)}

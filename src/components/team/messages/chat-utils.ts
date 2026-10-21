@@ -98,7 +98,7 @@ export function chatConvLabel(conv: {
   if (conv.type !== "dm") {
     return conv.name || conv.slug || "Group";
   }
-  return conv.peer_user_name || conv.name || "Direct message";
+  return conv.peer_user_name || conv.name || "AbabilX user";
 }
 
 export function chatConvPrefix(conv: { type: string; slug?: string }) {

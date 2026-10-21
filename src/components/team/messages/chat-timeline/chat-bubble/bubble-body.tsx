@@ -82,7 +82,7 @@ export default function BubbleBody({
           )}
           style={{ color: authorColorVar(message.user_id) }}
         >
-          {message.user_name ?? "Unknown"}
+          {message.user_name || "AbabilX user"}
         </p>
       ) : null}
 
