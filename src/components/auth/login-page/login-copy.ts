@@ -24,9 +24,9 @@ export const LOGIN_COPY = {
   errAuthUnavailable: "Sign-in is unavailable right now. Try again later.",
   navDocs: "Docs",
   getApp: "Get the Android app",
-  e2ee: "Your personal messages are end-to-end encrypted",
+  e2ee: "Your messages are end-to-end encrypted",
   /** Crawlable product summary — real copy, not hidden keyword stuffing. */
   aboutTitle: "Secure messaging from AbabilX",
   aboutBody:
-    "AbabilX Chat is end-to-end encrypted messaging for personal DMs and workspace groups. Sign in at chat.ababilx.com with your phone, keep chats private, and call when you need to.",
+    "AbabilX Chat is a private messenger. Chats, calls and files are end-to-end encrypted, and each message is deleted from our servers once your devices have it. No email or phone number needed, no ads, no trackers, no AI. Sign in at chat.ababilx.com with your phone.",
 } as const;

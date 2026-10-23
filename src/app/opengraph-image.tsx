@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { PRODUCT_NAME, SITE_URL } from "@/lib/site";
 
 export const alt =
-  "AbabilX Chat — end-to-end encrypted personal and workspace messaging";
+  "AbabilX Chat — private, end-to-end encrypted messaging";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -55,7 +55,7 @@ export default function OpenGraphImage() {
             lineHeight: 1.15,
           }}
         >
-          Encrypted chat for people and teams
+          Private messaging, deleted once delivered
         </div>
         <div
           style={{
@@ -67,7 +67,7 @@ export default function OpenGraphImage() {
             lineHeight: 1.35,
           }}
         >
-          AbabilX Chat · personal DMs · workspace groups · E2EE · chat.ababilx.com
+          AbabilX Chat · end-to-end encrypted · no ads · no trackers · chat.ababilx.com
         </div>
       </div>
     ),

@@ -14,21 +14,21 @@ export const PLAY_STORE_URL =
 
 /** Brand-first title — owns "ababilx chat" / "chat ababilx" queries. */
 export const DEFAULT_TITLE =
-  "AbabilX Chat | End-to-End Encrypted Messaging";
+  "AbabilX Chat | Private, End-to-End Encrypted Messaging";
 
 export const DEFAULT_DESCRIPTION =
-  "AbabilX Chat is secure end-to-end encrypted messaging for personal DMs and workspace groups. Open chat.ababilx.com, scan with your phone, and keep conversations private.";
+  "AbabilX Chat is private messaging: end-to-end encrypted chats, calls and files, deleted from our servers once delivered. No email or phone number needed, no ads, no trackers, no AI. Scan with your phone to chat on the web.";
 
 /** Longer variant for JSON-LD and social cards. */
 export const EXTENDED_DESCRIPTION =
-  "AbabilX Chat (chat.ababilx.com) is AbabilX's encrypted messaging web app: personal chats, workspace groups, Note to Self, voice and video calls, and phone QR sign-in. Messages are end-to-end encrypted so AbabilX cannot read your private text.";
+  "AbabilX Chat (chat.ababilx.com) is a private messenger. Messages, photos, voice notes and files are end-to-end encrypted, and our servers delete each message once your devices have it. Start without an email or phone number. Privacy mode hides when you are online, typing or reading and removes you from search. Ghost Chat goes phone to phone and is never stored. No ads, no trackers, no AI, and we never share your data.";
 
 export const OG_LOCALE = "en_US";
 export const OG_LOCALE_ALTERNATES = ["bn_BD"];
 export const CONTENT_LANGUAGES = ["en", "bn"];
 
 export const OG_IMAGE_ALT =
-  "AbabilX Chat — end-to-end encrypted personal and workspace messaging";
+  "AbabilX Chat — private, end-to-end encrypted messaging";
 
 export const OG_IMAGE = {
   url: "/opengraph-image",
@@ -55,8 +55,16 @@ export const DEFAULT_KEYWORDS = [
   "end-to-end encrypted chat",
   "E2EE messaging",
   "private messaging app",
-  "secure team chat",
-  "encrypted workspace chat",
+  "private messenger",
+  "messaging without phone number",
+  "chat app without email",
+  "no tracking messenger",
+  "Signal alternative",
+  "WhatsApp alternative",
+  "Telegram alternative",
+  "privacy mode chat",
+  "disappearing photos",
+  "Ghost Chat",
   "personal encrypted DM",
   "QR login chat",
   "AbabilX phone to web chat",
@@ -64,7 +72,7 @@ export const DEFAULT_KEYWORDS = [
   "AbabilX voice call",
   "AbabilX video call",
   "encrypted group chat",
-  "developer secure chat",
+  "encrypted messenger Bangladesh",
   "AbabilX Bangladesh chat",
 ] as const;
 

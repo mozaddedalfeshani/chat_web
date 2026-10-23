@@ -21,11 +21,15 @@ export const WEBSITE_ID = `${SITE_URL}/#website`;
 export const SOFTWARE_ID = `${SITE_URL}/#software`;
 
 const FEATURE_LIST = [
-  "End-to-end encrypted DMs and groups",
+  "End-to-end encrypted DMs, groups, calls and files",
+  "Messages deleted from our servers once delivered",
+  "No email or phone number needed",
+  "No ads, no trackers, no AI",
   "One-scan phone QR sign-in for the web",
   "Safety numbers and key-change warnings",
   "Message requests and blocks",
-  "Privacy mode, private chat and Ghost Chat",
+  "Privacy mode, private chat and Ghost Chat (never stored)",
+  "Local Share between your own devices on Wi-Fi",
   "View-once and timed photos",
   "1:1 voice and video calls, free group calls",
   "Group admin permissions",
