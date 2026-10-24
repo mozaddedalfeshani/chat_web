@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/popover";
 import { selectTotalUnread, useChatStore } from "@/store/chat-store";
 import { useUIStore } from "@/store/ui-store";
+import AwayButton from "./away-button";
 import RailButton from "./rail-button";
 
 /** Chat-only rail: Chats, theme, account. No Board/Wall — this app is chat. */
@@ -73,6 +74,7 @@ export default function RailNav({ user }: { user: AppUser | null }) {
         className="flex shrink-0 flex-col items-center gap-1 border-t py-3"
         style={{ borderColor: "var(--sig-border)" }}
       >
+        <AwayButton language={language} />
         <ThemeToggle className="h-10 w-10 text-[var(--sig-label-2)] hover:text-[var(--sig-label)] hover:bg-[var(--sig-fill)]" />
         {user ? (
           <Popover>

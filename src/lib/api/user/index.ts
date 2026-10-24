@@ -29,6 +29,7 @@ export * from "./messaging";
 export * from "./linked-device";
 export * from "./voice-call";
 export * from "./typing-indicators";
+export * from "./appear-offline";
 export * from "./group-call";
 export * from "./team-member-connections";
 export * from "./overview";
