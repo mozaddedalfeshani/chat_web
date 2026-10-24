@@ -50,7 +50,7 @@ export type ChatConversation = {
   can_message?: boolean;
   /**
    * Why the composer is closed. Omitted/empty when the viewer may send.
-   * `blocked` | `connection_removed` | `reconnect_requested` | `account_deleted`.
+   * `blocked` | `connection_removed` | `reconnect_requested` | `account_deleted` | `connections_only` (0184).
    */
   lock_reason?: string;
   /**

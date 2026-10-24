@@ -22,9 +22,14 @@ export default function ComposerConnectionLock({
 }) {
   const [busy, setBusy] = useState(false);
   const name = peerName.trim() || "this person";
-  const showRequest = lockReason === "connection_removed";
+  // connections_only (server 0184): the peer takes messages from
+  // connections only, so the way in is a connection request.
+  const showRequest =
+    lockReason === "connection_removed" || lockReason === "connections_only";
   const body =
-    lockReason === "connection_removed"
+    lockReason === "connections_only"
+      ? `${name} only takes messages from connections. Send a connection request first.`
+      : lockReason === "connection_removed"
       ? `${name} removed the connection. You can't send messages.`
       : lockReason === "reconnect_requested"
         ? `Request sent. You can message ${name} once they accept.`
@@ -39,6 +44,7 @@ export default function ComposerConnectionLock({
     setBusy(true);
     try {
       await api.sendChatConnectionRequest(peerUserId);
+      toast.success("Connection request sent");
     } catch (error) {
       toast.error(friendlyError(error, "Could not send the request"));
     } finally {
