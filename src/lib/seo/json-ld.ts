@@ -2,6 +2,7 @@ import {
   CONTENT_LANGUAGES,
   DEFAULT_TITLE,
   EXTENDED_DESCRIPTION,
+  GITHUB_ORG_URL,
   ORG_EMAIL,
   ORG_NAME,
   ORG_URL,
@@ -23,8 +24,9 @@ export const SOFTWARE_ID = `${SITE_URL}/#software`;
 const FEATURE_LIST = [
   "End-to-end encrypted DMs, groups, calls and files",
   "Messages deleted from our servers once delivered",
-  "No email or phone number needed",
+  "No email, phone number or personal details needed",
   "No ads, no trackers, no AI",
+  "Open-source Android app (GNU AGPL-3.0)",
   "One-scan phone QR sign-in for the web",
   "Safety numbers and key-change warnings",
   "Message requests and blocks",
@@ -57,7 +59,7 @@ export function organizationSchema(): JsonLdSchema {
       email: ORG_EMAIL,
       availableLanguage: ["English", "Bengali"],
     },
-    sameAs: [ORG_URL, SITE_URL],
+    sameAs: [ORG_URL, SITE_URL, GITHUB_ORG_URL],
   };
 }
 

@@ -24,7 +24,7 @@ const SEO: Record<string, { keywords: string[]; updated: string }> = {
   "note-to-self": { keywords: ["Note to Self", "message yourself", "private notes chat"], updated: "2026-09-09" },
   history: { keywords: ["message retention", "delivery-only chat", "server deletes messages", "chat history phone"], updated: "2026-10-19" },
   "local-backup": { keywords: ["AbabilX backup", "chat backup Android", "restore chats"], updated: "2026-10-19" },
-  "open-source": { keywords: ["open source chat", "AbabilX GitHub", "chat_web"], updated: "2026-09-09" },
+  "open-source": { keywords: ["open source messenger", "open source encrypted chat app", "AbabilX GitHub", "ababilx-mobile", "AGPL messenger"], updated: "2026-10-25" },
 };
 
 export function withSeo(page: DocPage): DocPage {

@@ -73,7 +73,7 @@ export const YOUR_DATA: DocGroup = {
     {
       slug: "open-source",
       title: "Open source",
-      description: "The web client is public. Read it, build it, check it.",
+      description: "The AbabilX Chat Android app is open source. Read it, build it, check how it encrypts.",
       sections: [
         {
           id: "repo",
@@ -81,17 +81,55 @@ export const YOUR_DATA: DocGroup = {
           blocks: [
             {
               type: "p",
-              text: "The code behind chat.ababilx.com is on GitHub. You can see exactly what runs in your browser, including how it encrypts.",
+              text: "The code of the AbabilX Chat Android app is public on GitHub under the GNU Affero General Public License v3.0 (AGPL-3.0). You can read exactly how it encrypts your messages, files and calls, build it yourself, and change it under the terms of that license.",
             },
             {
               type: "cards",
               items: [
                 {
-                  title: "AbabilX/chat_web",
-                  text: "The web client’s source on GitHub.",
+                  title: "AbabilX/ababilx-mobile",
+                  text: "The Android app’s source on GitHub (AGPL-3.0).",
                   href: GITHUB_REPO_URL,
                 },
               ],
+            },
+          ],
+        },
+        {
+          id: "no-personal-details",
+          heading: "No personal details needed",
+          blocks: [
+            {
+              type: "p",
+              text: "Most messengers start with your phone number or email address. AbabilX does not need either. Start New Chat creates your account from a key that stays on your phone, so you can talk to people without giving us your name, number or email.",
+            },
+            {
+              type: "list",
+              items: [
+                "No phone number, no email and no name are required.",
+                "Messages, calls and files are end-to-end encrypted. We cannot read them.",
+                "Our server deletes each message once your devices have it.",
+                "No ads, no trackers and no AI reading your chats.",
+              ],
+            },
+          ],
+        },
+        {
+          id: "what-is-public",
+          heading: "What is public, and what is not yet",
+          blocks: [
+            {
+              type: "list",
+              items: [
+                "Public: the Android app, including its encryption code.",
+                "Coming next: our server, planned to be open-sourced in December 2026.",
+                "Not public yet: the web client at chat.ababilx.com and the desktop app.",
+              ],
+            },
+            {
+              type: "callout",
+              tone: "info",
+              text: "Parts of the app are adapted from Signal’s open-source code, which is also AGPL-3.0. Third-party code keeps its own license; the full list is in THIRD_PARTY_NOTICES in the repository.",
             },
           ],
         },

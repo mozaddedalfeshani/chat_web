@@ -1,6 +1,10 @@
 # AbabilX Chat (web)
 
-Open-source Next.js client for AbabilX messaging: personal + workspace chat, E2EE, 1:1 and group calls.
+Next.js web client for AbabilX messaging: personal + workspace chat, E2EE, 1:1 and group calls.
+The GitHub repo (`AbabilX/chat_web`) is **private** and has no LICENSE file, so
+public copy must not call the web client open source. The open-source client is
+the Android app (`AbabilX/ababilx-mobile`, AGPL-3.0); `GITHUB_REPO_URL` in
+`src/lib/site.ts` points there.
 
 **This is the home of web chat.** From 2026-09-09, every chat-related change on
 the web is made here — messages and conversations, composer and timeline, E2EE

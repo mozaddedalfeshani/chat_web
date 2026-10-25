@@ -28,5 +28,5 @@ export const LOGIN_COPY = {
   /** Crawlable product summary — real copy, not hidden keyword stuffing. */
   aboutTitle: "Secure messaging from AbabilX",
   aboutBody:
-    "AbabilX Chat is a private messenger. Chats, calls and files are end-to-end encrypted, and each message is deleted from our servers once your devices have it. No email or phone number needed, no ads, no trackers, no AI. Sign in at chat.ababilx.com with your phone.",
+    "AbabilX Chat is a private messenger. Chats, calls and files are end-to-end encrypted, and each message is deleted from our servers once your devices have it. No email, phone number or personal details needed, no ads, no trackers, no AI. The Android app is open source. Sign in at chat.ababilx.com with your phone.",
 } as const;

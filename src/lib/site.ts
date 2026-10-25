@@ -8,7 +8,10 @@ export const PRODUCT_NAME = "AbabilX Chat";
 export const ORG_NAME = "AbabilX";
 export const ORG_URL = "https://ababilx.com";
 export const ORG_EMAIL = "info@ababilx.com";
-export const GITHUB_REPO_URL = "https://github.com/AbabilX/chat_web";
+/** The public source: the Android app (AGPL-3.0). chat_web is private. */
+export const GITHUB_REPO_URL = "https://github.com/AbabilX/ababilx-mobile";
+export const GITHUB_ORG_URL = "https://github.com/AbabilX";
+export const SOURCE_LICENSE_URL = "https://www.gnu.org/licenses/agpl-3.0.html";
 export const PLAY_STORE_URL =
   "https://play.google.com/store/apps/details?id=com.ababilx.app";
 
@@ -17,11 +20,11 @@ export const DEFAULT_TITLE =
   "AbabilX Chat | Private, End-to-End Encrypted Messaging";
 
 export const DEFAULT_DESCRIPTION =
-  "AbabilX Chat is private messaging: end-to-end encrypted chats, calls and files, deleted from our servers once delivered. No email or phone number needed, no ads, no trackers, no AI. Scan with your phone to chat on the web.";
+  "AbabilX Chat is private messaging: end-to-end encrypted chats, calls and files, deleted from our servers once delivered. No email, phone number or personal details needed, no ads, no trackers, no AI. Open-source Android app.";
 
 /** Longer variant for JSON-LD and social cards. */
 export const EXTENDED_DESCRIPTION =
-  "AbabilX Chat (chat.ababilx.com) is a private messenger. Messages, photos, voice notes and files are end-to-end encrypted, and our servers delete each message once your devices have it. Start without an email or phone number. Privacy mode hides when you are online, typing or reading and removes you from search. Ghost Chat goes phone to phone and is never stored. No ads, no trackers, no AI, and we never share your data.";
+  "AbabilX Chat (chat.ababilx.com) is a private messenger. Messages, photos, voice notes and files are end-to-end encrypted, and our servers delete each message once your devices have it. Start without an email, a phone number or any personal details: Start New Chat makes your account from a key kept on your phone. Privacy mode hides when you are online, typing or reading and removes you from search. Ghost Chat goes phone to phone and is never stored. No ads, no trackers, no AI, and we never share your data. The Android app is open source under the GNU AGPL-3.0, so anyone can check how it works.";
 
 export const OG_LOCALE = "en_US";
 export const OG_LOCALE_ALTERNATES = ["bn_BD"];
